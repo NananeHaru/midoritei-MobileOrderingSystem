@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>みどり亭 - カゴを見る</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; margin: 0; padding-bottom: 140px; background-color: #f9f9f9; }
+        header { background-color: #fff; border-bottom: 3px solid #f3b123; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { color: #f3b123; font-size: 24px; text-decoration: none; }
+        header h1 { margin: 0; font-size: 22px; color: #333; }
+        .timer { font-size: 14px; text-align: right; color: #333; }
+
+        .cart-list { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .cart-card { background: #fff; border: 1px solid #ccc; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .item-info { flex: 1; }
+        .item-name { font-size: 18px; margin: 0 0 5px 0; color: #333; font-weight: bold; }
+        .item-option { font-size: 14px; color: #e67e22; margin-bottom: 5px; }
+        .item-meta { font-size: 16px; color: #555; }
+        
+        .delete-btn { background: none; border: none; color: #e74c3c; font-size: 24px; cursor: pointer; padding: 10px; }
+
+        /* 下部エリア */
+        .cart-footer { position: fixed; bottom: 60px; left: 0; width: 100%; background-color: #fff; border-top: 1px solid #ccc; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; z-index: 90; }
+        .total-price { font-size: 20px; font-weight: bold; color: #333; }
+        .submit-order-btn { background-color: #e74c3c; color: white; border: none; padding: 12px 35px; font-size: 18px; font-weight: bold; border-radius: 30px; cursor: pointer; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background-color: #fff; border-top: 2px solid #f3b123; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-item { text-align: center; color: #666; text-decoration: none; width: 33.3%; font-size: 12px; font-weight: bold; }
+        .nav-item.active { color: #f3b123; }
+    </style>
+</head>
+<body>
+    <header>
+        <a th:href="@{/menu}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h1>カゴの中身</h1>
+        <div class="timer">残り時間<br><strong>01:20:00</strong></div>
+    </header>
+
+    <div class="cart-list">
+        <div th:if="${#lists.isEmpty(cart)}" style="text-align: center; margin-top: 50px; color: #888; font-size: 18px;">
+            <i class="fas fa-shopping-basket" style="font-size: 48px; margin-bottom: 10px;"></i>
+            <div>カゴは空っぽです</div>
+        </div>
+
+        <div class="cart-card" th:each="item, stat : ${cart}">
+            <div class="item-info">
+                <h3 class="item-name" th:text="${item.product.productName}">商品名</h3>
+                <div class="item-option" th:if="${item.selectedOption != 'なし'}" th:text="'オプション: ' + ${item.selectedOption}">オプション</div>
+                <div class="item-meta">
+                    <span th:text="${item.product.price + item.optionAddPrice} + '円'">0円</span> × 
+                    <span th:text="${item.quantity} + '個'">1個</span> &nbsp;&nbsp;
+                    <strong th:text="'小計: ' + ${item.subtotal} + '円'">0円</strong>
+                </div>
+            </div>
+            <form th:action="@{/cart/remove}" method="post">
+                <input type="hidden" name="index" th:value="${stat.index}">
+                <button type="submit" class="delete-btn"><i class="fas fa-trash-alt"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <div class="cart-footer">
+        <div class="total-price">合計: <span th:text="${totalAmount}">0</span> 円</div>
+        <form th:action="@{/cart/submit}" method="post" th:if="${!#lists.isEmpty(cart)}">
+            <button type="submit" class="submit-order-btn" onclick="return confirm('厨房に注文を送信します。よろしいですか？')">注文を確定する</button>
+        </form>
+    </div>
+
+    <nav class="bottom-nav">
+        <a th:href="@{/menu}" class="nav-item active"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>
+        <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
+        a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>    </nav>
+</body>
+</html>

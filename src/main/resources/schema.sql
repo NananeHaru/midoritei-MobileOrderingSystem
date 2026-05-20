@@ -52,3 +52,21 @@ SELECT * FROM (
     SELECT 3, 'ストレート', 0 UNION ALL
     SELECT 4, '水割り', 0
 ) th WHERE NOT EXISTS (SELECT 1 FROM オプションマスタテーブル);
+
+-- 6. 注文テーブル
+CREATE TABLE IF NOT EXISTS 注文テーブル (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id CHAR(7) NOT NULL,
+    order_time TIMESTAMP NOT NULL,
+    order_status INT NOT NULL DEFAULT 0 -- 0:調理中、1:提供済など
+);
+
+-- 7. 注文詳細テーブル
+CREATE TABLE IF NOT EXISTS 注文詳細テーブル (
+    order_detail_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id CHAR(6) NOT NULL,
+    quantity INT NOT NULL,
+    option_info VARCHAR(100), -- 「ロック」などの文字列をそのまま保存
+    option_add_price INT NOT NULL DEFAULT 0
+);

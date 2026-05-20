@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>みどり亭 - 注文履歴</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; margin: 0; padding-bottom: 80px; background-color: #f9f9f9; }
+        header { background-color: #fff; border-bottom: 3px solid #f3b123; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { color: #f3b123; font-size: 24px; text-decoration: none; }
+        header h1 { margin: 0; font-size: 22px; color: #333; }
+        .timer { font-size: 14px; text-align: right; color: #333; }
+
+        .history-container { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        .history-card { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .item-info { flex: 1; }
+        .item-name { font-size: 18px; margin: 0 0 5px 0; color: #333; font-weight: bold; }
+        .item-time { font-size: 12px; color: #999; margin-bottom: 5px; }
+        .item-option { font-size: 13px; color: #e67e22; }
+        .item-qty { font-size: 16px; font-weight: bold; color: #555; margin-top: 5px; }
+
+        /* ステータスバッジのスタイル */
+        .status-badge { font-size: 16px; font-weight: bold; padding: 6px 15px; border-radius: 20px; text-align: center; min-width: 80px; }
+        .status-cooking { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .status-delivered { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+        /* 下部ナビゲーション */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background-color: #fff; border-top: 2px solid #f3b123; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-item { text-align: center; color: #666; text-decoration: none; width: 33.3%; font-size: 12px; font-weight: bold; }
+        .nav-item.active { color: #f3b123; }
+    </style>
+</head>
+<body>
+    <header>
+        <a th:href="@{/menu}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h1>注文履歴</h1>
+        <div class="timer">残り時間<br><strong>01:20:00</strong></div>
+    </header>
+
+    <div class="history-container">
+        <div th:if="${#lists.isEmpty(historyList)}" style="text-align: center; margin-top: 50px; color: #888;">
+            <i class="fas fa-history" style="font-size: 48px; margin-bottom: 10px;"></i>
+            <div>まだ注文履歴はありません</div>
+        </div>
+
+        <div class="history-card" th:each="h : ${historyList}">
+            <div class="item-info">
+                <div class="item-time" th:text="${#strings.substring(h.order_time, 11, 16)} + ' 注文'">14:30 注文</div>
+                <h3 class="item-name" th:text="${h.product_name}">生ビール</h3>
+                <div class="item-option" th:if="${h.option_info != 'なし'}" th:text="'・' + ${h.option_info}">・ソーダ割り</div>
+                <div class="item-qty" th:text="${h.quantity} + ' 個'">1 個</div>
+            </div>
+            
+            <div th:class="${h.order_status == 0} ? 'status-badge status-cooking' : 'status-badge status-delivered'"
+                 th:text="${h.order_status == 0} ? '調理中' : '提供済'">
+                 調理中
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a th:href="@{/menu}" class="nav-item"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>
+        <a th:href="@{/orders/history}" class="nav-item active"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
+        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>    </nav>
+</body>
+</html>

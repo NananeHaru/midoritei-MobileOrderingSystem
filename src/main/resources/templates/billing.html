@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>みどり亭 - お会計</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; margin: 0; padding-bottom: 140px; background-color: #f9f9f9; }
+        header { background-color: #fff; border-bottom: 3px solid #f3b123; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .back-btn { color: #f3b123; font-size: 24px; text-decoration: none; }
+        header h1 { margin: 0; font-size: 22px; color: #333; }
+        .timer { font-size: 14px; text-align: right; color: #333; }
+
+        .billing-container { padding: 20px; }
+        .bill-box { background: #fff; border: 1px solid #ccc; border-radius: 12px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .bill-title { font-size: 18px; font-weight: bold; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-top: 0; color: #444; text-align: center; }
+        
+        .bill-items { margin: 15px 0; display: flex; flex-direction: column; gap: 10px; }
+        .bill-item { display: flex; justify-content: space-between; font-size: 16px; color: #555; }
+        .bill-item-sub { font-size: 13px; color: #e67e22; padding-left: 10px; }
+
+        .total-row { display: flex; justify-content: space-between; align-items: center; border-top: 2px dashed #ccc; padding-top: 15px; margin-top: 15px; }
+        .total-label { font-size: 20px; font-weight: bold; color: #333; }
+        .total-value { font-size: 28px; font-weight: bold; color: #e74c3c; }
+
+        /* 下部固定エリア */
+        .checkout-footer { position: fixed; bottom: 60px; left: 0; width: 100%; background-color: #fff; border-top: 1px solid #ccc; padding: 15px 20px; text-align: center; box-sizing: border-box; z-index: 90; }
+        .checkout-btn { background-color: #27ae60; color: white; border: none; padding: 12px 0; width: 100%; font-size: 18px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background-color: #fff; border-top: 2px solid #f3b123; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-item { text-align: center; color: #666; text-decoration: none; width: 33.3%; font-size: 12px; font-weight: bold; }
+        .nav-item.active { color: #f3b123; }
+    </style>
+</head>
+<body>
+    <header>
+        <a th:href="@{/menu}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <h1>御勘定（お会計）</h1>
+        <div class="timer">残り時間<br><strong>01:20:00</strong></div>
+    </header>
+
+    <div class="billing-container">
+        <div class="bill-box">
+            <h2 class="bill-title"><i class="fas fa-receipt"></i> 注文内訳明細</h2>
+            
+            <div class="bill-items">
+                <div th:if="${#lists.isEmpty(billDetails)}" style="text-align: center; color: #999; padding: 20px 0;">
+                    まだご注文がありません
+                </div>
+                
+                <div th:each="item : ${billDetails}">
+                    <div class="bill-item">
+                        <div>
+                            <span th:text="${item.product_name}">商品名</span>
+                            <span th:text="' × ' + ${item.quantity}">× 1</span>
+                            <div class="bill-item-sub" th:if="${item.option_info != 'なし'}" th:text="'(' + ${item.option_info} + ')'">(ロック)</div>
+                        </div>
+                        <div th:text="${(item.price + item.option_add_price) * item.quantity} + '円'">0円</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="total-row">
+                <div class="total-label">総合計金額</div>
+                <div class="total-value"><span th:text="${finalAmount}">0</span><span style="font-size:18px; color:#333;"> 円</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="checkout-footer">
+        <form th:action="@{/orders/checkout}" method="post">
+            <button type="submit" class="checkout-btn" onclick="return confirm('お会計を確定して退店します。よろしいですか？\n（席データがリセットされます）')">お会計を確定する</button>
+        </form>
+    </div>
+
+    <nav class="bottom-nav">
+        <a th:href="@{/menu}" class="nav-item"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>
+        <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
+        <a th:href="@{/orders/billing}" class="nav-item active"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>
+    </nav>
+</body>
+</html>

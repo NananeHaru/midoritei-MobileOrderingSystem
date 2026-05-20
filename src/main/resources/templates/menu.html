@@ -37,16 +37,16 @@
 </head>
 <body>
     <header>
-        <a th:href="@{/seating/start}" class="home-btn"><i class="fas fa-home"></i></a>
+        <a th:href="@{/menu}" class="home-btn"><i class="fas fa-home"></i></a>
         <h1>注文</h1>
         <div class="timer">残り時間<br><strong>01:20:00</strong></div>
     </header>
 
     <div class="category-tabs">
-        <button class="tab-btn active">おすすめ</button>
-        <button class="tab-btn">季節限定</button>
-        <button class="tab-btn">串物</button>
-        <button class="tab-btn">一品</button>
+        <button class="tab-btn active" onclick="filterCategory('all', this)">おすすめ</button>
+        <button class="tab-btn" onclick="filterCategory('CT01', this)">お酒</button>
+        <button class="tab-btn" onclick="filterCategory('CT02', this)">スピードメニュー</button>
+        <button class="tab-btn" onclick="filterCategory('CT03', this)">メイン・揚げ物</button>
     </div>
 
     <div class="menu-list">
@@ -60,14 +60,36 @@
     </div>
 
     <div class="cart-footer">
-        <div class="total-price">合計金額 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ？？？ 円</div>
-        <a href="#" class="view-cart-btn">カゴを見る</a>
+        <div class="total-price">合計金額 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span th:text="${totalAmount}">0</span> 円</div>
+        <a th:href="@{/cart}" class="view-cart-btn">カゴを見る（<span th:text="${cartCount}">0</span>）</a>
     </div>
 
     <nav class="bottom-nav">
         <a th:href="@{/menu}" class="nav-item active"><i class="fas fa-utensils nav-icon"></i><div class="nav-text">注文</div></a>
-        <a href="#" class="nav-item"><i class="fas fa-list-alt nav-icon"></i><div class="nav-text">注文履歴</div></a>
-        <a href="#" class="nav-item"><i class="fas fa-cash-register nav-icon"></i><div class="nav-text">会計</div></a>
-    </nav>
+        <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
+        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>
 </body>
+<script>
+    function filterCategory(categoryId, element) {
+        // 1. すべてのタブボタンから 'active' クラスを外す
+        document.querySelectorAll('.tab-btn').forEach(btn => { // ← ここを tab-btn に修正
+            btn.classList.remove('active');
+        });
+        // 2. 今クリックされたボタンに 'active' クラスをつける
+        element.classList.add('active');
+
+        // 3. すべての商品カードを取得して、絞り込みを行う
+        document.querySelectorAll('.product-card').forEach(card => {
+            if (categoryId === 'all') {
+                card.style.display = 'block';
+            } else {
+                if (card.getAttribute('data-category') === categoryId) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        });
+    }
+</script>
 </html>
