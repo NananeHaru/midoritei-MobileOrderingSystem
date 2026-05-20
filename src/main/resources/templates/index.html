@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>みどり亭 - 注文開始</title>
+    <style>
+        body { font-family: 'Hiragino Kaku Gothic ProN', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #fff; }
+        .logo-area { text-align: center; margin-bottom: 100px; }
+        .logo-text-top { font-size: 32px; color: #333; }
+        .logo-main { font-size: 64px; color: #333; font-weight: bold; font-family: 'Hiragino Mincho ProN', serif; }
+        .store-name { font-size: 20px; color: #666; margin-top: 10px; }
+        .start-btn { background-color: #f3b123; color: white; border: none; padding: 20px 60px; font-size: 28px; font-weight: bold; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="logo-area">
+        <div class="logo-text-top">居酒屋</div>
+        <div class="logo-main">みどり亭</div>
+        <div class="store-name">緑橋一号店</div>
+    </div>
+    <a th:href="@{/seating/members(store_id='01', seat_id='SE01')}" class="start-btn">注文開始</a>
+</body>
+</html>

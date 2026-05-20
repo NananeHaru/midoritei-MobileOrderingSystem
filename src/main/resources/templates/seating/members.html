@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>みどり亭 - 人数選択</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; margin: 0; background-color: #fdfdfd; }
+        header { background-color: #fff; border-bottom: 3px solid #f3b123; padding: 15px; display: flex; align-items: center; position: relative; }
+        header h1 { margin: 0 auto; font-size: 22px; color: #333; }
+        .main-content { display: flex; flex-direction: column; align-items: center; padding: 50px 20px; }
+        .number-selector { display: flex; align-items: center; gap: 20px; border: 2px solid #ccc; border-radius: 8px; padding: 10px; background-color: #fff; }
+        .count-btn { background: none; border: none; font-size: 40px; cursor: pointer; }
+        .count-btn.minus { color: #666; }
+        .count-btn.plus { color: #f3b123; }
+        .count-num { font-size: 40px; color: #333; font-weight: bold; width: 60px; text-align: center; }
+        .next-btn { background-color: #f3b123; color: white; border: none; padding: 15px 40px; font-size: 22px; font-weight: bold; border-radius: 8px; margin-top: 50px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>人数選択</h1>
+    </header>
+    <div class="main-content">
+        <div class="number-selector">
+            <button class="count-btn minus" onclick="changeCount(-1)"><i class="fas fa-minus-square"></i></button>
+            <div class="count-num" id="memberCount">1</div>
+            <button class="count-btn plus" onclick="changeCount(1)"><i class="fas fa-plus-square"></i></button>
+        </div>
+        <form th:action="@{/seating/course}" method="get" style="width: 100%; text-align: right;">
+            <input type="hidden" name="store_id" th:value="${param.store_id}">
+            <input type="hidden" name="seat_id" th:value="${param.seat_id}">
+            <input type="hidden" name="members" id="membersInput" value="1">
+            <button type="submit" class="next-btn">次へ</button>
+        </form>
+    </div>
+    <script>
+        function changeCount(delta) {
+            let count = parseInt(document.getElementById('memberCount').innerText);
+            count = Math.max(1, count + delta);
+            document.getElementById('memberCount').innerText = count;
+            document.getElementById('membersInput').value = count;
+        }
+    </script>
+</body>
+</html>

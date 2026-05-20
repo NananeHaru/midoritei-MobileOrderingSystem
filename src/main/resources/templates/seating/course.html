@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>みどり亭 - コース選択</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; margin: 0; background-color: #fdfdfd; }
+        header { background-color: #fff; border-bottom: 3px solid #f3b123; padding: 15px; display: flex; align-items: center; }
+        header h1 { margin: 0 auto; font-size: 22px; color: #333; }
+        .main-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .course-btn { width: 100%; border: 3px solid transparent; border-radius: 12px; padding: 25px; color: white; display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 22px; cursor: pointer; }
+        .premium { background: linear-gradient(to bottom, #f37023, #d9531a); }
+        .standard { background: linear-gradient(to bottom, #00adef, #008cc9); }
+        .none { background: linear-gradient(to bottom, #999, #777); font-size: 26px; }
+        .next-btn { background-color: #f3b123; color: white; border: none; padding: 15px 40px; font-size: 22px; font-weight: bold; border-radius: 8px; margin-top: 30px; cursor: pointer; align-self: flex-end; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>コース選択</h1>
+    </header>
+    <div class="main-content">
+        <form th:action="@{/seating/open}" method="post" style="display: flex; flex-direction: column; gap: 20px;">
+            <input type="hidden" name="store_id" th:value="${param.store_id}">
+            <input type="hidden" name="seat_id" th:value="${param.seat_id}">
+            <input type="hidden" name="members" th:value="${param.members}">
+            <input type="hidden" name="course_id" id="courseInput" value="none">
+
+            <button type="button" class="course-btn premium" onclick="selectCourse('CS01', this)">
+                <i class="fas fa-wine-glass-alt"></i> premium コース
+            </button>
+            <button type="button" class="course-btn standard" onclick="selectCourse('CS02', this)">
+                <i class="fas fa-beer"></i> standard コース
+            </button>
+            <button type="button" class="course-btn none" onclick="selectCourse('none', this)">
+                コースなし
+            </button>
+
+            <button type="submit" class="next-btn">次へ</button>
+        </form>
+    </div>
+    <script>
+        function selectCourse(courseId, element) {
+            document.getElementById('courseInput').value = courseId;
+            document.querySelectorAll('.course-btn').forEach(btn => btn.style.borderColor = 'transparent');
+            element.style.borderColor = '#f3b123';
+        }
+    </script>
+</body>
+</html>
