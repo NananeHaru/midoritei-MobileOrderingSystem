@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン | 居酒屋 みどり亭</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #E29A13; /* 温かみのあるオレンジ・黄色 */
+            --primary-hover: #C5830E;
+            --bg-color: #F8F9FA;
+            --card-bg: #FFFFFF;
+            --text-color: #333333;
+            --border-color: #CCCCCC;
+            --error-color: #D32F2F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-family: 'Noto Serif JP', serif;
+            font-weight: 900;
+            font-size: 2.2rem;
+            color: #1A1A1A;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: #666666;
+            letter-spacing: 1px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            padding: 40px 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .card-title {
+            text-align: center;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #555555;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(226, 154, 19, 0.15);
+        }
+
+        /* パスワード非表示/表示トグルアイコン */
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999999;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toggle-password:hover {
+            color: #666666;
+        }
+
+        .btn-login {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 30px;
+        }
+
+        .btn-login:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+
+        .error-message {
+            background-color: #FFEBEE;
+            border-left: 4px solid var(--error-color);
+            color: var(--error-color);
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="header">
+        <h1>居酒屋 みどり亭</h1>
+        <p>モバイルオーダーシステム</p>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">ログイン</h2>
+
+        <!-- エラーメッセージ -->
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+        <form th:action="@{/staff/login}" method="POST">
+            <div class="form-group">
+                <label for="employeeId">従業員ID</label>
+                <div class="input-wrapper">
+                    <input type="text" id="employeeId" name="employeeId" class="form-control" placeholder="IDを入力してください" required autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">パスワード</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="パスワードを入力してください" required>
+                    <span class="toggle-password" id="togglePassword">
+                        <!-- SVGの目のアイコン -->
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login">ログイン</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    const eyeIcon = document.querySelector('#eyeIcon');
+
+    togglePassword.addEventListener('click', function (e) {
+        // type属性の切り替え
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        
+        // アイコンの切り替え
+        if (type === 'text') {
+            // 目にスラッシュが入ったアイコンに変更
+            eyeIcon.innerHTML = `
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+            `;
+        } else {
+            // 普通の目のアイコンに戻す
+            eyeIcon.innerHTML = `
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            `;
+        }
+    });
+</script>
+</body>
+</html>

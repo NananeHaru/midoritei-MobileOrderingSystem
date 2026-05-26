@@ -27,56 +27,64 @@ public class OrderService {
     public void submitOrder(String customerId, List<CartItem> cartItems) {
         if (cartItems == null || cartItems.isEmpty()) return;
 
-        // 1. 注文テーブルに親レコードを1件インサート
-        String orderSql = "INSERT INTO 注文テーブル (customer_id, order_time, order_status) VALUES (?, ?, ?)";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        // 1. 注文ID（15桁）を生成 (例: OR + yyMMddHHmmss + ランダム1桁)
+        String orderId = "OR" + java.time.format.DateTimeFormatter.ofPattern("yyMMddHHmmss").format(java.time.LocalDateTime.now()) + (int)(Math.random() * 10);
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(orderSql, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, customerId);
-            ps.setObject(2, LocalDateTime.now());
-            ps.setInt(3, 0); // 0: 調理中
-            return ps;
-        }, keyHolder);
+        // 2. 注文テーブルに親レコードを1件インサート
+        String orderSql = "INSERT INTO 注文テーブル (order_id, customer_id, order_time, status) VALUES (?, ?, ?, 0)";
+        jdbcTemplate.update(orderSql, orderId, customerId, java.time.LocalDateTime.now());
 
-        // 自動生成された order_id を取得
-        int orderId = keyHolder.getKey().intValue();
-
-        // 2. 注文詳細テーブルにカゴの中身をすべてインサート
-        String detailSql = "INSERT INTO 注文詳細テーブル (order_id, product_id, quantity, option_info, option_add_price) VALUES (?, ?, ?, ?, ?)";
+        // 3. 注文明細テーブルにカゴの中身をすべてインサート
+        String detailSql = "INSERT INTO 注文明細テーブル (order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status) VALUES (?, ?, ?, ?, ?, ?, ?, 0)";
         for (CartItem item : cartItems) {
+            // オプション名からオプションIDを逆引き取得
+            Integer optionId = null;
+            if (item.getSelectedOption() != null && !item.getSelectedOption().trim().isEmpty()) {
+                try {
+                    optionId = jdbcTemplate.queryForObject(
+                        "SELECT option_id FROM オプションマスタテーブル WHERE option_name = ?",
+                        Integer.class,
+                        item.getSelectedOption()
+                    );
+                } catch (Exception e) {
+                    // オプションIDが見つからない場合はnullのまま
+                }
+            }
+
             jdbcTemplate.update(detailSql,
                 orderId,
                 item.getProduct().getProductId(),
                 item.getQuantity(),
+                item.getProduct().getPrice(), // unit_price
+                optionId,
                 item.getSelectedOption(),
                 item.getOptionAddPrice()
             );
         }
 
-        // 3. 顧客テーブルの「現在の合計金額」も更新
+        // 4. 顧客テーブルの「現在の合計金額」も更新
         int subtotal = cartItems.stream().mapToInt(CartItem::getSubtotal).sum();
         String updateCustomerSql = "UPDATE 顧客テーブル SET total_amount = total_amount + ? WHERE customer_id = ?";
         jdbcTemplate.update(updateCustomerSql, subtotal, customerId);
     }
 
     /**
-     * 指定された顧客IDの過去の注文履歴を、注文テーブル、詳細テーブル、商品マスタを結合して取得します。
+     * 指定された顧客IDの過去 of 注文履歴を、注文テーブル、詳細テーブル、商品マスタを結合して取得します。
      */
     public List<Map<String, Object>> getOrderHistory(String customerId) {
         String sql = "SELECT " +
                      "  o.order_time, " +
-                     "  o.order_status, " +
+                     "  d.serve_status AS order_status, " + // 既存Thymeleafテンプレートの互換性のためのエイリアス
                      "  p.product_name, " +
                      "  d.quantity, " +
                      "  d.option_info, " +
                      "  p.price, " +
                      "  d.option_add_price " +
                      "FROM 注文テーブル o " +
-                     "JOIN 注文詳細テーブル d ON o.order_id = d.order_id " +
+                     "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
                      "JOIN 商品マスタテーブル p ON d.product_id = p.product_id " +
                      "WHERE o.customer_id = ? " +
-                     "ORDER BY o.order_time DESC"; // 新しい注文が上に来るようにソート
+                     "ORDER BY o.order_time DESC";
 
         return jdbcTemplate.queryForList(sql, customerId);
     }
@@ -87,7 +95,7 @@ public class OrderService {
     public int getTotalBillingAmount(String customerId) {
         String sql = "SELECT SUM((p.price + d.option_add_price) * d.quantity) " +
                     "FROM 注文テーブル o " +
-                    "JOIN 注文詳細テーブル d ON o.order_id = d.order_id " +
+                    "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
                     "JOIN 商品マスタテーブル p ON d.product_id = p.product_id " +
                     "WHERE o.customer_id = ?";
         
@@ -106,5 +114,66 @@ public class OrderService {
             return 0;
         }
         return 0;
+    }
+
+    /**
+     * 指定された日付（yyyy-MM-dd）のすべての注文詳細を取得します。
+     * 日付指定がない場合は本日分を取得します。
+     */
+    public List<Map<String, Object>> getAllOrderDetails(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            dateStr = java.time.LocalDate.now().toString();
+        }
+        
+        java.time.LocalDateTime start = java.time.LocalDate.parse(dateStr).atStartOfDay();
+        java.time.LocalDateTime end = java.time.LocalDate.parse(dateStr).atTime(java.time.LocalTime.MAX);
+
+        String sql = "SELECT " +
+                     "  o.order_id, " +
+                     "  c.seat_id, " +
+                     "  p.product_name, " +
+                     "  d.quantity, " +
+                     "  d.option_info, " +
+                     "  d.serve_status AS order_status, " + // 既存Thymeleafテンプレートの互換用のエイリアス
+                     "  d.order_item_id AS order_detail_id, " + // 既存コントローラ・ビュー互換用のエイリアス
+                     "  o.order_time " +
+                     "FROM 注文テーブル o " +
+                     "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
+                     "JOIN 商品マスタテーブル p ON d.product_id = p.product_id " +
+                     "JOIN 顧客テーブル c ON o.customer_id = c.customer_id " +
+                     "WHERE o.order_time >= ? AND o.order_time <= ? " +
+                     "ORDER BY o.order_time DESC, d.order_item_id ASC";
+
+        return jdbcTemplate.queryForList(sql, start, end);
+    }
+
+    /**
+     * 注文の提供ステータスを更新します。
+     */
+    @Transactional
+    public void updateOrderStatus(int orderItemId, int status) {
+        String sql = "UPDATE 注文明細テーブル SET serve_status = ? WHERE order_item_id = ?";
+        jdbcTemplate.update(sql, status, orderItemId);
+    }
+
+    /**
+     * 指定された日付の本日の提供数・未提供数の統計を取得します。
+     */
+    public Map<String, Object> getOrderStats(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            dateStr = java.time.LocalDate.now().toString();
+        }
+        
+        java.time.LocalDateTime start = java.time.LocalDate.parse(dateStr).atStartOfDay();
+        java.time.LocalDateTime end = java.time.LocalDate.parse(dateStr).atTime(java.time.LocalTime.MAX);
+
+        String sql = "SELECT " +
+                     "  COALESCE(SUM(CASE WHEN d.serve_status = 0 THEN d.quantity ELSE 0 END), 0) AS unpaid_count, " +
+                     "  COALESCE(SUM(CASE WHEN d.serve_status = 1 THEN d.quantity ELSE 0 END), 0) AS paid_count " +
+                     "FROM 注文テーブル o " +
+                     "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
+                     "WHERE o.order_time >= ? AND o.order_time <= ?";
+
+        return jdbcTemplate.queryForMap(sql, start, end);
     }
 }
