@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お会計の確定</title>
+</head>
+<body style="font-family: sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px;">
+
+    <div style="max-width: 600px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+        
+        <h2 style="color: #2ecc71; margin-bottom: 10px;">✔ お会計を確定しました</h2>
+        <p style="color: #666; margin-bottom: 30px;">以下のQRコードをお手持ちのスマホで読み取って決済を完了させてください。</p>
+
+        <div class="qr-section" style="background: #fcfcfc; border: 2px solid #f0f0f0; padding: 20px; border-radius: 8px; display: inline-block;">
+            <h3 style="color: #333; font-size: 1.1rem; margin-top: 0; margin-bottom: 15px;">決済用QRコード</h3>
+            
+            <img th:src="@{/order/qr/{id}(id=${orderId})}" alt="決済用QRコード" 
+                 style="width: 200px; height: 200px; background: #fff; border: 1px solid #ddd; padding: 5px;" />
+            
+            <p style="color: #888; margin-top: 10px; margin-bottom: 0; font-size: 0.85rem;">
+                顧客番号: <span th:text="${orderId}"></span>
+            </p>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <a th:href="@{/orders/billing}" style="color: #3498db; text-decoration: none; font-size: 0.9rem;">← 前の画面に戻る</a>
+        </div>
+        
+    </div>
+
+</body>
+</html>

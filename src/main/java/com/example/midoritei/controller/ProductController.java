@@ -144,8 +144,45 @@ public class ProductController {
         
         model.addAttribute("billDetails", billDetails);
         model.addAttribute("finalAmount", finalAmount);
+        
+        // ★★★ ここに下の1行を追加してください ★★★
+        model.addAttribute("orderId", customerId); 
+        
         return "billing"; // billing.htmlを表示
     }
+    
+
+@GetMapping("/orders/billing/complete")
+public String showBillingComplete(@RequestParam(required = false, defaultValue = "0100001") String id, Model model) {
+    
+    try {
+        // 1. 仕様書に合わせるデータ（オブジェクト）を作成
+        PaymentUpdateRequest requestData = new PaymentUpdateRequest();
+        requestData.setMethod("updateStatus");   // 仕様書の method 値
+        requestData.setCustomerId(id);           // 顧客ID（"0100001"）
+        requestData.setHash(null);               // ハッシュ値（今回は同一性判定しないのでnull）
+        requestData.setBillStatus(8);            // 会計中ステータス（値: 8）
+
+        // 2. 相手（レジシステム側）のAPIのURLを設定
+        // ※演習環境に合わせてURL（http://localhost:XXXX など）が変わる場合はここを調整します
+        String apiUrl = "http://localhost:8080/api/orders"; 
+
+        // 3. RestTemplateを使って、POSTメソッドでJSONデータを送信
+        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+        restTemplate.postForObject(apiUrl, requestData, String.class);
+        
+        System.out.println("★レジAPIへの会計状況更新（status:8）に成功しました！");
+
+    } catch (Exception e) {
+        System.out.println("⚠️ API送信でエラーが発生しました: " + e.getMessage());
+        // 演習環境によっては相手のAPIサーバーがまだ起動していないとここに落ちます
+    }
+
+    // 完了画面に顧客IDを引き渡す処理（既存）
+    model.addAttribute("orderId", id);
+    return "billing_complete"; 
+}
+
 
     // ★追加：退店ボタンを押した時の処理（セッションをクリアして最初に戻る）
     @PostMapping("/orders/checkout")
