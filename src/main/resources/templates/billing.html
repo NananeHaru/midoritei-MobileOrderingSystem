@@ -41,7 +41,7 @@
             /* 画面全体を中央に寄せ、タブレットで見やすい幅に制限します */
             .container, .billing-wrapper, .main-content { 
                 max-width: 650px;
-                margin: 0 auto;
+                margin: 20px auto;
                 background-color: #ffffff; /* 中身は白ベース */
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 高級感のある影をつけます */
                 border-radius: 12px; /* 角を少し丸くします */
@@ -63,7 +63,7 @@
     <header>
         <a th:href="@{/menu}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
         <h1>御勘定（お会計）</h1>
-        <div class="timer">残り時間<br><strong>01:20:00</strong></div>
+        <div class="timer">残り時間<br><strong id="countdown-timer">01:20:00</strong></div>
     </header>
 
     <div class="billing-container">
@@ -107,3 +107,36 @@
     </nav>
 </body>
 </html>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        // Javaから受け取った「本物の残り秒数」をセット（予備として4800秒）
+        let totalSeconds = /*[[${remainingSeconds}]]*/ 4800;
+
+        const timerElement = document.getElementById("countdown-timer");
+
+        function updateTimer() {
+            if (totalSeconds <= 0) {
+                timerElement.textContent = "00:00:00";
+                clearInterval(timerInterval);
+                alert("制限時間になりました。");
+                return;
+            }
+
+            let hours = Math.floor(totalSeconds / 3600);
+            let minutes = Math.floor((totalSeconds % 3600) / 60);
+            let seconds = totalSeconds % 60;
+
+            let hStr = String(hours).padStart(2, '0');
+            let mStr = String(minutes).padStart(2, '0');
+            let sStr = String(seconds).padStart(2, '0');
+
+            timerElement.textContent = `${hStr}:${mStr}:${sStr}`;
+
+            totalSeconds--;
+        }
+
+        const timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+    });
+</script> 

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +26,32 @@ public class ProductController {
 
     @Autowired
     private OrderService orderService;
+
+    // -------------------------------------------------------------
+    // ⏱️ ★新しく追加：すべての画面で自動的に残り秒数を引き渡す共通処理
+    // -------------------------------------------------------------
+    @ModelAttribute
+    public void addRemainingSeconds(jakarta.servlet.http.HttpSession session, Model model) {
+        long remainingSeconds = 0;
+        long currentTime = System.currentTimeMillis();
+        
+        // セッションから客の座席状況を取り出す
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+        
+        if (customerSession != null) {
+            long endTime = customerSession.getSessionEndTime();
+            remainingSeconds = (endTime - currentTime) / 1000;
+        }
+        
+        if (remainingSeconds < 0) {
+            remainingSeconds = 0;
+        }
+
+        // これを書くだけで、このController内にあるすべての画面（/menu, /cart, /orders/history等）に
+        // 自動的に remainingSeconds が引き渡されるようになります！
+        model.addAttribute("remainingSeconds", remainingSeconds);
+    }
 
     // メニュー一覧
     @GetMapping("/menu")
@@ -132,23 +159,22 @@ public class ProductController {
 
     // （既存のクラスの中に追記してください）
 
-    // ★追加：会計画面の表示
+    // ★会計画面の表示（本番環境ルート完全対応版・共通化スッキリ版）
     @GetMapping("/orders/billing")
-    public String showBilling(Model model) {
+    public String showBilling(Model model, HttpSession session) {
         String customerId = "0100001"; // 演習用の固定顧客ID
         
-        // 内訳として使うために、履歴と同じ注文一覧を取得
         List<Map<String, Object>> billDetails = orderService.getOrderHistory(customerId);
-        // 総合計金額を取得
         int finalAmount = orderService.getTotalBillingAmount(customerId);
         
         model.addAttribute("billDetails", billDetails);
         model.addAttribute("finalAmount", finalAmount);
-        
-        // ★★★ ここに下の1行を追加してください ★★★
         model.addAttribute("orderId", customerId); 
+
+        // 💡 タイマー計算のロジック（remainingSecondsの計算部分）は
+        // まるごと消去しました！自動で共通処理から引き渡されます。
         
-        return "billing"; // billing.htmlを表示
+        return "billing"; 
     }
     
 

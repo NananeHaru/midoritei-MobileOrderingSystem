@@ -5,13 +5,14 @@ CREATE TABLE IF NOT EXISTS 顧客採番テーブル (
 INSERT INTO 顧客採番テーブル (current_number)
 SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM 顧客採番テーブル);
 
--- 2. 顧客テーブル
+-- 2. 顧客テーブル（★end_timeを追加します）
 CREATE TABLE IF NOT EXISTS 顧客テーブル (
     customer_id CHAR(7) PRIMARY KEY,
     store_id CHAR(2),
     seat_id VARCHAR(20),
     course_id CHAR(7),
     entry_time TIMESTAMP,
+    end_time TIMESTAMP, -- 👈 ★ここに新しく終了時刻の項目を追加！
     checkout_status INT,
     total_amount INT
 );

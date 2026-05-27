@@ -36,22 +36,21 @@
     <header>
         <a th:href="@{/menu}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
         <h1>注文履歴</h1>
-        <div class="timer">残り時間<br><strong>01:20:00</strong></div>
+        <div class="timer">残り時間<br><strong id="countdown-timer">01:20:00</strong></div>
     </header>
 
     <div class="history-container">
         <div th:if="${#lists.isEmpty(historyList)}" style="text-align: center; margin-top: 50px; color: #888;">
-            <i class="fas fa-history" style="font-size: 48px; margin-bottom: 10px;"></i>
-            <div>まだ注文履歴はありません</div>
-        </div>
+        <i class="fas fa-history" style="font-size: 48px; margin-bottom: 10px;"></i>
+        <div>まだ注文履歴はありません</div>
+    </div>
 
-        <div class="history-card" th:each="h : ${historyList}">
-            <div class="item-info">
-                <div class="item-time" th:text="${#strings.substring(h.order_time, 11, 16)} + ' 注文'">14:30 注文</div>
-                <h3 class="item-name" th:text="${h.product_name}">生ビール</h3>
-                <div class="item-option" th:if="${h.option_info != 'なし'}" th:text="'・' + ${h.option_info}">・ソーダ割り</div>
-                <div class="item-qty" th:text="${h.quantity} + ' 個'">1 個</div>
-            </div>
+    <div class="history-card" th:each="h : ${historyList}">
+        <div class="item-info">
+            <div class="item-time" th:text="${#strings.substring(h.order_time, 11, 16)} + ' 注文'">14:30 注文</div>
+            <h3 class="item-name" th:text="${h.product_name}">生ビール</h3>
+            <div class="item-option" th:if="${h.option_info != 'なし'}" th:text="'・' + ${h.option_info}">・ソーダ割り</div>
+            <div class="item-qty" th:text="${h.quantity} + ' 個'">1 個</div>
             
             <div th:class="${h.order_status == 0} ? 'status-badge status-cooking' : 'status-badge status-delivered'"
                  th:text="${h.order_status == 0} ? '調理中' : '提供済'">
@@ -63,6 +62,36 @@
     <nav class="bottom-nav">
         <a th:href="@{/menu}" class="nav-item"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>
         <a th:href="@{/orders/history}" class="nav-item active"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
-        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>    </nav>
+        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>
+    </nav>
+
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            // Javaの共通処理から残り秒数を受け取る
+            let totalSeconds = /*[[${remainingSeconds}]]*/ 4800;
+            const timerElement = document.getElementById("countdown-timer");
+
+            function updateTimer() {
+                if (totalSeconds <= 0) {
+                    timerElement.textContent = "00:00:00";
+                    clearInterval(timerInterval);
+                    alert("制限時間になりました。");
+                    return;
+                }
+                let hours = Math.floor(totalSeconds / 3600);
+                let minutes = Math.floor((totalSeconds % 3600) / 60);
+                let seconds = totalSeconds % 60;
+
+                let hStr = String(hours).padStart(2, '0');
+                let mStr = String(minutes).padStart(2, '0');
+                let sStr = String(seconds).padStart(2, '0');
+
+                timerElement.textContent = `${hStr}:${mStr}:${sStr}`;
+                totalSeconds--;
+            }
+            const timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+        });
+    </script>
 </body>
 </html>
