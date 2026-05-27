@@ -478,7 +478,7 @@
             </span>
             注文削除
         </a>
-        <a href="#" class="menu-item" onclick="alert('メニュー管理は準備中です')">
+        <a th:href="@{/staff/menu}" class="menu-item">
             <span class="menu-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
@@ -529,7 +529,7 @@
             <!-- 商品グリッド -->
             <div class="product-grid">
                 <div class="product-card" th:each="p : ${products}" th:data-category="${p.categoryId}"
-                     th:onclick="openDetailModal([[${p.productId}]], [[${p.productName}]], [[${p.price}]], [[${p.imagePath}]])">
+                     th:onclick="openDetailModal([[${p.productId}]], [[${p.productName}]], [[${p.price}]], [[${p.imagePath}]], [[${p.categoryId}]], [[${p.description}]])">
                     <div class="product-info">
                         <h3 class="product-name" th:text="${p.productName}">商品名</h3>
                         <span class="product-price" th:text="${p.price} + '円(税込)'">0円</span>
@@ -562,6 +562,13 @@
         
         <form th:action="@{/staff/orders/add/cart/add}" method="POST" id="addToCartForm">
             <input type="hidden" name="productId" id="mProductId">
+            <input type="hidden" name="selectedOption" id="mSelectedOption" value="">
+            <input type="hidden" name="optionAddPrice" id="mOptionAddPrice" value="0">
+            
+            <div id="mProductOptions" style="margin: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <!-- Dynamically loaded option buttons -->
+            </div>
+
             <div class="qty-picker">
                 <button type="button" class="btn-qty" onclick="changeQty(-1)">-</button>
                 <div class="qty-val" id="qtyVal">1</div>
@@ -621,31 +628,71 @@
     const qtyVal = document.getElementById('qtyVal');
     const qtyInput = document.getElementById('qtyInput');
 
-    function openDetailModal(id, name, price, imgPath) {
+    function openDetailModal(id, name, price, imgPath, categoryId, desc) {
         mProductId.value = id;
         mProductName.innerText = name;
         mProductPrice.innerText = price + "円(税込)";
         mProductImg.src = imgPath;
         
-        // 商品の説明文を動的に生成（ダミー）
-        if (id === 'PR0001') {
-            mProductDesc.innerText = "のどごし爽快な、みどり亭定番の生ビールです。お食事によく合います。";
-        } else if (id === 'PR0002') {
-            mProductDesc.innerText = "さっぱりとした酸味が特徴の自家製レモンサワーです。";
-        } else if (id === 'PR0003') {
-            mProductDesc.innerText = "冷たくて香ばしい定番のウーロン茶です。";
-        } else if (id === 'FP0001') {
-            mProductDesc.innerText = "塩味が効いた、おつまみに最適な茹でたて枝豆です。";
-        } else if (id === 'FP0002') {
-            mProductDesc.innerText = "サクサクの衣とジューシーな鶏肉が絶品の、みどり亭特製の唐揚げです。";
-        } else if (id === 'FP0003') {
-            mProductDesc.innerText = "外はカリッと、中はホクホクに揚げたフライドポテトです。";
-        } else {
-            mProductDesc.innerText = "みどり亭こだわりの美味しいメニューです。";
-        }
+        mProductDesc.innerText = desc || "みどり亭こだわりの美味しいメニューです。";
 
         qtyVal.innerText = "1";
         qtyInput.value = "1";
+
+        // オプション表示の初期化
+        const optionContainer = document.getElementById('mProductOptions');
+        optionContainer.innerHTML = '';
+        document.getElementById('mSelectedOption').value = '';
+        document.getElementById('mOptionAddPrice').value = '0';
+
+        // 商品に紐づく有効なオプションをAPI経由でロード
+        fetch('/staff/menu/api/product-options?productId=' + id)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    // 最初のオプションをデフォルト選択
+                    document.getElementById('mSelectedOption').value = data[0].option_name;
+                    document.getElementById('mOptionAddPrice').value = data[0].option_add_price;
+
+                    data.forEach((opt, idx) => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'option-btn' + (idx === 0 ? ' selected' : '');
+                        btn.innerText = opt.option_add_price > 0 ? opt.option_name + ' (+' + opt.option_add_price + '円)' : opt.option_name;
+                        
+                        // スタイリング
+                        btn.style.background = 'white';
+                        btn.style.border = '2px solid #ccc';
+                        btn.style.borderRadius = '8px';
+                        btn.style.padding = '10px';
+                        btn.style.fontSize = '14px';
+                        btn.style.fontWeight = 'bold';
+                        btn.style.cursor = 'pointer';
+                        
+                        if (idx === 0) {
+                            btn.style.borderColor = '#E29A13';
+                            btn.style.backgroundColor = '#FFFDF5';
+                        }
+
+                        btn.onclick = function() {
+                            optionContainer.querySelectorAll('button').forEach(b => {
+                                b.classList.remove('selected');
+                                b.style.borderColor = '#ccc';
+                                b.style.backgroundColor = 'white';
+                            });
+                            btn.classList.add('selected');
+                            btn.style.borderColor = '#E29A13';
+                            btn.style.backgroundColor = '#FFFDF5';
+                            
+                            document.getElementById('mSelectedOption').value = opt.option_name;
+                            document.getElementById('mOptionAddPrice').value = opt.option_add_price;
+                        };
+                        
+                        optionContainer.appendChild(btn);
+                    });
+                }
+            });
+
         detailModal.style.display = 'flex';
     }
 

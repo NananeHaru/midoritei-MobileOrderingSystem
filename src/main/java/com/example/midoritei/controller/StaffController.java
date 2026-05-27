@@ -230,6 +230,8 @@ public class StaffController {
     @PostMapping("/orders/add/cart/add")
     public String addToStaffCart(@RequestParam("productId") String productId,
                                  @RequestParam("quantity") int quantity,
+                                 @RequestParam(value = "selectedOption", defaultValue = "") String selectedOption,
+                                 @RequestParam(value = "optionAddPrice", defaultValue = "0") int optionAddPrice,
                                  HttpSession session) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
@@ -247,19 +249,19 @@ public class StaffController {
                 .orElse(null);
 
         if (product != null) {
-            // 代理注文における同一商品のマージ処理
+            // 代理注文における同一商品のマージ処理 (商品IDとオプション情報が両方一致する場合のみマージ)
             boolean exists = false;
             for (int i = 0; i < cart.size(); i++) {
                 CartItem item = cart.get(i);
-                if (item.getProduct().getProductId().equals(productId)) {
+                if (item.getProduct().getProductId().equals(productId) && item.getSelectedOption().equals(selectedOption)) {
                     // 数量を加算して置き換え
-                    cart.set(i, new CartItem(item.getProduct(), item.getQuantity() + quantity, "", 0));
+                    cart.set(i, new CartItem(item.getProduct(), item.getQuantity() + quantity, selectedOption, optionAddPrice));
                     exists = true;
                     break;
                 }
             }
             if (!exists) {
-                cart.add(new CartItem(product, quantity, "", 0));
+                cart.add(new CartItem(product, quantity, selectedOption, optionAddPrice));
             }
             session.setAttribute("staffCart", cart);
         }
