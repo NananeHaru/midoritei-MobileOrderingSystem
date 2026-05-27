@@ -81,6 +81,7 @@ public class ProductController {
         if (targetProduct == null) { return "redirect:/menu"; }
 
         model.addAttribute("product", targetProduct);
+        model.addAttribute("options", productService.getOptionsByProductId(targetProduct.getProductId()));
         return "detail";
     }
 

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メニュー検索 - 条件指定 | みどり亭 スタッフ</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #E29A13;
+            --primary-hover: #C5830E;
+            --bg-color: #F4F5F7;
+            --sidebar-bg: #EFEFEF;
+            --text-color: #333333;
+            --border-color: #DDDDDD;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ヘッダー */
+        .header {
+            background-color: #FFFFFF;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 4px solid var(--primary-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--primary-color);
+        }
+
+        .header-logo span {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-left: 10px;
+            font-family: 'Noto Serif JP', serif;
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* メインレイアウト */
+        .main-container {
+            display: flex;
+            margin-top: 60px;
+            flex: 1;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            padding-top: 10px;
+            z-index: 90;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 24px;
+            color: #555555;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            border-left: 4px solid transparent;
+            font-size: 1.05rem;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(0,0,0,0.03);
+            color: #111111;
+        }
+
+        .menu-item.active {
+            background-color: #FFFFFF;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            font-weight: 700;
+        }
+
+        .menu-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+
+        /* コンテンツ領域 */
+        .content {
+            margin-left: 240px;
+            padding: 30px;
+            flex: 1;
+            max-width: calc(100% - 240px);
+        }
+
+        /* コンテンツヘッダー */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            width: 44px;
+            height: 40px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* 検索ボタン */
+        .btn-search {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 24px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-search:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* 検索カード */
+        .search-card {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 30px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-control-text {
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-size: 1.05rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control-text:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* トグルボタンのグリッド */
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-toggle {
+            background-color: #FFFFFF;
+            color: #888888;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .btn-toggle.selected {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background-color: rgba(226, 154, 19, 0.04);
+            box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        .hidden-checkbox {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ヘッダー -->
+    <header class="header">
+        <a th:href="@{/staff/orders}" class="header-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>みどり亭 管理画面</span>
+        </a>
+        <a th:href="@{/staff/logout}" class="btn-logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            ログアウト
+        </a>
+    </header>
+
+    <div class="main-container">
+        <!-- サイドバー -->
+        <aside class="sidebar">
+            <a th:href="@{/staff/orders}" class="menu-item">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="9" x2="15" y2="9"></line>
+                        <line x1="9" y1="13" x2="15" y2="13"></line>
+                        <line x1="9" y1="17" x2="15" y2="17"></line>
+                    </svg>
+                </span>
+                注文一覧
+            </a>
+            <a th:href="@{/staff/orders/add}" class="menu-item">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </span>
+                注文追加
+            </a>
+            <a th:href="@{/staff/orders/delete}" class="menu-item">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </span>
+                注文削除
+            </a>
+            <a th:href="@{/staff/menu}" class="menu-item active">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                </span>
+                メニュー管理
+            </a>
+            <a href="#" class="menu-item" onclick="alert('座席一覧は準備中です')">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19h16v2H4zM4 5h16v12H4z"></path>
+                    </svg>
+                </span>
+                座席一覧
+            </a>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="content">
+            <form method="get" th:action="@{/staff/menu/search/results}">
+                <div class="content-header">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <a th:href="@{/staff/menu}" class="btn-back">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                        </a>
+                        <h1 class="content-title">メニュー検索</h1>
+                    </div>
+                    
+                    <button type="submit" class="btn-search">検索</button>
+                </div>
+
+                <!-- 検索条件カード -->
+                <div class="search-card">
+                    <!-- 検索条件の結合条件 -->
+                    <div class="form-group">
+                        <label class="form-label">検索条件の結合</label>
+                        <div style="display: flex; gap: 24px; align-items: center; margin-top: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 1rem; font-weight: 500;">
+                                <input type="radio" name="searchOperator" value="AND" checked style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                                すべての条件に一致する (AND)
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 1rem; font-weight: 500;">
+                                <input type="radio" name="searchOperator" value="OR" style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                                いずれかの条件に一致する (OR)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 商品名 -->
+                    <div class="form-group">
+                        <label class="form-label" for="productName">商品名</label>
+                        <input type="text" name="productName" id="productName" class="form-control-text" placeholder="商品名を入力してください">
+                    </div>
+
+                    <!-- キーワード -->
+                    <div class="form-group">
+                        <label class="form-label" for="keyword">キーワード</label>
+                        <input type="text" name="keyword" id="keyword" class="form-control-text" placeholder="キーワードを入力してください">
+                    </div>
+
+                    <!-- カテゴリー -->
+                    <div class="form-group">
+                        <label class="form-label">カテゴリー</label>
+                        <div class="toggle-grid">
+                            <!-- 季節限定 -->
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'check_seasonal')">季節限定</div>
+                            <input type="checkbox" name="categories" value="seasonal" id="check_seasonal" class="hidden-checkbox">
+
+                            <!-- 各種カテゴリー (DBから動的ロード) -->
+                            <th:block th:each="cat : ${categories}">
+                                <div class="btn-toggle" th:text="${cat.category_name}" th:data-category-id="${cat.category_id}" onclick="toggleSelection(this, 'check_cat_' + this.getAttribute('data-category-id'))">串物</div>
+                                <input type="checkbox" name="categories" th:value="${cat.category_id}" th:id="'check_cat_' + ${cat.category_id}" class="hidden-checkbox">
+                            </th:block>
+                        </div>
+                    </div>
+
+                    <!-- 価格帯 -->
+                    <div class="form-group">
+                        <label class="form-label">価格帯</label>
+                        <div class="toggle-grid" style="grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));">
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'price_1')">〜500円</div>
+                            <input type="checkbox" name="priceRanges" value="~500" id="price_1" class="hidden-checkbox">
+                            
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'price_2')">500〜1000円</div>
+                            <input type="checkbox" name="priceRanges" value="500~1000" id="price_2" class="hidden-checkbox">
+                            
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'price_3')">1000〜2000円</div>
+                            <input type="checkbox" name="priceRanges" value="1000~2000" id="price_3" class="hidden-checkbox">
+                            
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'price_4')">2000〜3000円</div>
+                            <input type="checkbox" name="priceRanges" value="2000~3000" id="price_4" class="hidden-checkbox">
+                            
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'price_5')">3000〜4000円</div>
+                            <input type="checkbox" name="priceRanges" value="3000~4000" id="price_5" class="hidden-checkbox">
+                            
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'price_6')">4000〜5000円</div>
+                            <input type="checkbox" name="priceRanges" value="4000~5000" id="price_6" class="hidden-checkbox">
+                            
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'price_7')">5000円〜</div>
+                            <input type="checkbox" name="priceRanges" value="5000~" id="price_7" class="hidden-checkbox">
+                        </div>
+                    </div>
+
+                    <!-- 対象コース -->
+                    <div class="form-group">
+                        <label class="form-label">対象コース</label>
+                        <div class="toggle-grid">
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'course_1')">スタンダード</div>
+                            <input type="checkbox" name="courses" value="none" id="course_1" class="hidden-checkbox">
+                            
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'course_2')">プレミアム</div>
+                            <input type="checkbox" name="courses" value="CS01" id="course_2" class="hidden-checkbox">
+                        </div>
+                    </div>
+
+                    <!-- 状態 -->
+                    <div class="form-group">
+                        <label class="form-label">状態</label>
+                        <div class="toggle-grid">
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'status_0')">販売中</div>
+                            <input type="checkbox" name="salesStatuses" value="0" id="status_0" class="hidden-checkbox">
+                            
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'status_1')">品切れ</div>
+                            <input type="checkbox" name="salesStatuses" value="1" id="status_1" class="hidden-checkbox">
+                            
+                            <div class="btn-toggle" onclick="toggleSelection(this, 'status_2')">販売停止中</div>
+                            <input type="checkbox" name="salesStatuses" value="2" id="status_2" class="hidden-checkbox">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        function toggleSelection(btnElement, checkboxId) {
+            const cb = document.getElementById(checkboxId);
+            cb.checked = !cb.checked;
+            if (cb.checked) {
+                btnElement.classList.add('selected');
+            } else {
+                btnElement.classList.remove('selected');
+            }
+        }
+
+        // ページが表示された際（戻るボタンでの遷移時など）にトグルボタンの見た目とチェックボックスの状態を同期する
+        window.addEventListener('pageshow', function() {
+            const toggles = document.querySelectorAll('.btn-toggle');
+            toggles.forEach(btn => {
+                const onclickStr = btn.getAttribute('onclick');
+                if (onclickStr) {
+                    const match = onclickStr.match(/toggleSelection\(this,\s*'([^']+)'\)/);
+                    if (match && match[1]) {
+                        const cb = document.getElementById(match[1]);
+                        if (cb) {
+                            if (cb.checked) {
+                                btn.classList.add('selected');
+                            } else {
+                                btn.classList.remove('selected');
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

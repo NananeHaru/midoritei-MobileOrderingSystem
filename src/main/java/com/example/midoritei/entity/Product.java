@@ -9,13 +9,15 @@ public class Product {
     private String courseId;
     private int salesStatus;
     private String imagePath; // 画像用のフィールドも合わせて用意しておきます
+    private String description;
+    private int isSeasonal;
 
     // 1. 空のコンストラクタ（new Product() 用）
     public Product() {
     }
 
     // 2. 引数付きのコンストラクタ
-    public Product(String productId, String categoryId, String productName, int price, String courseId, int salesStatus, String imagePath) {
+    public Product(String productId, String categoryId, String productName, int price, String courseId, int salesStatus, String imagePath, String description, int isSeasonal) {
         this.productId = productId;
         this.categoryId = categoryId;
         this.productName = productName;
@@ -23,6 +25,8 @@ public class Product {
         this.courseId = courseId;
         this.salesStatus = salesStatus;
         this.imagePath = imagePath;
+        this.description = description;
+        this.isSeasonal = isSeasonal;
     }
 
     // 3. ゲッターとセッター（これらが無いとServiceでエラーになります）
@@ -53,4 +57,10 @@ public class Product {
         return imagePath;
     }
     public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public int getIsSeasonal() { return isSeasonal; }
+    public void setIsSeasonal(int isSeasonal) { this.isSeasonal = isSeasonal; }
 }
