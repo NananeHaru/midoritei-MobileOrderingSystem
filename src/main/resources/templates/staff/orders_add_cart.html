@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注文追加 - カゴの確認 | みどり亭 スタッフ</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #E29A13;
+            --primary-hover: #C5830E;
+            --bg-color: #F4F5F7;
+            --sidebar-bg: #EFEFEF;
+            --text-color: #333333;
+            --border-color: #DDDDDD;
+            --modal-bg: rgba(0, 0, 0, 0.5);
+            --card-red: #F04134;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ヘッダー */
+        .header {
+            background-color: #FFFFFF;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 4px solid var(--primary-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--primary-color);
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* メインレイアウト */
+        .main-container {
+            display: flex;
+            margin-top: 60px;
+            flex: 1;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            padding-top: 10px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 24px;
+            color: #555555;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            border-left: 4px solid transparent;
+            font-size: 1.05rem;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(0,0,0,0.03);
+            color: #111111;
+        }
+
+        .menu-item.active {
+            background-color: #FFFFFF;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            font-weight: 700;
+        }
+
+        .menu-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+
+        /* コンテンツ領域 */
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+            flex: 1;
+            max-width: calc(100% - 240px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 上部操作ナビゲーション */
+        .action-nav {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-back {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 6px;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .info-pill {
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            gap: 15px;
+        }
+
+        .info-pill span {
+            color: var(--primary-color);
+        }
+
+        .btn-submit-order {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-submit-order:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-submit-order:disabled {
+            background-color: #CCCCCC;
+            cursor: not-allowed;
+        }
+
+        /* カートリスト */
+        .cart-container {
+            background-color: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .cart-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #FFFFFF;
+        }
+
+        .cart-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .cart-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #111111;
+        }
+
+        .cart-price {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #444444;
+        }
+
+        .cart-qty {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .cart-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-change {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-change:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .cart-img {
+            width: 100px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: #EEEEEE;
+        }
+
+        .empty-cart-msg {
+            text-align: center;
+            color: #888888;
+            font-size: 1.1rem;
+            padding: 40px;
+        }
+
+        /* モーダル共通スタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-bg);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            position: relative;
+            text-align: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #111111;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+
+        .btn-modal {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+            transition: opacity 0.2s;
+        }
+
+        .btn-modal:hover {
+            opacity: 0.9;
+        }
+
+        .btn-modal.cancel {
+            background-color: #888888;
+            color: #FFFFFF;
+        }
+
+        .btn-modal.confirm {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+        }
+
+        .btn-modal.delete {
+            background-color: var(--card-red);
+            color: #FFFFFF;
+        }
+
+        /* 変更ダイアログ用 */
+        .detail-modal-content {
+            max-width: 550px;
+        }
+
+        .detail-img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: #EEEEEE;
+            margin-bottom: 20px;
+        }
+
+        .detail-desc {
+            color: #666666;
+            margin: 15px 0 25px 0;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .qty-picker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .btn-qty {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            background-color: #FFFFFF;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-qty:hover {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+        }
+
+        .qty-val {
+            font-size: 1.8rem;
+            font-weight: 700;
+            width: 50px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header class="header">
+    <a th:href="@{/staff/orders}" class="header-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+    </a>
+    <a th:href="@{/staff/logout}" class="btn-logout">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        ログアウト
+    </a>
+</header>
+
+<div class="main-container">
+    <!-- サイドバー -->
+    <aside class="sidebar">
+        <a th:href="@{/staff/orders}" class="menu-item">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </span>
+            注文一覧
+        </a>
+        <a th:href="@{/staff/orders/add}" class="menu-item active">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </span>
+            注文追加
+        </a>
+        <a href="#" class="menu-item" onclick="alert('注文削除は準備中です')">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </span>
+            注文削除
+        </a>
+        <a href="#" class="menu-item" onclick="alert('メニュー管理は準備中です')">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+            </span>
+            メニュー管理
+        </a>
+        <a href="#" class="menu-item" onclick="alert('座席一覧は準備中です')">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="9" x2="15" y2="9"></line>
+                    <line x1="9" y1="13" x2="15" y2="13"></line>
+                    <line x1="9" y1="17" x2="15" y2="17"></line>
+                </svg>
+            </span>
+            座席一覧
+        </a>
+    </aside>
+
+    <!-- コンテンツ -->
+    <main class="content">
+        <!-- 上部操作バー -->
+        <div class="action-nav">
+            <a th:href="@{/staff/orders/add/menu}" class="btn-back">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </a>
+            <div class="info-pill">
+                <div>座席ID <span th:text="${seatId}">-</span></div>
+                <div>合計金額 <span th:text="${totalAmount} + ' 円'">0 円</span></div>
+            </div>
+            <button class="btn-submit-order" id="orderSubmitBtn" th:disabled="${#lists.isEmpty(cart)}">注文する</button>
+        </div>
+
+        <!-- カゴの中身リスト -->
+        <div class="cart-container">
+            <div th:if="${#lists.isEmpty(cart)}" class="empty-cart-msg">
+                カゴの中身は空です。
+            </div>
+
+            <div class="cart-card" th:each="item : ${cart}">
+                <div class="cart-info">
+                    <h3 class="cart-name" th:text="${item.product.productName}">商品名</h3>
+                    <div class="cart-price" th:text="${item.product.price} + '円(税込)'">0円</div>
+                    <div class="cart-qty" th:text="'個数  ' + ${item.quantity}">個数 1</div>
+                </div>
+                <div class="cart-actions">
+                    <button class="btn-change" 
+                            th:onclick="openEditModal([[${item.product.productId}]], [[${item.product.productName}]], [[${item.product.price}]], [[${item.product.imagePath}]], [[${item.quantity}]])">
+                        変更
+                    </button>
+                    <img class="cart-img" th:src="${item.product.imagePath}" alt="商品画像">
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- モーダル1: 変更・削除モーダル -->
+<div class="modal" id="editModal">
+    <div class="modal-content detail-modal-content">
+        <!-- 戻る矢印（閉じる） -->
+        <button class="btn-back" style="position:absolute; left:20px; top:20px; width:36px; height:36px;" onclick="closeEditModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </button>
+        
+        <h3 class="modal-title" id="mProductName" style="margin-top: 15px;">商品名</h3>
+        <p class="product-price" id="mProductPrice">0円(税込)</p>
+        <img class="detail-img" id="mProductImg" src="/images/no-image.png" alt="商品画像">
+        <p class="detail-desc" id="mProductDesc">国産の鳥の焼き物です。</p>
+        
+        <form th:action="@{/staff/orders/add/cart/update}" method="POST" id="updateCartForm">
+            <input type="hidden" name="productId" id="mProductId">
+            <input type="hidden" name="remove" id="mRemoveInput" value="false">
+            
+            <div class="qty-picker">
+                <button type="button" class="btn-qty" onclick="changeQty(-1)">-</button>
+                <div class="qty-val" id="qtyVal">1</div>
+                <input type="hidden" name="quantity" id="qtyInput" value="1">
+                <button type="button" class="btn-qty" onclick="changeQty(1)">+</button>
+            </div>
+            
+            <div class="modal-buttons">
+                <button type="button" class="btn-modal delete" onclick="deleteItem()">削除</button>
+                <button type="submit" class="btn-modal confirm">変更</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- モーダル2: 注文確定確認モーダル -->
+<div class="modal" id="submitConfirmModal">
+    <div class="modal-content">
+        <h3 class="modal-title">注文しますか？</h3>
+        <form th:action="@{/staff/orders/add/cart/submit}" method="POST">
+            <div class="modal-buttons">
+                <button type="button" class="btn-modal cancel" id="closeSubmitModalBtn">戻る</button>
+                <button type="submit" class="btn-modal confirm">注文</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 編集モーダルの制御
+    const editModal = document.getElementById('editModal');
+    const mProductId = document.getElementById('mProductId');
+    const mProductName = document.getElementById('mProductName');
+    const mProductPrice = document.getElementById('mProductPrice');
+    const mProductImg = document.getElementById('mProductImg');
+    const mProductDesc = document.getElementById('mProductDesc');
+    const qtyVal = document.getElementById('qtyVal');
+    const qtyInput = document.getElementById('qtyInput');
+    const mRemoveInput = document.getElementById('mRemoveInput');
+
+    function openEditModal(id, name, price, imgPath, currentQty) {
+        mProductId.value = id;
+        mProductName.innerText = name;
+        mProductPrice.innerText = price + "円(税込)";
+        mProductImg.src = imgPath;
+        mRemoveInput.value = "false";
+        
+        if (id === 'PR0001') {
+            mProductDesc.innerText = "のどごし爽快な、みどり亭定番の生ビールです。お食事によく合います。";
+        } else if (id === 'PR0002') {
+            mProductDesc.innerText = "さっぱりとした酸味が特徴の自家製レモンサワーです。";
+        } else if (id === 'PR0003') {
+            mProductDesc.innerText = "冷たくて香ばしい定番のウーロン茶です。";
+        } else if (id === 'FP0001') {
+            mProductDesc.innerText = "塩味が効いた、おつまみに最適な茹でたて枝豆です。";
+        } else if (id === 'FP0002') {
+            mProductDesc.innerText = "サクサクの衣とジューシーな鶏肉が絶品の、みどり亭特製の唐揚げです。";
+        } else if (id === 'FP0003') {
+            mProductDesc.innerText = "外はカリッと、中はホクホクに揚げたフライドポテトです。";
+        } else {
+            mProductDesc.innerText = "みどり亭こだわりの美味しいメニューです。";
+        }
+
+        qtyVal.innerText = currentQty;
+        qtyInput.value = currentQty;
+        editModal.style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        editModal.style.display = 'none';
+    }
+
+    function changeQty(diff) {
+        let current = parseInt(qtyVal.innerText);
+        current += diff;
+        if (current < 1) current = 1;
+        qtyVal.innerText = current;
+        qtyInput.value = current;
+    }
+
+    function deleteItem() {
+        mRemoveInput.value = "true";
+        document.getElementById('updateCartForm').submit();
+    }
+
+    // 注文確定モーダルの制御
+    const orderSubmitBtn = document.getElementById('orderSubmitBtn');
+    const submitConfirmModal = document.getElementById('submitConfirmModal');
+    const closeSubmitModalBtn = document.getElementById('closeSubmitModalBtn');
+
+    if (orderSubmitBtn) {
+        orderSubmitBtn.addEventListener('click', () => {
+            submitConfirmModal.style.display = 'flex';
+        });
+    }
+
+    closeSubmitModalBtn.addEventListener('click', () => {
+        submitConfirmModal.style.display = 'none';
+    });
+</script>
+
+</body>
+</html>

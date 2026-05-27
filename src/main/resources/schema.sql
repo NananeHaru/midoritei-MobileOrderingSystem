@@ -99,3 +99,6 @@ INSERT INTO 注文明細テーブル (order_item_id, order_id, product_id, quant
 SELECT 3, '2', 'PR0003', 1, 250, NULL, '', 0, 1 WHERE NOT EXISTS (SELECT 1 FROM 注文明細テーブル WHERE order_item_id = 3);
 INSERT INTO 注文明細テーブル (order_item_id, order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status)
 SELECT 4, '3', 'PR0002', 2, 380, 2, 'ソーダ割り', 50, 0 WHERE NOT EXISTS (SELECT 1 FROM 注文明細テーブル WHERE order_item_id = 4);
+
+-- 自動採番カウンタを初期データの最大値の次(5)にリセット
+ALTER TABLE 注文明細テーブル ALTER COLUMN order_item_id RESTART WITH 5;
