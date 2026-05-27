@@ -38,4 +38,12 @@ public class SeatingService {
 
         return customerId; 
     }
+
+    /**
+     * 現在食事中（checkout_status = 0）の座席と顧客ID一覧を取得します。
+     */
+    public java.util.List<java.util.Map<String, Object>> getActiveSeats() {
+        String sql = "SELECT seat_id, customer_id FROM 顧客テーブル WHERE checkout_status = 0 ORDER BY seat_id ASC";
+        return jdbcTemplate.queryForList(sql);
+    }
 }

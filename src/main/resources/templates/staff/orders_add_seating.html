@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注文追加 - 座席選択 | みどり亭 スタッフ</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #E29A13;
+            --primary-hover: #C5830E;
+            --bg-color: #F4F5F7;
+            --sidebar-bg: #EFEFEF;
+            --text-color: #333333;
+            --border-color: #DDDDDD;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ヘッダー */
+        .header {
+            background-color: #FFFFFF;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 4px solid var(--primary-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--primary-color);
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* メインレイアウト */
+        .main-container {
+            display: flex;
+            margin-top: 60px;
+            flex: 1;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            padding-top: 10px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 24px;
+            color: #555555;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            border-left: 4px solid transparent;
+            font-size: 1.05rem;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(0,0,0,0.03);
+            color: #111111;
+        }
+
+        .menu-item.active {
+            background-color: #FFFFFF;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            font-weight: 700;
+        }
+
+        .menu-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+
+        /* コンテンツ領域 */
+        .content {
+            margin-left: 240px;
+            padding: 30px;
+            flex: 1;
+            max-width: calc(100% - 240px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 座席選択カード */
+        .seating-card {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            padding: 40px 60px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .seating-form {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .seat-select {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            color: var(--text-color);
+            background-color: #FFFFFF;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            appearance: none; /* デフォルトの矢印を消す */
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .seat-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 8px rgba(226, 154, 19, 0.15);
+        }
+
+        /* カスタム矢印 */
+        .select-wrapper::after {
+            content: '';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 10px solid #888888;
+            pointer-events: none;
+            transition: transform 0.2s;
+        }
+
+        .select-wrapper.open::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 6px;
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .no-seats-msg {
+            color: #888888;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header class="header">
+    <a th:href="@{/staff/orders}" class="header-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+    </a>
+    <a th:href="@{/staff/logout}" class="btn-logout">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        ログアウト
+    </a>
+</header>
+
+<div class="main-container">
+    <!-- サイドバー -->
+    <aside class="sidebar">
+        <a th:href="@{/staff/orders}" class="menu-item">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </span>
+            注文一覧
+        </a>
+        <a th:href="@{/staff/orders/add}" class="menu-item active">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </span>
+            注文追加
+        </a>
+        <a href="#" class="menu-item" onclick="alert('注文削除は準備中です')">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </span>
+            注文削除
+        </a>
+        <a href="#" class="menu-item" onclick="alert('メニュー管理は準備中です')">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+            </span>
+            メニュー管理
+        </a>
+        <a href="#" class="menu-item" onclick="alert('座席一覧は準備中です')">
+            <span class="menu-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="9" x2="15" y2="9"></line>
+                    <line x1="9" y1="13" x2="15" y2="13"></line>
+                    <line x1="9" y1="17" x2="15" y2="17"></line>
+                </svg>
+            </span>
+            座席一覧
+        </a>
+    </aside>
+
+    <!-- コンテンツ -->
+    <main class="content">
+        <div class="seating-card">
+            <form th:action="@{/staff/orders/add/select-seat}" method="POST" class="seating-form">
+                <div class="select-wrapper" id="selectWrapper">
+                    <select name="seatId" id="seatSelect" class="seat-select" required>
+                        <option value="" disabled selected>座席IDを選択してください</option>
+                        <option th:each="seat : ${activeSeats}" 
+                                th:value="${seat.seat_id}" 
+                                th:data-customer-id="${seat.customer_id}" 
+                                th:text="${'座席ID ' + seat.seat_id}"></option>
+                    </select>
+                </div>
+                <!-- customer_id をJavaScriptでバインドして送信 -->
+                <input type="hidden" name="customerId" id="customerIdInput">
+                
+                <div th:if="${#lists.isEmpty(activeSeats)}" class="no-seats-msg">
+                    現在ご利用中の座席がありません（席開設を行ってください）。
+                </div>
+
+                <button type="submit" class="btn-submit" th:disabled="${#lists.isEmpty(activeSeats)}">注文</button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    // セレクトボックス変更時に隠しinputへcustomerIdをセットする
+    const seatSelect = document.getElementById('seatSelect');
+    const customerIdInput = document.getElementById('customerIdInput');
+    const selectWrapper = document.getElementById('selectWrapper');
+
+    seatSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const customerId = selectedOption.getAttribute('data-customer-id');
+        customerIdInput.value = customerId;
+    });
+
+    // ドロップダウンが開閉したときに矢印の向きをCSSで制御
+    seatSelect.addEventListener('click', function() {
+        selectWrapper.classList.toggle('open');
+    });
+    seatSelect.addEventListener('blur', function() {
+        selectWrapper.classList.remove('open');
+    });
+</script>
+
+</body>
+</html>

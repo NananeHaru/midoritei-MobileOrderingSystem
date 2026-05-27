@@ -356,7 +356,7 @@
             </span>
             注文一覧
         </a>
-        <a href="#" class="menu-item" onclick="alert('注文追加は準備中です')">
+        <a th:href="@{/staff/orders/add}" class="menu-item">
             <span class="menu-icon">
                 <!-- 注文追加：+ -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -366,7 +366,7 @@
             </span>
             注文追加
         </a>
-        <a href="#" class="menu-item" onclick="alert('注文削除は準備中です')">
+        <a th:href="@{/staff/orders/delete}" class="menu-item">
             <span class="menu-icon">
                 <!-- 注文削除：- -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

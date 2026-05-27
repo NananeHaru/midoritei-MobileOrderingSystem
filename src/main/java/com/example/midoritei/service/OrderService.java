@@ -97,7 +97,7 @@ public class OrderService {
                     "FROM 注文テーブル o " +
                     "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
                     "JOIN 商品マスタテーブル p ON d.product_id = p.product_id " +
-                    "WHERE o.customer_id = ?";
+                    "WHERE o.customer_id = ? AND d.serve_status != 9";
         
         // queryForObjectで直接intに変換するのではなく、一度「Map」として1行だけ取得します
         try {
@@ -136,12 +136,15 @@ public class OrderService {
                      "  d.option_info, " +
                      "  d.serve_status AS order_status, " + // 既存Thymeleafテンプレートの互換用のエイリアス
                      "  d.order_item_id AS order_detail_id, " + // 既存コントローラ・ビュー互換用のエイリアス
+                     "  d.product_id, " +
+                     "  d.unit_price, " +
+                     "  d.option_add_price, " +
                      "  o.order_time " +
                      "FROM 注文テーブル o " +
                      "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
                      "JOIN 商品マスタテーブル p ON d.product_id = p.product_id " +
                      "JOIN 顧客テーブル c ON o.customer_id = c.customer_id " +
-                     "WHERE o.order_time >= ? AND o.order_time <= ? " +
+                     "WHERE o.order_time >= ? AND o.order_time <= ? AND d.serve_status != 9 " +
                      "ORDER BY o.order_time DESC, d.order_item_id ASC";
 
         return jdbcTemplate.queryForList(sql, start, end);
@@ -154,6 +157,74 @@ public class OrderService {
     public void updateOrderStatus(int orderItemId, int status) {
         String sql = "UPDATE 注文明細テーブル SET serve_status = ? WHERE order_item_id = ?";
         jdbcTemplate.update(sql, status, orderItemId);
+    }
+
+    /**
+     * 注文明細をキャンセル（削除）します。
+     * 部分キャンセルの場合は、元の数量を減らし、キャンセル分を新規レコードとしてserve_status = 9で挿入します。
+     */
+    @Transactional
+    public void cancelOrderItem(int orderItemId, int cancelQuantity) {
+        // 1. 注文明細情報を取得
+        String selectSql = "SELECT order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status " +
+                           "FROM 注文明細テーブル WHERE order_item_id = ?";
+        List<Map<String, Object>> details = jdbcTemplate.queryForList(selectSql, orderItemId);
+        if (details.isEmpty()) {
+            return;
+        }
+        Map<String, Object> detail = details.get(0);
+        int currentQuantity = ((Number) detail.get("quantity")).intValue();
+        int serveStatus = ((Number) detail.get("serve_status")).intValue();
+        if (serveStatus == 9 || cancelQuantity <= 0 || cancelQuantity > currentQuantity) {
+            return; // すでにキャンセル済み、または数量不正
+        }
+
+        String orderId = (String) detail.get("order_id");
+        String productId = (String) detail.get("product_id");
+        int unitPrice = ((Number) detail.get("unit_price")).intValue();
+        Integer optionId = (Integer) detail.get("option_id");
+        String optionInfo = (String) detail.get("option_info");
+        int optionAddPrice = ((Number) detail.get("option_add_price")).intValue();
+
+        // 2. 数量の判定による更新・挿入
+        if (cancelQuantity == currentQuantity) {
+            // 全数キャンセルの場合: serve_status を 9 に更新
+            String updateStatusSql = "UPDATE 注文明細テーブル SET serve_status = 9 WHERE order_item_id = ?";
+            jdbcTemplate.update(updateStatusSql, orderItemId);
+        } else {
+            // 部分キャンセルの場合: 元のレコードの数量を減算
+            String updateQtySql = "UPDATE 注文明細テーブル SET quantity = ? WHERE order_item_id = ?";
+            jdbcTemplate.update(updateQtySql, currentQuantity - cancelQuantity, orderItemId);
+
+            // キャンセルされた分のレコードを新規挿入
+            String insertCancelSql = "INSERT INTO 注文明細テーブル " +
+                                     "(order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status) " +
+                                     "VALUES (?, ?, ?, ?, ?, ?, ?, 9)";
+            jdbcTemplate.update(insertCancelSql, orderId, productId, cancelQuantity, unitPrice, optionId, optionInfo, optionAddPrice);
+        }
+
+        // 3. 顧客テーブルの total_amount を減算
+        String selectCustomerSql = "SELECT customer_id FROM 注文テーブル WHERE order_id = ?";
+        String customerId = jdbcTemplate.queryForObject(selectCustomerSql, String.class, orderId);
+        
+        if (customerId != null) {
+            int cancelAmount = (unitPrice + optionAddPrice) * cancelQuantity;
+            String updateCustomerSql = "UPDATE 顧客テーブル SET total_amount = total_amount - ? WHERE customer_id = ?";
+            jdbcTemplate.update(updateCustomerSql, cancelAmount, customerId);
+        }
+
+        // 4. 親注文テーブルのstatus更新判定
+        // 同一注文IDに紐づくすべての明細がserve_status = 9（キャンセル）になった場合、親のステータスも9にする
+        String countAllSql = "SELECT COUNT(*) FROM 注文明細テーブル WHERE order_id = ?";
+        String countCancelSql = "SELECT COUNT(*) FROM 注文明細テーブル WHERE order_id = ? AND serve_status = 9";
+        
+        int allCount = jdbcTemplate.queryForObject(countAllSql, Integer.class, orderId);
+        int cancelCount = jdbcTemplate.queryForObject(countCancelSql, Integer.class, orderId);
+        
+        if (allCount > 0 && allCount == cancelCount) {
+            String updateParentSql = "UPDATE 注文テーブル SET status = 9 WHERE order_id = ?";
+            jdbcTemplate.update(updateParentSql, orderId);
+        }
     }
 
     /**
