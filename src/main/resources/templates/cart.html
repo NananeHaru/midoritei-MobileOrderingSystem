@@ -85,8 +85,17 @@
                     timerElement.textContent = "00:00:00";
                     clearInterval(timerInterval);
                     alert("制限時間になりました。");
+
+                    // 💡 【新しく追加】「注文を確定する」ボタンを取得して無効化する
+                    const submitBtn = document.querySelector(".submit-order-btn");
+                    if (submitBtn) {
+                        submitBtn.style.backgroundColor = "#ccc"; // ボタンをグレーにする
+                        submitBtn.disabled = true;                // ボタンの機能を完全に無効化
+                        submitBtn.textContent = "時間切れ";       // 文字を変える
+                    }
                     return;
                 }
+                
                 let hours = Math.floor(totalSeconds / 3600);
                 let minutes = Math.floor((totalSeconds % 3600) / 60);
                 let seconds = totalSeconds % 60;

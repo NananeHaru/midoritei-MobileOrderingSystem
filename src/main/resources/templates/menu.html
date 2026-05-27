@@ -72,6 +72,7 @@
             <a th:href="@{/menu}" class="nav-item active"><i class="fas fa-utensils nav-icon"></i><div class="nav-text">注文</div></a>
             <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
             <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>
+        </nav>
     </body>
     <script>
         function filterCategory(categoryId, element) {
@@ -105,8 +106,17 @@
                     timerElement.textContent = "00:00:00";
                     clearInterval(timerInterval);
                     alert("制限時間になりました。");
+
+                    // 💡 【新しく追加】「カゴを見る」ボタンを取得して無効化する
+                    const cartBtn = document.querySelector(".view-cart-btn");
+                    if (cartBtn) {
+                        cartBtn.style.backgroundColor = "#ccc"; // ボタンをグレーにする
+                        cartBtn.style.pointerEvents = "none";  // クリックを完全に無効化（リンクを踏めなくする）
+                        cartBtn.textContent = "時間切れ";       // 文字を変える
+                    }
                     return;
                 }
+                
                 let hours = Math.floor(totalSeconds / 3600);
                 let minutes = Math.floor((totalSeconds % 3600) / 60);
                 let seconds = totalSeconds % 60;
