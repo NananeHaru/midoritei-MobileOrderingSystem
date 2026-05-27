@@ -359,20 +359,8 @@
 
                 <!-- 検索条件カード -->
                 <div class="search-card">
-                    <!-- 検索条件の結合条件 -->
-                    <div class="form-group">
-                        <label class="form-label">検索条件の結合</label>
-                        <div style="display: flex; gap: 24px; align-items: center; margin-top: 8px;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 1rem; font-weight: 500;">
-                                <input type="radio" name="searchOperator" value="AND" checked style="accent-color: var(--primary-color); width: 18px; height: 18px;">
-                                すべての条件に一致する (AND)
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 1rem; font-weight: 500;">
-                                <input type="radio" name="searchOperator" value="OR" style="accent-color: var(--primary-color); width: 18px; height: 18px;">
-                                いずれかの条件に一致する (OR)
-                            </label>
-                        </div>
-                    </div>
+                    <!-- searchOperator は AND 固定（価格帯のみ内部でOR連結） -->
+                    <input type="hidden" name="searchOperator" value="AND">
 
                     <!-- 商品名 -->
                     <div class="form-group">

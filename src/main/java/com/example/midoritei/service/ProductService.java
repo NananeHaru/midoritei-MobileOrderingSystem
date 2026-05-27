@@ -222,7 +222,7 @@ public class ProductService {
             }
         }
 
-        // 4. 価格帯の結合
+        // 4. 価格帯の結合（価格帯同士は常にOR、全体としてはAND条件に追加）
         if (priceRanges != null && !priceRanges.isEmpty()) {
             List<String> priceConds = new ArrayList<>();
             for (String range : priceRanges) {
@@ -244,20 +244,16 @@ public class ProductService {
             }
 
             if (!priceConds.isEmpty()) {
-                if (isOr) {
-                    sql.append(" AND (");
-                    for (int i = 0; i < priceConds.size(); i++) {
-                        sql.append(i == 0 ? "" : " OR ");
-                        sql.append(priceConds.get(i));
-                    }
-                    sql.append(")");
-                } else {
-                    for (String cond : priceConds) {
-                        sql.append(" AND ").append(cond);
-                    }
+                // 価格帯は複数選択時に常にOR連結
+                sql.append(" AND (");
+                for (int i = 0; i < priceConds.size(); i++) {
+                    sql.append(i == 0 ? "" : " OR ");
+                    sql.append(priceConds.get(i));
                 }
+                sql.append(")");
             }
         }
+
 
         // 5. 対象コースの結合
         if (courseIds != null && !courseIds.isEmpty()) {
