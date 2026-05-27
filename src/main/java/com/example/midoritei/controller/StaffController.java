@@ -374,4 +374,109 @@ public class StaffController {
 
         return "staff/orders_add_complete";
     }
+
+    // ==========================================
+    // 座席一覧 (フロア座席管理) 機能のエンドポイント
+    // ==========================================
+
+    /**
+     * 座席一覧画面を表示します。
+     */
+    @GetMapping("/seating")
+    public String seatingPage(HttpSession session, Model model) {
+        if (session == null || session.getAttribute("loggedInStaff") == null) {
+            return "redirect:/staff/login";
+        }
+
+        // 食事中（checkout_status = 0）の席一覧を取得
+        List<Map<String, Object>> activeSeats = seatingService.getActiveSeatsDetail();
+        
+        // 1番〜15番の座席状態をマージしたデータを構築
+        List<Map<String, Object>> seats = new java.util.ArrayList<>();
+        for (int i = 1; i <= 15; i++) {
+            final String seatId = String.valueOf(i);
+            Map<String, Object> seatMap = new java.util.HashMap<>();
+            seatMap.put("seatId", seatId);
+            seatMap.put("type", i <= 10 ? "counter" : "table");
+            
+            // 現在の席データがあるか探索
+            Map<String, Object> activeSeat = activeSeats.stream()
+                .filter(s -> seatId.equals(String.valueOf(s.get("seat_id"))))
+                .findFirst()
+                .orElse(null);
+            
+            if (activeSeat != null) {
+                seatMap.put("status", "使用中");
+                seatMap.put("customerId", activeSeat.get("customer_id"));
+                seatMap.put("numberOfMembers", activeSeat.get("number_of_members"));
+                seatMap.put("courseId", activeSeat.get("course_id"));
+                seatMap.put("entryTime", activeSeat.get("entry_time"));
+            } else {
+                seatMap.put("status", "空席");
+            }
+            seats.add(seatMap);
+        }
+
+        model.addAttribute("seats", seats);
+        return "staff/seating_management";
+    }
+
+    /**
+     * 空席を使用中に変更（席開設）します。
+     */
+    @PostMapping("/seating/open")
+    public String openTable(@RequestParam("seatId") String seatId,
+                            HttpSession session) {
+        if (session == null || session.getAttribute("loggedInStaff") == null) {
+            return "redirect:/staff/login";
+        }
+        
+        // 初期値：店舗ID="99", 人数=0名, コース=なし(none)
+        seatingService.openTable("99", seatId, "none", 0);
+        return "redirect:/staff/seating";
+    }
+
+    /**
+     * 使用中の座席を空席に変更します。
+     */
+    @PostMapping("/seating/close")
+    public String closeTable(@RequestParam("seatId") String seatId,
+                             HttpSession session) {
+        if (session == null || session.getAttribute("loggedInStaff") == null) {
+            return "redirect:/staff/login";
+        }
+        
+        seatingService.closeTable(seatId);
+        return "redirect:/staff/seating";
+    }
+
+    /**
+     * 席替え（座席変更）を処理します。
+     */
+    @PostMapping("/seating/change")
+    public String changeSeat(@RequestParam("currentSeatId") String currentSeatId,
+                             @RequestParam("newSeatId") String newSeatId,
+                             HttpSession session) {
+        if (session == null || session.getAttribute("loggedInStaff") == null) {
+            return "redirect:/staff/login";
+        }
+        
+        seatingService.changeSeat(currentSeatId, newSeatId);
+        return "redirect:/staff/seating";
+    }
+
+    /**
+     * 座席統合を処理します。
+     */
+    @PostMapping("/seating/merge")
+    public String mergeSeats(@RequestParam("parentSeatId") String parentSeatId,
+                             @RequestParam("childSeatIds") List<String> childSeatIds,
+                             HttpSession session) {
+        if (session == null || session.getAttribute("loggedInStaff") == null) {
+            return "redirect:/staff/login";
+        }
+        
+        seatingService.mergeSeats(parentSeatId, childSeatIds);
+        return "redirect:/staff/seating";
+    }
 }

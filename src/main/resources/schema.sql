@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS 顧客採番テーブル (
     current_number INT NOT NULL
 );
 INSERT INTO 顧客採番テーブル (current_number)
-SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM 顧客採番テーブル);
+SELECT 2 WHERE NOT EXISTS (SELECT 1 FROM 顧客採番テーブル);
 
 -- 2. 顧客テーブル
 CREATE TABLE IF NOT EXISTS 顧客テーブル (
@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS 顧客テーブル (
     course_id CHAR(7),
     entry_time TIMESTAMP,
     checkout_status INT,
-    total_amount INT
+    total_amount INT,
+    number_of_members INT DEFAULT 0
 );
 
 -- 3. 商品マスタテーブル
@@ -86,10 +87,10 @@ CREATE TABLE IF NOT EXISTS 注文明細テーブル (
 );
 
 -- 8. テスト用の顧客データおよび注文データ（検証用）
-INSERT INTO 顧客テーブル (customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount)
-SELECT '9900001', '99', '1', 'none', CURRENT_TIMESTAMP, 0, 1630 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900001');
-INSERT INTO 顧客テーブル (customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount)
-SELECT '9900002', '99', '2', 'none', CURRENT_TIMESTAMP, 0, 780 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900002');
+INSERT INTO 顧客テーブル (customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount, number_of_members)
+SELECT '9900001', '99', '1', 'none', CURRENT_TIMESTAMP, 0, 1630, 2 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900001');
+INSERT INTO 顧客テーブル (customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount, number_of_members)
+SELECT '9900002', '99', '2', 'none', CURRENT_TIMESTAMP, 0, 780, 3 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900002');
 
 INSERT INTO 注文テーブル (order_id, customer_id, order_time, status)
 SELECT '1', '9900001', CURRENT_TIMESTAMP, 0 WHERE NOT EXISTS (SELECT 1 FROM 注文テーブル WHERE order_id = '1');
