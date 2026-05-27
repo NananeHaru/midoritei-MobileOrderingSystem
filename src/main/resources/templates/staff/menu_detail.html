@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メニュー詳細 | みどり亭 スタッフ</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #E29A13;
+            --primary-hover: #C5830E;
+            --bg-color: #F4F5F7;
+            --sidebar-bg: #EFEFEF;
+            --text-color: #333333;
+            --border-color: #DDDDDD;
+            --card-green: #00A854;
+            --card-red: #F04134;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ヘッダー */
+        .header {
+            background-color: #FFFFFF;
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 4px solid var(--primary-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--primary-color);
+        }
+
+        .header-logo span {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-left: 10px;
+            font-family: 'Noto Serif JP', serif;
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* メインレイアウト */
+        .main-container {
+            display: flex;
+            margin-top: 60px;
+            flex: 1;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            padding-top: 10px;
+            z-index: 90;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 24px;
+            color: #555555;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            border-left: 4px solid transparent;
+            font-size: 1.05rem;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(0,0,0,0.03);
+            color: #111111;
+        }
+
+        .menu-item.active {
+            background-color: #FFFFFF;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            font-weight: 700;
+        }
+
+        .menu-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+
+        /* コンテンツ領域 */
+        .content {
+            margin-left: 240px;
+            padding: 30px;
+            flex: 1;
+            max-width: calc(100% - 240px);
+        }
+
+        /* コンテンツヘッダー */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            width: 44px;
+            height: 40px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* 詳細レイアウト */
+        .detail-card {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            row-gap: 20px;
+            flex: 1;
+            font-size: 1.15rem;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: #333333;
+        }
+
+        .info-value {
+            color: #555555;
+            font-weight: 500;
+        }
+
+        .image-section {
+            width: 260px;
+            height: 200px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background-color: #FAFAFA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+        /* コースバッジ */
+        .course-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            text-align: center;
+            margin-right: 8px;
+        }
+
+        .course-badge.standard {
+            background-color: #00A2E8;
+        }
+
+        .course-badge.premium {
+            background-color: #FF7F27;
+            font-style: italic;
+        }
+
+        /* フッターセクション */
+        .action-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+        }
+
+        .status-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .status-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .status-dot.active {
+            background-color: var(--card-green);
+            box-shadow: 0 0 8px rgba(0, 168, 84, 0.5);
+        }
+
+        .status-dot.inactive {
+            background-color: var(--card-red);
+            box-shadow: 0 0 8px rgba(240, 65, 52, 0.5);
+        }
+
+        .status-dot.suspended {
+            background-color: #777777;
+            box-shadow: 0 0 8px rgba(119, 119, 119, 0.5);
+        }
+
+        .btn-action-yellow {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 24px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+
+        .btn-action-yellow:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* 完了トースト/ダイアログ用 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-card {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .btn-confirm {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-confirm:hover {
+            background-color: var(--primary-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ヘッダー -->
+    <header class="header">
+        <a th:href="@{/staff/orders}" class="header-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>みどり亭 管理画面</span>
+        </a>
+        <a th:href="@{/staff/logout}" class="btn-logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            ログアウト
+        </a>
+    </header>
+
+    <div class="main-container">
+        <!-- サイドバー -->
+        <aside class="sidebar">
+            <a th:href="@{/staff/orders}" class="menu-item">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="9" x2="15" y2="9"></line>
+                        <line x1="9" y1="13" x2="15" y2="13"></line>
+                        <line x1="9" y1="17" x2="15" y2="17"></line>
+                    </svg>
+                </span>
+                注文一覧
+            </a>
+            <a th:href="@{/staff/orders/add}" class="menu-item">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </span>
+                注文追加
+            </a>
+            <a th:href="@{/staff/orders/delete}" class="menu-item">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </span>
+                注文削除
+            </a>
+            <a th:href="@{/staff/menu}" class="menu-item active">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                </span>
+                メニュー管理
+            </a>
+            <a href="#" class="menu-item" onclick="alert('座席一覧は準備中です')">
+                <span class="menu-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19h16v2H4zM4 5h16v12H4z"></path>
+                    </svg>
+                </span>
+                座席一覧
+            </a>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="content">
+            <div class="content-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button type="button" class="btn-back" onclick="history.back()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+                    <h1 class="content-title">メニュー検索</h1>
+                </div>
+            </div>
+
+            <!-- 詳細カード -->
+            <div class="detail-card">
+                <div class="info-section">
+                    <div class="info-grid">
+                        <div class="info-label">商品名</div>
+                        <div class="info-value" style="font-weight: 700; color: #111111;">
+                            <span th:text="${product.productName}">やきとり</span>
+                            <span th:if="${product.isSeasonal == 1}" style="font-size: 0.8rem; background-color: var(--primary-color); color: white; padding: 2px 6px; border-radius: 3px; font-weight: 700; margin-left: 8px;">季節限定</span>
+                        </div>
+
+                        <div class="info-label">カテゴリー</div>
+                        <div class="info-value" th:text="${categoryName}">串物</div>
+
+                        <div class="info-label">価格</div>
+                        <div class="info-value" style="font-weight: 700; color: #111111;" th:text="${product.price} + '円(税込)'">550円(税込)</div>
+
+                        <div class="info-label">商品説明</div>
+                        <div class="info-value" th:text="${product.description}">国産の鳥の焼き物です。</div>
+
+                        <div class="info-label">対象コース</div>
+                        <div class="info-value">
+                            <span class="course-badge standard" th:if="${product.courseId == null || product.courseId == 'none'}">standard</span>
+                            <span class="course-badge premium" th:if="${product.courseId != null && product.courseId != 'none'}">premium</span>
+                        </div>
+
+                        <div class="info-label">オプション</div>
+                        <div class="info-value">
+                            <span th:each="opt, iterStat : ${options}" 
+                                  th:text="${opt.option_name} + (${iterStat.last} ? '' : '、 ')">タレ、塩</span>
+                            <span th:if="${#lists.isEmpty(options)}" style="color: #999; font-style: italic;">オプションなし</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;">
+                        <div class="image-section">
+                            <img class="image-preview" th:src="${product.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
+                        </div>
+                        <a th:href="@{/staff/menu/edit/{id}(id=${product.productId})}" class="btn-action-yellow" style="width: 100%;">詳細編集</a>
+                    </div>
+                </div>
+
+                <!-- ステータスおよび状態更新フォーム -->
+                <div class="action-section">
+                    <div class="status-display">
+                        <span>状態</span>
+                        <span>:</span>
+                        <div class="status-dot active" th:if="${product.salesStatus == 0}"></div>
+                        <div class="status-dot inactive" th:if="${product.salesStatus == 1}"></div>
+                        <div class="status-dot suspended" th:if="${product.salesStatus == 2}"></div>
+                        <span th:if="${product.salesStatus == 0}">販売中</span>
+                        <span th:if="${product.salesStatus == 1}">品切れ</span>
+                        <span th:if="${product.salesStatus == 2}">販売停止中</span>
+                    </div>
+
+                    <!-- 3ステータス即時変更フォーム -->
+                    <form method="post" th:action="@{/staff/menu/update-status}" id="statusForm">
+                        <input type="hidden" name="productId" th:value="${product.productId}">
+                        <select name="salesStatus" class="form-control-text" style="width: auto; padding: 8px 30px 8px 12px; font-weight: bold; border-color: var(--primary-color);" onchange="document.getElementById('statusForm').submit();">
+                            <option value="0" th:selected="${product.salesStatus == 0}">販売中</option>
+                            <option value="1" th:selected="${product.salesStatus == 1}">品切れ</option>
+                            <option value="2" th:selected="${product.salesStatus == 2}">販売停止中</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 変更完了ダイアログ -->
+    <div class="modal-overlay" id="editCompleteModal" th:style="${editComplete} ? 'display: flex;' : 'display: none;'">
+        <div class="modal-card">
+            <h3 class="modal-title">変更が完了しました</h3>
+            <p style="margin-bottom: 24px; font-size: 1.1rem; font-weight: 500;" th:text="${editedProductName}"></p>
+            <button type="button" class="btn-confirm" onclick="closeEditCompleteModal()">確認</button>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function closeEditCompleteModal() {
+            document.getElementById('editCompleteModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
