@@ -5,13 +5,14 @@ CREATE TABLE IF NOT EXISTS 顧客採番テーブル (
 INSERT INTO 顧客採番テーブル (current_number)
 SELECT 2 WHERE NOT EXISTS (SELECT 1 FROM 顧客採番テーブル);
 
--- 2. 顧客テーブル
+-- 2. 顧客テーブル（★end_timeを追加します）
 CREATE TABLE IF NOT EXISTS 顧客テーブル (
     customer_id CHAR(7) PRIMARY KEY,
     store_id CHAR(2),
     seat_id VARCHAR(20),
     course_id CHAR(7),
     entry_time TIMESTAMP,
+    end_time TIMESTAMP, -- 👈 ★ここに新しく終了時刻の項目を追加！
     checkout_status INT,
     total_amount INT,
     number_of_members INT DEFAULT 0,
@@ -167,6 +168,20 @@ CREATE TABLE IF NOT EXISTS "商品オプション紐づけテーブル" (
     FOREIGN KEY (product_id) REFERENCES 商品マスタテーブル(product_id) ON DELETE CASCADE,
     FOREIGN KEY (option_id) REFERENCES オプションマスタテーブル(option_id) ON DELETE CASCADE
 );
+
+-- 12. 店舗マスタテーブル（設計書に準拠）
+CREATE TABLE IF NOT EXISTS 店舗マスタテーブル (
+    store_id CHAR(2) NOT NULL,
+    store_name VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(15),
+    address VARCHAR(100),
+    PRIMARY KEY (store_id)
+);
+
+-- 「緑橋一号店」の初期データを登録（テーブルが空のときだけ実行）
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT '01', '緑橋一号店', '06-XXXX-XXXX', '大阪府大阪市東成区...' 
+WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = '01');
 
 -- 商品オプション紐づけ初期データ
 -- 生ビール(PR0001)、レモンサワー(PR0002)にロック(1)・ソーダ割り(2)・ストレート(3)・水割り(4)を紐づけ

@@ -17,7 +17,8 @@
     <div class="logo-area">
         <div class="logo-text-top">居酒屋</div>
         <div class="logo-main">みどり亭</div>
-        <div class="store-name">緑橋一号店</div>
+        
+        <div class="store-name" th:text="${storeName}">緑橋一号店</div>
     </div>
     <a th:href="@{/seating/members(store_id='01', seat_id='SE01')}" class="start-btn">注文開始</a>
 </body>

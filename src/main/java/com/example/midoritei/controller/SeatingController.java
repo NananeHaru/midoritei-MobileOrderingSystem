@@ -3,6 +3,8 @@ package com.example.midoritei.controller;
 import com.example.midoritei.service.SeatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model; 
+import org.springframework.jdbc.core.JdbcTemplate; 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,9 +17,19 @@ public class SeatingController {
     @Autowired
     private SeatingService seatingService;
 
-    // 1. トップ画面を表示（初期アクセス）
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    // 1. トップ画面を表示（/seating/start でアクセスされた時）
     @GetMapping("/start")
-    public String startPage() {
+    public String startPage(Model model) {
+        try {
+            String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = '01'";
+            String storeName = jdbcTemplate.queryForObject(sql, String.class);
+            model.addAttribute("storeName", storeName); 
+        } catch (Exception e) {
+            model.addAttribute("storeName", "緑橋一号店");
+        }
         return "index";
     }
 
@@ -37,12 +49,38 @@ public class SeatingController {
     @PostMapping("/open")
     public String openTable(@RequestParam("store_id") String storeId,
                             @RequestParam("seat_id") String seatId,
-                            @RequestParam("course_id") String courseId) {
+                            @RequestParam("course_id") String courseId,
+                            @RequestParam("members") int members, // 💡 画面の hidden から送られてくる人数を受け取る
+                            jakarta.servlet.http.HttpSession session) {
         
-        // 自動採番＆DBインサートを実行
-        String customerId = seatingService.openTable(storeId, seatId, courseId);
+        // 💡 サービス側の処理に「members」を渡す
+        String customerId = seatingService.openTable(storeId, seatId, courseId, members);
         
-        // 本来はここでcustomerIdをセッションに保持しますが、まずはメニュー画面へ遷移させます
+        // セッション側にも、初期値の「2」ではなく実際の人数（members）をセットする
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            new com.example.midoritei.entity.CustomerSession(customerId, members, courseId);
+        
+        session.setAttribute("customerSession", customerSession);
+        
         return "redirect:/menu";
+    }
+}
+
+// 💡 http://localhost:8080/ (スラッシュだけ) でアクセスされた時も確実に同じ画面を出し、DB連動させるための別クラス
+@Controller
+class MainRootController {
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @GetMapping("/")
+    public String rootPage(Model model) {
+        try {
+            String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = '01'";
+            String storeName = jdbcTemplate.queryForObject(sql, String.class);
+            model.addAttribute("storeName", storeName); 
+        } catch (Exception e) {
+            model.addAttribute("storeName", "緑橋一号店");
+        }
+        return "index";
     }
 }

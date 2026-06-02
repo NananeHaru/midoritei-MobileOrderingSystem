@@ -35,7 +35,7 @@
     <header>
         <a th:href="@{/menu}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
         <h1>カゴの中身</h1>
-        <div class="timer">残り時間<br><strong>01:20:00</strong></div>
+        <div class="timer">残り時間<br><strong id="countdown-timer">01:20:00</strong></div>    
     </header>
 
     <div class="cart-list">
@@ -62,7 +62,8 @@
     </div>
 
     <div class="cart-footer">
-        <div class="total-price">合計: <span th:text="${totalAmount}">0</span> 円</div>
+        <div class="total-price">小計: <span th:text="${totalAmount}">0</span> 円(税込)</div>
+        
         <form th:action="@{/cart/submit}" method="post" th:if="${!#lists.isEmpty(cart)}">
             <button type="submit" class="submit-order-btn" onclick="return confirm('厨房に注文を送信します。よろしいですか？')">注文を確定する</button>
         </form>
@@ -71,6 +72,45 @@
     <nav class="bottom-nav">
         <a th:href="@{/menu}" class="nav-item active"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>
         <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
-        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>    </nav>
+        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>    
+    </nav>
+
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            // Javaの共通処理から残り秒数を受け取る
+            let totalSeconds = /*[[${remainingSeconds}]]*/ 4800;
+            const timerElement = document.getElementById("countdown-timer");
+
+            function updateTimer() {
+                if (totalSeconds <= 0) {
+                    timerElement.textContent = "00:00:00";
+                    clearInterval(timerInterval);
+                    alert("制限時間になりました。");
+
+                    // 💡 【新しく追加】「注文を確定する」ボタンを取得して無効化する
+                    const submitBtn = document.querySelector(".submit-order-btn");
+                    if (submitBtn) {
+                        submitBtn.style.backgroundColor = "#ccc"; // ボタンをグレーにする
+                        submitBtn.disabled = true;                // ボタンの機能を完全に無効化
+                        submitBtn.textContent = "時間切れ";       // 文字を変える
+                    }
+                    return;
+                }
+                
+                let hours = Math.floor(totalSeconds / 3600);
+                let minutes = Math.floor((totalSeconds % 3600) / 60);
+                let seconds = totalSeconds % 60;
+
+                let hStr = String(hours).padStart(2, '0');
+                let mStr = String(minutes).padStart(2, '0');
+                let sStr = String(seconds).padStart(2, '0');
+
+                timerElement.textContent = `${hStr}:${mStr}:${sStr}`;
+                totalSeconds--;
+            }
+            const timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+        });
+    </script>
 </body>
 </html>
