@@ -40,7 +40,7 @@
     <header>
         <a th:href="@{/menu}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
         <h1>注文</h1>
-        <div class="timer">残り時間<br><strong>01:20:00</strong></div>
+        <div class="timer">残り時間<br><strong id="countdown-timer">01:20:00</strong></div>
     </header>
 
     <div class="detail-container">
@@ -102,6 +102,45 @@
                 minusBtn.style.opacity = "1";   // 元の明るさに戻す
             }
         }
+    </script>
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            // Javaの共通処理から残り秒数を受け取る（入っていなければ4800秒をデフォルトに）
+            let totalSeconds = /*[[${remainingSeconds}]]*/ 4800;
+            const timerElement = document.getElementById("countdown-timer");
+
+            if (!timerElement) return; // タイマー要素がなければ処理しない
+
+            function updateTimer() {
+                if (totalSeconds <= 0) {
+                    timerElement.textContent = "00:00:00";
+                    clearInterval(timerInterval);
+                    alert("制限時間になりました。");
+
+                    // カゴに入れるボタンを無効化する処理（必要に応じてクラス名を設定してください）
+                    const cartBtn = document.querySelector(".cart-btn, .view-cart-btn");
+                    if (cartBtn) {
+                        cartBtn.style.backgroundColor = "#ccc"; 
+                        cartBtn.style.pointerEvents = "none";  
+                        cartBtn.textContent = "時間切れ";       
+                    }
+                    return;
+                }
+                
+                let hours = Math.floor(totalSeconds / 3600);
+                let minutes = Math.floor((totalSeconds % 3600) / 60);
+                let seconds = totalSeconds % 60;
+
+                let hStr = String(hours).padStart(2, '0');
+                let mStr = String(minutes).padStart(2, '0');
+                let sStr = String(seconds).padStart(2, '0');
+
+                timerElement.textContent = `${hStr}:${mStr}:${sStr}`;
+                totalSeconds--;
+            }
+            const timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+        });
     </script>
 </body>
 </html>

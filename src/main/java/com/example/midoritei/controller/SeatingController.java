@@ -50,12 +50,15 @@ public class SeatingController {
     public String openTable(@RequestParam("store_id") String storeId,
                             @RequestParam("seat_id") String seatId,
                             @RequestParam("course_id") String courseId,
+                            @RequestParam("members") int members, // 💡 画面の hidden から送られてくる人数を受け取る
                             jakarta.servlet.http.HttpSession session) {
         
-        String customerId = seatingService.openTable(storeId, seatId, courseId);
+        // 💡 サービス側の処理に「members」を渡す
+        String customerId = seatingService.openTable(storeId, seatId, courseId, members);
         
+        // セッション側にも、初期値の「2」ではなく実際の人数（members）をセットする
         com.example.midoritei.entity.CustomerSession customerSession = 
-            new com.example.midoritei.entity.CustomerSession(customerId, 2, courseId);
+            new com.example.midoritei.entity.CustomerSession(customerId, members, courseId);
         
         session.setAttribute("customerSession", customerSession);
         
