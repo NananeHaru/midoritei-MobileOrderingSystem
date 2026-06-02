@@ -543,7 +543,7 @@
                         <h3 class="product-name" th:text="${p.productName}">商品名</h3>
                         <span class="product-price" th:text="${p.price} + '円(税込)'">0円</span>
                     </div>
-                    <img class="product-img" th:src="${p.imagePath}" alt="商品画像">
+                    <img class="product-img" th:src="${p.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
                 </div>
             </div>
         </div>
@@ -566,7 +566,7 @@
     <div class="modal-content detail-modal-content">
         <h3 class="modal-title" id="mProductName">商品名</h3>
         <p class="product-price" id="mProductPrice">0円(税込)</p>
-        <img class="detail-img" id="mProductImg" src="/images/no-image.png" alt="商品画像">
+        <img class="detail-img" id="mProductImg" src="/images/no-image.png" alt="商品画像" onerror="this.src='/images/no-image.png'">
         <p class="detail-desc" id="mProductDesc">おいしいメニューです。</p>
         
         <form th:action="@{/staff/orders/add/cart/add}" method="POST" id="addToCartForm">

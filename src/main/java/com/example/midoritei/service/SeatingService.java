@@ -103,4 +103,27 @@ public class SeatingService {
         String sql = "DELETE FROM 顧客テーブル WHERE seat_id = ? AND checkout_status = 0";
         jdbcTemplate.update(sql, seatId);
     }
+
+    /**
+     * テーブル結合（統合）を解除します。
+     */
+    @Transactional
+    public void unmergeSeat(String seatId) {
+        String selectSql = "SELECT customer_id, parent_customer_id FROM 顧客テーブル WHERE seat_id = ? AND checkout_status = 0";
+        java.util.List<java.util.Map<String, Object>> seats = jdbcTemplate.queryForList(selectSql, seatId);
+        if (seats.isEmpty()) return;
+        
+        String customerId = (String) seats.get(0).get("customer_id");
+        String parentCustomerId = (String) seats.get(0).get("parent_customer_id");
+        
+        if (parentCustomerId != null && !parentCustomerId.trim().isEmpty()) {
+            // 子席の場合: 自身の親ID連携をクリア
+            String sql = "UPDATE 顧客テーブル SET parent_customer_id = NULL WHERE seat_id = ? AND checkout_status = 0";
+            jdbcTemplate.update(sql, seatId);
+        } else {
+            // 親席の場合: 自身を親としている子席の連携をすべてクリア
+            String sql = "UPDATE 顧客テーブル SET parent_customer_id = NULL WHERE parent_customer_id = ? AND checkout_status = 0";
+            jdbcTemplate.update(sql, customerId);
+        }
+    }
 }

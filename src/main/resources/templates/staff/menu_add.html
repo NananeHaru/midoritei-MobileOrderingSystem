@@ -546,7 +546,7 @@
 
             <!-- 追加カード -->
             <div class="edit-card">
-                <form id="addForm" method="post" th:action="@{/staff/menu/add}">
+                <form id="addForm" method="post" th:action="@{/staff/menu/add}" enctype="multipart/form-data">
                     <!-- 送信用隠しフィールド -->
                     <input type="hidden" name="productId" value="">
                     <input type="hidden" name="courseId" id="courseIdInput" value="">
@@ -619,7 +619,9 @@
                             <div class="image-box">
                                 <img class="img-preview" id="imgPreview" src="/images/no-image.png" alt="商品画像" onerror="this.src='/images/no-image.png'">
                             </div>
-                            <button type="button" class="btn-img-change" onclick="changeImage()">画像選択</button>
+                            <!-- ファイル選択用の隠しinput -->
+                            <input type="file" name="imageFile" id="imageFileInput" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                            <button type="button" class="btn-img-change" onclick="document.getElementById('imageFileInput').click()">画像選択</button>
                             
                             <button type="button" class="btn-action-yellow" style="width: 100%; margin-top: auto;" onclick="openConfirmModal()">確定</button>
                         </div>
@@ -704,25 +706,16 @@
                 });
         }
 
-        // 画像選択デモ切り替え
-        let imgState = 0;
-        function changeImage() {
-            const imgEl = document.getElementById('imgPreview');
-            const inputEl = document.getElementById('imagePathInput');
-            
-            // 演習用に、数パターンの画像パスをデモで切り替える
-            if (imgState === 0) {
-                imgEl.src = "/images/PR0001.png"; // 生ビール
-                inputEl.value = "/images/PR0001.png";
-                imgState = 1;
-            } else if (imgState === 1) {
-                imgEl.src = "/images/FP0002.png"; // 自家製から揚げ
-                inputEl.value = "/images/FP0002.png";
-                imgState = 2;
-            } else {
-                imgEl.src = "/images/no-image.png";
-                inputEl.value = "/images/no-image.png";
-                imgState = 0;
+        // 画像のリアルタイムプレビュー
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imgPreview').src = e.target.result;
+                    document.getElementById('imagePathInput').value = ""; 
+                };
+                reader.readAsDataURL(file);
             }
         }
 

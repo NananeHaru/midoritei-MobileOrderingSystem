@@ -543,7 +543,7 @@
                             th:onclick="openEditModal([[${item.product.productId}]], [[${item.product.productName}]], [[${item.product.price}]], [[${item.product.imagePath}]], [[${item.quantity}]])">
                         変更
                     </button>
-                    <img class="cart-img" th:src="${item.product.imagePath}" alt="商品画像">
+                    <img class="cart-img" th:src="${item.product.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
                 </div>
             </div>
         </div>
@@ -563,7 +563,7 @@
         
         <h3 class="modal-title" id="mProductName" style="margin-top: 15px;">商品名</h3>
         <p class="product-price" id="mProductPrice">0円(税込)</p>
-        <img class="detail-img" id="mProductImg" src="/images/no-image.png" alt="商品画像">
+        <img class="detail-img" id="mProductImg" src="/images/no-image.png" alt="商品画像" onerror="this.src='/images/no-image.png'">
         <p class="detail-desc" id="mProductDesc">国産の鳥の焼き物です。</p>
         
         <form th:action="@{/staff/orders/add/cart/update}" method="POST" id="updateCartForm">

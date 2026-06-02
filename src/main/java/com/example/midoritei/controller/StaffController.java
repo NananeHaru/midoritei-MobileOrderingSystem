@@ -537,4 +537,18 @@ public class StaffController {
         seatingService.mergeSeats(parentSeatId, childSeatIds);
         return "redirect:/staff/seating";
     }
+
+    /**
+     * テーブル結合（統合）解除を処理します。
+     */
+    @PostMapping("/seating/unmerge")
+    public String unmergeSeat(@RequestParam("seatId") String seatId,
+                              HttpSession session) {
+        if (session == null || session.getAttribute("loggedInStaff") == null) {
+            return "redirect:/staff/login";
+        }
+        
+        seatingService.unmergeSeat(seatId);
+        return "redirect:/staff/seating";
+    }
 }
