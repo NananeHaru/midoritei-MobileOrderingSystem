@@ -52,7 +52,7 @@
 
         <div class="selector-section">
             <span style="font-size: 18px; font-weight: bold;">個数</span>
-            <button class="count-btn" onclick="changeCount(-1)"><i class="fas fa-minus-square"></i></button>
+            <button class="count-btn" id="minusBtn" onclick="changeCount(-1)" disabled style="opacity: 0.4;"><i class="fas fa-minus-square"></i></button>
             <span class="count-num" id="quantityLabel">1</span>
             <button class="count-btn" onclick="changeCount(1)"><i class="fas fa-plus-square"></i></button>
         </div>
@@ -91,13 +91,16 @@
             count = Math.max(1, count + delta);
             document.getElementById('quantityLabel').innerText = count;
             document.getElementById('quantityInput').value = count; // フォームに個数をセット
-        }
-        function selectOption(name, price, element) {
-            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
-            element.classList.add('selected');
-            
-            document.getElementById('optionInput').value = name;        // フォームにオプション名をセット
-            document.getElementById('optionPriceInput').value = price;  // フォームに加算金額をセット
+
+            // 💡 【新しく追加】個数が1ならマイナスボタンを無効（グレー）に、2以上なら有効にする
+            const minusBtn = document.getElementById('minusBtn');
+            if (count === 1) {
+                minusBtn.disabled = true;
+                minusBtn.style.opacity = "0.4"; // 薄く（グレーに）する
+            } else {
+                minusBtn.disabled = false;
+                minusBtn.style.opacity = "1";   // 元の明るさに戻す
+            }
         }
     </script>
 </body>
