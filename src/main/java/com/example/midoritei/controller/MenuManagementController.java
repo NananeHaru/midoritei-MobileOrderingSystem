@@ -2,6 +2,7 @@ package com.example.midoritei.controller;
 
 import com.example.midoritei.entity.Product;
 import com.example.midoritei.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -35,12 +36,52 @@ public class MenuManagementController {
      * メニュー詳細検索フォームを表示します。
      */
     @GetMapping("/menu/search")
-    public String menuSearchFormPage(HttpSession session, Model model) {
+    public String menuSearchFormPage(@RequestParam(value = "productName", required = false) String productName,
+                                     @RequestParam(value = "keyword", required = false) String keyword,
+                                     @RequestParam(value = "categories", required = false) List<String> categories,
+                                     @RequestParam(value = "priceRanges", required = false) List<String> priceRanges,
+                                     @RequestParam(value = "courses", required = false) List<String> courses,
+                                     @RequestParam(value = "salesStatuses", required = false) List<Integer> salesStatuses,
+                                     @RequestParam(value = "searchOperator", defaultValue = "AND") String searchOperator,
+                                     HttpSession session,
+                                     Model model) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
         model.addAttribute("categories", productService.getAllCategories());
+
+        // フォーム復元用の値をモデルに追加
+        model.addAttribute("productName", productName != null ? productName : "");
+        model.addAttribute("keyword", keyword != null ? keyword : "");
+        model.addAttribute("selectedCategories", categories != null ? categories : new ArrayList<String>());
+        model.addAttribute("selectedPriceRanges", priceRanges != null ? priceRanges : new ArrayList<String>());
+        model.addAttribute("selectedCourses", courses != null ? courses : new ArrayList<String>());
+        model.addAttribute("selectedSalesStatuses", salesStatuses != null ? salesStatuses : new ArrayList<Integer>());
+        model.addAttribute("searchOperator", searchOperator);
+
+        // セッションから前回の検索条件を取得
+        System.out.println("★Search form session ID: " + session.getId());
+        Map<String, Object> lastSearchParams = (Map<String, Object>) session.getAttribute("lastSearchParams");
+        System.out.println("★Search form lastSearchParams from session: " + lastSearchParams);
+        if (lastSearchParams == null) {
+            lastSearchParams = new HashMap<>();
+        }
+        model.addAttribute("lastSearchParams", lastSearchParams);
+
         return "staff/menu_search_form";
+    }
+
+    /**
+     * 検索条件をクリアし、検索フォームにリダイレクトします。
+     */
+    @GetMapping("/menu/search/clear")
+    public String clearMenuSearch(HttpSession session) {
+        if (session == null || session.getAttribute("loggedInStaff") == null) {
+            return "redirect:/staff/login";
+        }
+        session.removeAttribute("lastSearchParams");
+        session.removeAttribute("lastSearchUrl");
+        return "redirect:/staff/menu/search";
     }
 
     /**
@@ -54,11 +95,29 @@ public class MenuManagementController {
                                         @RequestParam(value = "courses", required = false) List<String> courses,
                                         @RequestParam(value = "salesStatuses", required = false) List<Integer> salesStatuses,
                                         @RequestParam(value = "searchOperator", defaultValue = "AND") String searchOperator,
+                                        HttpServletRequest request,
                                         HttpSession session,
                                         Model model) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
+
+        // 直前の検索結果URLをセッションに保存
+        String queryString = request.getQueryString();
+        String searchUrl = "/staff/menu/search/results" + (queryString != null ? "?" + queryString : "");
+        session.setAttribute("lastSearchUrl", searchUrl);
+
+        // 検索パラメータをセッションに保存
+        Map<String, Object> lastSearchParams = new HashMap<>();
+        lastSearchParams.put("productName", productName);
+        lastSearchParams.put("keyword", keyword);
+        lastSearchParams.put("categories", categories);
+        lastSearchParams.put("priceRanges", priceRanges);
+        lastSearchParams.put("courses", courses);
+        lastSearchParams.put("salesStatuses", salesStatuses);
+        System.out.println("★Search results session ID: " + session.getId());
+        System.out.println("★Search results saving lastSearchParams: " + lastSearchParams);
+        session.setAttribute("lastSearchParams", lastSearchParams);
 
         System.out.println("★検索パラメータ - productName: " + productName + ", keyword: " + keyword + ", categories: " + categories + ", priceRanges: " + priceRanges + ", courses: " + courses + ", salesStatuses: " + salesStatuses + ", searchOperator: " + searchOperator);
 
@@ -93,10 +152,14 @@ public class MenuManagementController {
             catMap.put((String) c.get("category_id"), (String) c.get("category_name"));
         }
 
+        // 検索条件入力画面へ戻る際のURL（パラメータを引き継ぐ）
+        String backToSearchFormUrl = "/staff/menu/search" + (queryString != null ? "?" + queryString : "");
+
         model.addAttribute("products", searchResults);
         model.addAttribute("categoryMap", catMap);
         model.addAttribute("searchOperator", searchOperator);
         model.addAttribute("salesStatuses", salesStatuses);
+        model.addAttribute("backToSearchFormUrl", backToSearchFormUrl);
         return "staff/menu_search_results";
     }
 
@@ -126,12 +189,19 @@ public class MenuManagementController {
             }
         }
 
-        // カテゴリーに紐づくオプションリスト取得
-        List<Map<String, Object>> options = productService.getOptionsByCategoryId(product.getCategoryId());
+        // 商品に直接紐づくオプションリスト取得
+        List<Map<String, Object>> options = productService.getOptionsByProductId(productId);
+
+        // 直前の検索結果URLをセッションから取得、無ければトップを設定
+        String lastSearchUrl = (String) session.getAttribute("lastSearchUrl");
+        if (lastSearchUrl == null) {
+            lastSearchUrl = "/staff/menu";
+        }
 
         model.addAttribute("product", product);
         model.addAttribute("categoryName", categoryName);
         model.addAttribute("options", options);
+        model.addAttribute("backUrl", lastSearchUrl); // 戻るURLを追加
         return "staff/menu_detail";
     }
 
