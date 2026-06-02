@@ -14,34 +14,50 @@
             background-color: #f9f9f9;
         }
 
+        /* 💡 ヘッダー：絶対配置の基準(relative)にし、タイマーがしっかり収まる高さ(60px)を確保 */
         header {
             background-color: #fff;
             border-bottom: 3px solid #f3b123;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 10px 15px;
             position: sticky;
             top: 0;
             z-index: 100;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
         }
 
+        /* 💡 ホームボタン：左端に絶対配置 */
         .home-btn {
             color: #f3b123;
             font-size: 28px;
             text-decoration: none;
+            position: absolute;
+            left: 15px;
+            z-index: 101;
         }
 
+        /* 💡 タイトル「注文」：画面の横幅に対して完全にど真ん中（50%の位置）に固定 */
         header h1 {
             margin: 0;
             font-size: 22px;
             color: #333;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%); /* 💡 これで1文字でも完全に中央に寄ります */
+            white-space: nowrap;
         }
 
+        /* 💡 タイマー：右端に絶対配置し、2行がきれいに入る行間を設定 */
         .timer {
             font-size: 14px;
             text-align: right;
             color: #333;
+            position: absolute;
+            right: 15px;
+            z-index: 101;
+            line-height: 1.3;
         }
 
         .category-tabs {
@@ -188,7 +204,7 @@
     <header>
         <a th:href="@{/menu}" class="home-btn"><i class="fas fa-home"></i></a>
         <h1>注文</h1>
-        <div class="timer">残り時間<br><strong>01:20:00</strong></div>
+        <div class="timer">残り時間<br><strong id="countdown-timer">01:20:00</strong></div>
     </header>
 
     <div class="category-tabs">
@@ -204,13 +220,14 @@
                 <h3 class="product-name" th:text="${p.productName}">商品名</h3>
                 <span class="product-price" th:text="${p.price} + '円(税込)'">0円</span>
             </div>
+            <!-- エラー時の代替画像表示を維持します -->
             <img class="product-img" th:src="${p.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
         </a>
     </div>
 
     <div class="cart-footer">
-        <div class="total-price">合計金額 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span th:text="${totalAmount}">0</span> 円
-        </div>
+        <!-- 「小計 〇〇 円(税込)」の表記を採用します -->
+        <div class="total-price">小計 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span th:text="${totalAmount}">0</span> 円(税込)</div>
         <a th:href="@{/cart}" class="view-cart-btn">カゴを見る（<span th:text="${cartCount}">0</span>）</a>
     </div>
 
@@ -224,17 +241,19 @@
         <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i>
             <div>会計</div>
         </a>
+    </nav>
 </body>
+
 <script>
     function filterCategory(categoryId, element) {
         // 1. すべてのタブボタンから 'active' クラスを外す
-        document.querySelectorAll('.tab-btn').forEach(btn => { // ← ここを tab-btn に修正
+        document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         // 2. 今クリックされたボタンに 'active' クラスをつける
         element.classList.add('active');
 
-        // 3. すべての商品カードを取得して、絞り込みを行う
+        // 3. カテゴリで絞り込み
         document.querySelectorAll('.product-card').forEach(card => {
             if (categoryId === 'all') {
                 card.style.display = 'block';
@@ -247,6 +266,42 @@
             }
         });
     }
+</script>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        let totalSeconds = /*[[${remainingSeconds}]]*/ 4800;
+        const timerElement = document.getElementById("countdown-timer");
+
+        function updateTimer() {
+            if (totalSeconds <= 0) {
+                timerElement.textContent = "00:00:00";
+                clearInterval(timerInterval);
+                alert("制限時間になりました。");
+
+                const cartBtn = document.querySelector(".view-cart-btn");
+                if (cartBtn) {
+                    cartBtn.style.backgroundColor = "#ccc"; 
+                    cartBtn.style.pointerEvents = "none";  
+                    cartBtn.textContent = "時間切れ";       
+                }
+                return;
+            }
+            
+            let hours = Math.floor(totalSeconds / 3600);
+            let minutes = Math.floor((totalSeconds % 3600) / 60);
+            let seconds = totalSeconds % 60;
+
+            let hStr = String(hours).padStart(2, '0');
+            let mStr = String(minutes).padStart(2, '0');
+            let sStr = String(seconds).padStart(2, '0');
+
+            timerElement.textContent = `${hStr}:${mStr}:${sStr}`;
+            totalSeconds--;
+        }
+        const timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
+    });
 </script>
 
 </html>
