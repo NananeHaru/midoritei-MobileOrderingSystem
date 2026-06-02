@@ -24,7 +24,7 @@
     </header>
     <div class="main-content">
         <div class="number-selector">
-            <button class="count-btn minus" onclick="changeCount(-1)"><i class="fas fa-minus-square"></i></button>
+            <button class="count-btn minus" id="minusBtn" onclick="changeCount(-1)" disabled style="color: #ccc;"><i class="fas fa-minus-square"></i></button>
             <div class="count-num" id="memberCount">1</div>
             <button class="count-btn plus" onclick="changeCount(1)"><i class="fas fa-plus-square"></i></button>
         </div>
@@ -41,6 +41,16 @@
             count = Math.max(1, count + delta);
             document.getElementById('memberCount').innerText = count;
             document.getElementById('membersInput').value = count;
+
+            // 💡 【新しく追加】人数が1ならマイナスボタンを無効（グレー）に、2以上なら有効（オレンジ）にする
+            const minusBtn = document.getElementById('minusBtn');
+            if (count === 1) {
+                minusBtn.disabled = true;
+                minusBtn.style.color = "#ccc";     // グレーにする
+            } else {
+                minusBtn.disabled = false;
+                minusBtn.style.color = "#f3b123";  // いつものオレンジに戻す
+            }
         }
     </script>
 </body>

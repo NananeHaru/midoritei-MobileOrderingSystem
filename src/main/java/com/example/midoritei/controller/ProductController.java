@@ -27,6 +27,10 @@ public class ProductController {
     @Autowired
     private OrderService orderService;
 
+    // 💡 DBから直接SQLを実行するために JdbcTemplate を追加します
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     // -------------------------------------------------------------
     // ⏱️ ★新しく追加：すべての画面で自動的に残り秒数を引き渡す共通処理
     // -------------------------------------------------------------
@@ -68,7 +72,6 @@ public class ProductController {
 
         return "menu";
     }
-
     // 商品詳細画面
     @GetMapping("/menu/detail/{productId}")
     public String showDetail(@PathVariable("productId") String productId, Model model) {

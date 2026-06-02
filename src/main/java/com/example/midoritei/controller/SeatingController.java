@@ -3,6 +3,8 @@ package com.example.midoritei.controller;
 import com.example.midoritei.service.SeatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model; 
+import org.springframework.jdbc.core.JdbcTemplate; 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,9 +17,19 @@ public class SeatingController {
     @Autowired
     private SeatingService seatingService;
 
-    // 1. トップ画面を表示（初期アクセス）
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    // 1. トップ画面を表示（/seating/start でアクセスされた時）
     @GetMapping("/start")
-    public String startPage() {
+    public String startPage(Model model) {
+        try {
+            String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = '01'";
+            String storeName = jdbcTemplate.queryForObject(sql, String.class);
+            model.addAttribute("storeName", storeName); 
+        } catch (Exception e) {
+            model.addAttribute("storeName", "緑橋一号店");
+        }
         return "index";
     }
 
@@ -38,27 +50,34 @@ public class SeatingController {
     public String openTable(@RequestParam("store_id") String storeId,
                             @RequestParam("seat_id") String seatId,
                             @RequestParam("course_id") String courseId,
-                            jakarta.servlet.http.HttpSession session) { // 💡 引数に HttpSession を追加しました
+                            jakarta.servlet.http.HttpSession session) {
         
-        // 自動採番＆DBインサートを実行（ここで本物の customerId が発行されます！）
         String customerId = seatingService.openTable(storeId, seatId, courseId);
         
-        // -------------------------------------------------------------
-        // ⏱️ 本番仕様：入店した瞬間に「終了時刻」を計算してセッションに保存する！
-        // -------------------------------------------------------------
-        // ※とりあえず人数は仮で「2」にしていますが、これでCustomerSession内で
-        // 「入店時刻」と「80分後の終了時刻」が完全に自動計算されます。
         com.example.midoritei.entity.CustomerSession customerSession = 
             new com.example.midoritei.entity.CustomerSession(customerId, 2, courseId);
         
-        // セッションに「本物の顧客セッション」を保存！
         session.setAttribute("customerSession", customerSession);
-        // -------------------------------------------------------------
-        
-        // 固定のテスト用に、以前コントローラーで使っていたダミーID「0100001」ではなく、
-        // 今回発行された本物の `customerId` を使いたいところですが、まずは連動テストのために
-        // セッションへ本物データを格納した状態でメニュー画面へ遷移させます。
         
         return "redirect:/menu";
+    }
+}
+
+// 💡 http://localhost:8080/ (スラッシュだけ) でアクセスされた時も確実に同じ画面を出し、DB連動させるための別クラス
+@Controller
+class MainRootController {
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @GetMapping("/")
+    public String rootPage(Model model) {
+        try {
+            String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = '01'";
+            String storeName = jdbcTemplate.queryForObject(sql, String.class);
+            model.addAttribute("storeName", storeName); 
+        } catch (Exception e) {
+            model.addAttribute("storeName", "緑橋一号店");
+        }
+        return "index";
     }
 }

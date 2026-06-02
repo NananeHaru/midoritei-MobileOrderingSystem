@@ -75,9 +75,9 @@
         </form>
     </div>
 
-    <div class="cart-footer">
-        <div class="total-price" style="font-weight: bold;">合計金額 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ？？？ 円</div>
-        <a th:href="@{/cart}" class="add-cart-btn" style="padding: 10px 20px; font-size:16px; width:auto; margin:0; border-radius:8px; text-decoration:none;">カゴを見る</a>    </div>
+    <div class="cart-footer" style="display: flex !important; justify-content: flex-end !important; padding: 10px 20px;">
+        <a th:href="@{/cart}" class="add-cart-btn" style="padding: 10px 20px; font-size:16px; width:auto; margin:0; border-radius:8px; text-decoration:none;">カゴを見る</a>
+    </div>
 
     <nav class="bottom-nav">
         <a th:href="@{/menu}" class="nav-item active"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>

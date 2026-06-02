@@ -62,7 +62,8 @@
     </div>
 
     <div class="cart-footer">
-        <div class="total-price">合計: <span th:text="${totalAmount}">0</span> 円</div>
+        <div class="total-price">小計: <span th:text="${totalAmount}">0</span> 円(税込)</div>
+        
         <form th:action="@{/cart/submit}" method="post" th:if="${!#lists.isEmpty(cart)}">
             <button type="submit" class="submit-order-btn" onclick="return confirm('厨房に注文を送信します。よろしいですか？')">注文を確定する</button>
         </form>
