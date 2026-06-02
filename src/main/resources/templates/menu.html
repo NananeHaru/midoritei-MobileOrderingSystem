@@ -1,40 +1,189 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>みどり亭 - 注文</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; margin: 0; padding-bottom: 140px; background-color: #f9f9f9; }
-        header { background-color: #fff; border-bottom: 3px solid #f3b123; padding: 10px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .home-btn { color: #f3b123; font-size: 28px; text-decoration: none; }
-        header h1 { margin: 0; font-size: 22px; color: #333; }
-        .timer { font-size: 14px; text-align: right; color: #333; }
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding-bottom: 140px;
+            background-color: #f9f9f9;
+        }
 
-        .category-tabs { background-color: #fff; display: flex; overflow-x: auto; padding: 10px; gap: 10px; border-bottom: 1px solid #eee; }
-        .tab-btn { background: none; border: none; padding: 5px 15px; font-size: 16px; color: #666; white-space: nowrap; cursor: pointer; }
-        .tab-btn.active { color: #f3b123; border-bottom: 2px solid #f3b123; font-weight: bold; }
+        header {
+            background-color: #fff;
+            border-bottom: 3px solid #f3b123;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-        .menu-list { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .home-btn {
+            color: #f3b123;
+            font-size: 28px;
+            text-decoration: none;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            color: #333;
+        }
+
+        .timer {
+            font-size: 14px;
+            text-align: right;
+            color: #333;
+        }
+
+        .category-tabs {
+            background-color: #fff;
+            display: flex;
+            overflow-x: auto;
+            padding: 10px;
+            gap: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 5px 15px;
+            font-size: 16px;
+            color: #666;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            color: #f3b123;
+            border-bottom: 2px solid #f3b123;
+            font-weight: bold;
+        }
+
+        .menu-list {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         /* aタグになってもデザインが崩れないように修正 */
-        .product-card { background: #fff; border: 1px solid #ccc; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; }
-        .product-info { flex: 1; }
-        .product-name { font-size: 18px; margin: 0 0 10px 0; color: #333; font-weight: bold; }
-        .product-price { font-size: 18px; font-weight: bold; color: #333; }
-        .product-img { width: 120px; height: 90px; object-fit: cover; border-radius: 8px; margin-left: 15px; background-color: #eee; }
+        .product-card {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+        }
 
-        .cart-footer { position: fixed; bottom: 60px; left: 0; width: 100%; background-color: #fff; border-top: 1px solid #ccc; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; z-index: 90; }
-        .total-price { font-size: 18px; font-weight: bold; color: #333; }
-        .view-cart-btn { background-color: #f3b123; color: white; border: none; padding: 10px 25px; font-size: 18px; font-weight: bold; border-radius: 8px; text-decoration: none; }
+        .product-info {
+            flex: 1;
+        }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background-color: #fff; border-top: 2px solid #f3b123; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .nav-item { text-align: center; color: #666; text-decoration: none; width: 33.3%; }
-        .nav-item.active { color: #f3b123; }
-        .nav-icon { font-size: 24px; }
-        .nav-text { font-size: 12px; margin-top: 3px; font-weight: bold; }
+        .product-name {
+            font-size: 18px;
+            margin: 0 0 10px 0;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .product-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .product-img {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-left: 15px;
+            background-color: #eee;
+        }
+
+        .cart-footer {
+            position: fixed;
+            bottom: 60px;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            border-top: 1px solid #ccc;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            z-index: 90;
+        }
+
+        .total-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .view-cart-btn {
+            background-color: #f3b123;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #fff;
+            border-top: 2px solid #f3b123;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #666;
+            text-decoration: none;
+            width: 33.3%;
+        }
+
+        .nav-item.active {
+            color: #f3b123;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-text {
+            font-size: 12px;
+            margin-top: 3px;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
     <header>
         <a th:href="@{/menu}" class="home-btn"><i class="fas fa-home"></i></a>
@@ -55,19 +204,26 @@
                 <h3 class="product-name" th:text="${p.productName}">商品名</h3>
                 <span class="product-price" th:text="${p.price} + '円(税込)'">0円</span>
             </div>
-            <img class="product-img" th:src="${p.imagePath}" alt="商品画像">
+            <img class="product-img" th:src="${p.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
         </a>
     </div>
 
     <div class="cart-footer">
-        <div class="total-price">合計金額 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span th:text="${totalAmount}">0</span> 円</div>
+        <div class="total-price">合計金額 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span th:text="${totalAmount}">0</span> 円
+        </div>
         <a th:href="@{/cart}" class="view-cart-btn">カゴを見る（<span th:text="${cartCount}">0</span>）</a>
     </div>
 
     <nav class="bottom-nav">
-        <a th:href="@{/menu}" class="nav-item active"><i class="fas fa-utensils nav-icon"></i><div class="nav-text">注文</div></a>
-        <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
-        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>
+        <a th:href="@{/menu}" class="nav-item active"><i class="fas fa-utensils nav-icon"></i>
+            <div class="nav-text">注文</div>
+        </a>
+        <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i>
+            <div>注文履歴</div>
+        </a>
+        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i>
+            <div>会計</div>
+        </a>
 </body>
 <script>
     function filterCategory(categoryId, element) {
@@ -92,4 +248,5 @@
         });
     }
 </script>
+
 </html>
