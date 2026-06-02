@@ -320,6 +320,61 @@
             color: var(--text-color);
         }
 
+        /* 統合グループのバッジ */
+        .group-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        /* ホバー時の連動ハイライト用クラス */
+        .seat-card.group-highlight {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border: 3px solid var(--highlight-color, var(--primary-color)) !important;
+        }
+
+        .seat-brief-id {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            background: #f1f3f4;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            display: inline-block;
+        }
+
+        .seat-brief-relation {
+            font-size: 10px;
+            margin-top: 3px;
+            font-weight: 500;
+            padding: 1px 4px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        .parent-rel {
+            color: #d93025;
+            background-color: #fce8e6;
+        }
+
+        .child-rel {
+            color: #1a73e8;
+            background-color: #e8f0fe;
+        }
+
         /* 統合モード時の選択可能/不可状態 */
         .integration-mode .seat-card {
             cursor: not-allowed;
@@ -662,7 +717,19 @@
                      th:data-members="${seat['numberOfMembers']}"
                      th:data-course-id="${seat['courseId']}"
                      th:data-entry-time="${seat['entryTime'] != null ? #dates.format(seat['entryTime'], 'HH:mm') : ''}"
-                     onclick="handleSeatClick(this)">
+                     th:data-parent-customer-id="${seat['parentCustomerId']}"
+                     th:data-parent-seat-id="${seat['parentSeatId']}"
+                     th:data-group-id="${seat['groupId']}"
+                     th:data-group-color="${seat['groupColor']}"
+                     onclick="handleSeatClick(this)"
+                     onmouseenter="handleSeatMouseEnter(this)"
+                     onmouseleave="handleSeatMouseLeave(this)">
+                    
+                    <!-- グループバッジ表示 -->
+                    <div th:if="${seat['groupLabel'] != null}" 
+                         class="group-badge" 
+                         th:style="'background-color: ' + ${seat['groupColor']}" 
+                         th:text="${seat['groupLabel']}">A</div>
                     
                     <div class="seat-number" th:text="${seat['seatId']}">1</div>
                     <div class="seat-icon">
@@ -679,8 +746,19 @@
                             <line x1="8" y1="7" x2="16" y2="7"></line>
                         </svg>
                     </div>
-                    <div class="seat-info-brief">
-                        <span th:if="${seat['status'] == '使用中'}" th:text="${seat['numberOfMembers'] + '名'}">2名</span>
+                    <div class="seat-info-brief" th:if="${seat['status'] == '使用中'}">
+                        <div th:text="${seat['numberOfMembers'] + '名'}">2名</div>
+                        <div class="seat-brief-id" th:text="'ID: ' + ${seat['customerId']}">ID: 9900001</div>
+                        
+                        <!-- 親席の表示 (子座席の場合) -->
+                        <div th:if="${seat['parentSeatId'] != null}" class="seat-brief-relation parent-rel">
+                            親席: <span th:text="${seat['parentSeatId']}">2</span>番
+                        </div>
+                        
+                        <!-- 子席の表示 (親座席の場合) -->
+                        <div th:if="${seat['childSeatIds'] != null}" class="seat-brief-relation child-rel">
+                            子席: <span th:text="${#strings.listJoin(seat['childSeatIds'], ', ')}">1</span>番
+                        </div>
                     </div>
                 </div>
             </div>
@@ -817,8 +895,9 @@
             const members = cardElement.getAttribute('data-members');
             const courseId = cardElement.getAttribute('data-course-id');
             const entryTime = cardElement.getAttribute('data-entry-time');
+            const parentCustomerId = cardElement.getAttribute('data-parent-customer-id');
 
-            selectedSeat = { seatId, type, status, customerId, members, courseId, entryTime };
+            selectedSeat = { seatId, type, status, customerId, members, courseId, entryTime, parentCustomerId };
 
             // モーダルのテキスト設定
             document.getElementById('detailModalTitle').innerText = `座席ID ${seatId}`;
@@ -921,11 +1000,16 @@
         function openQrModal() {
             closeModal('detailModal');
             const qrImage = document.getElementById('qrImageElement');
-            const customerId = selectedSeat.customerId;
+            const targetCustomerId = selectedSeat.parentCustomerId || selectedSeat.customerId;
             
             // チームメンバーが実装したQRコード出力APIを叩いて画像をセット
-            qrImage.src = `/order/qr/${customerId}`;
-            document.getElementById('qrCustomerInfo').innerText = `顧客ID: ${customerId}`;
+            qrImage.src = `/order/qr/${targetCustomerId}`;
+            
+            let labelText = `顧客ID: ${targetCustomerId}`;
+            if (selectedSeat.parentCustomerId) {
+                labelText += ` (親席 ID: ${selectedSeat.parentCustomerId} からの統合)`;
+            }
+            document.getElementById('qrCustomerInfo').innerText = labelText;
             
             showModal('qrModal');
         }
@@ -1014,6 +1098,32 @@
             });
         }
 
+        // ホバー時の連動ハイライト処理
+        function handleSeatMouseEnter(cardElement) {
+            const groupId = cardElement.getAttribute('data-group-id');
+            if (!groupId) return;
+
+            const groupColor = cardElement.getAttribute('data-group-color');
+            document.querySelectorAll('.seat-card').forEach(card => {
+                if (card.getAttribute('data-group-id') === groupId) {
+                    card.classList.add('group-highlight');
+                    card.style.setProperty('--highlight-color', groupColor);
+                }
+            });
+        }
+
+        function handleSeatMouseLeave(cardElement) {
+            const groupId = cardElement.getAttribute('data-group-id');
+            if (!groupId) return;
+
+            document.querySelectorAll('.seat-card').forEach(card => {
+                if (card.getAttribute('data-group-id') === groupId) {
+                    card.classList.remove('group-highlight');
+                    card.style.removeProperty('--highlight-color');
+                }
+            });
+        }
+        
         // 統合確定のPOST送信
         function submitMerge() {
             if (mergeSelectedSeatIds.length === 0) return;
@@ -1021,7 +1131,7 @@
             const confirmMsg = `これらの座席を統合しますか？\n\n` +
                                `親座席：座席ID ${selectedSeat.seatId}\n` +
                                `統合する座席：座席ID ${mergeSelectedSeatIds.join(', ')}\n\n` +
-                               `※統合された座席の注文情報はすべて親座席に紐づけ直され、対象座席は空席になります。`;
+                               `※統合された座席の注文情報はすべて親座席に紐づけ直されます。（統合された座席は使用中のまま残ります）`;
             
             if (confirm(confirmMsg)) {
                 // 動的にフォームを生成してPOST送信

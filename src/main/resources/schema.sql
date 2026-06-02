@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS 顧客テーブル (
     entry_time TIMESTAMP,
     checkout_status INT,
     total_amount INT,
-    number_of_members INT DEFAULT 0
+    number_of_members INT DEFAULT 0,
+    parent_customer_id CHAR(7)
 );
 
 -- 3. 商品マスタテーブル

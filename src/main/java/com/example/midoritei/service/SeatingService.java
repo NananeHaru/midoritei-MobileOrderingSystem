@@ -56,7 +56,7 @@ public class SeatingService {
      * 現在食事中（checkout_status = 0）の座席詳細一覧を取得します。
      */
     public java.util.List<java.util.Map<String, Object>> getActiveSeatsDetail() {
-        String sql = "SELECT seat_id, customer_id, number_of_members, course_id, entry_time FROM 顧客テーブル WHERE checkout_status = 0 ORDER BY seat_id ASC";
+        String sql = "SELECT seat_id, customer_id, number_of_members, course_id, entry_time, parent_customer_id FROM 顧客テーブル WHERE checkout_status = 0 ORDER BY seat_id ASC";
         return jdbcTemplate.queryForList(sql);
     }
 
@@ -88,9 +88,9 @@ public class SeatingService {
                 String updateOrdersSql = "UPDATE 注文テーブル SET customer_id = ? WHERE customer_id = ?";
                 jdbcTemplate.update(updateOrdersSql, parentCustomerId, childCustomerId);
 
-                // 子の顧客レコードを削除（空席化）
-                String deleteCustomerSql = "DELETE FROM 顧客テーブル WHERE customer_id = ?";
-                jdbcTemplate.update(deleteCustomerSql, childCustomerId);
+                // 子の顧客レコードに親の顧客IDをセット（統合関係の保持）
+                String updateParentIdSql = "UPDATE 顧客テーブル SET parent_customer_id = ? WHERE customer_id = ?";
+                jdbcTemplate.update(updateParentIdSql, parentCustomerId, childCustomerId);
             }
         }
     }

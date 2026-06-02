@@ -391,6 +391,25 @@ public class StaffController {
         // 食事中（checkout_status = 0）の席一覧を取得
         List<Map<String, Object>> activeSeats = seatingService.getActiveSeatsDetail();
         
+        // 親子関係を持つグループの整理
+        // 親の顧客ID -> グループ情報 (ラベル, カラー)
+        Map<String, String> groupLabels = new java.util.HashMap<>();
+        Map<String, String> groupColors = new java.util.HashMap<>();
+        String[] labels = {"A", "B", "C", "D", "E", "F"};
+        String[] colors = {"#1a73e8", "#a142f4", "#e8710a", "#12b5cb", "#e52592", "#137333"};
+        int groupCount = 0;
+
+        for (Map<String, Object> seat : activeSeats) {
+            String parentCustId = (String) seat.get("parent_customer_id");
+            if (parentCustId != null && !groupLabels.containsKey(parentCustId)) {
+                if (groupCount < labels.length) {
+                    groupLabels.put(parentCustId, labels[groupCount]);
+                    groupColors.put(parentCustId, colors[groupCount]);
+                    groupCount++;
+                }
+            }
+        }
+        
         // 1番〜15番の座席状態をマージしたデータを構築
         List<Map<String, Object>> seats = new java.util.ArrayList<>();
         for (int i = 1; i <= 15; i++) {
@@ -407,10 +426,49 @@ public class StaffController {
             
             if (activeSeat != null) {
                 seatMap.put("status", "使用中");
-                seatMap.put("customerId", activeSeat.get("customer_id"));
+                String myCustomerId = (String) activeSeat.get("customer_id");
+                seatMap.put("customerId", myCustomerId);
                 seatMap.put("numberOfMembers", activeSeat.get("number_of_members"));
                 seatMap.put("courseId", activeSeat.get("course_id"));
                 seatMap.put("entryTime", activeSeat.get("entry_time"));
+                
+                // 親の顧客ID
+                String parentCustomerId = (String) activeSeat.get("parent_customer_id");
+                
+                if (parentCustomerId != null) {
+                    // 自分は子席
+                    seatMap.put("parentCustomerId", parentCustomerId);
+                    // 親座席の番号を取得
+                    String parentSeatId = activeSeats.stream()
+                        .filter(s -> parentCustomerId.equals(s.get("customer_id")))
+                        .map(s -> String.valueOf(s.get("seat_id")))
+                        .findFirst()
+                        .orElse(null);
+                    seatMap.put("parentSeatId", parentSeatId);
+                    
+                    // グループ情報の適用
+                    if (groupLabels.containsKey(parentCustomerId)) {
+                        seatMap.put("groupId", parentCustomerId);
+                        seatMap.put("groupLabel", groupLabels.get(parentCustomerId));
+                        seatMap.put("groupColor", groupColors.get(parentCustomerId));
+                    }
+                } else {
+                    // 自分は親席、あるいは単独席
+                    // 自分が親（＝自分を親顧客IDとしている子がいる）か確認
+                    List<String> childSeatIds = activeSeats.stream()
+                        .filter(s -> myCustomerId.equals(s.get("parent_customer_id")))
+                        .map(s -> String.valueOf(s.get("seat_id")))
+                        .collect(java.util.stream.Collectors.toList());
+                    
+                    if (!childSeatIds.isEmpty()) {
+                        seatMap.put("childSeatIds", childSeatIds);
+                        if (groupLabels.containsKey(myCustomerId)) {
+                            seatMap.put("groupId", myCustomerId);
+                            seatMap.put("groupLabel", groupLabels.get(myCustomerId));
+                            seatMap.put("groupColor", groupColors.get(myCustomerId));
+                        }
+                    }
+                }
             } else {
                 seatMap.put("status", "空席");
             }
