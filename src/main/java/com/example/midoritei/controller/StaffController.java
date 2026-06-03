@@ -231,7 +231,10 @@ public class StaffController {
         List<Product> activeProducts = productService.getActiveProducts();
         adjustProductPricesByCourse(activeProducts, courseId);
 
+        String courseName = getCourseNameByCustomerId(customerId);
+
         model.addAttribute("seatId", seatId);
+        model.addAttribute("courseName", courseName);
         model.addAttribute("totalAmount", totalAmount);
         model.addAttribute("products", activeProducts);
         return "staff/orders_add_menu";
@@ -314,7 +317,10 @@ public class StaffController {
 
         int totalAmount = cart.stream().mapToInt(CartItem::getSubtotal).sum();
 
+        String courseName = getCourseNameByCustomerId(customerId);
+
         model.addAttribute("seatId", seatId);
+        model.addAttribute("courseName", courseName);
         model.addAttribute("cart", cart);
         model.addAttribute("totalAmount", totalAmount);
         return "staff/orders_add_cart";
@@ -476,7 +482,8 @@ public class StaffController {
                 String myCustomerId = (String) activeSeat.get("customer_id");
                 seatMap.put("customerId", myCustomerId);
                 seatMap.put("numberOfMembers", activeSeat.get("number_of_members"));
-                seatMap.put("courseId", activeSeat.get("course_id"));
+                seatMap.put("courseId", activeSeat.get("course_id") != null ? ((String) activeSeat.get("course_id")).trim() : null);
+                seatMap.put("courseName", activeSeat.get("course_name") != null ? ((String) activeSeat.get("course_name")).trim() : "コースなし");
                 seatMap.put("entryTime", activeSeat.get("entry_time"));
                 
                 // 親の顧客ID
@@ -536,8 +543,8 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         
-        // 初期値：店舗ID="99", 人数=0名, コース=なし(none)
-        seatingService.openTable("99", seatId, "none", 0);
+        // 初期値：店舗ID="99", 人数=0名, コース=なし(CS01)
+        seatingService.openTable("99", seatId, "CS01", 0);
         return "redirect:/staff/seating";
     }
 
@@ -635,6 +642,24 @@ public class StaffController {
             return (courseId != null) ? courseId.trim() : "CS01";
         } catch (Exception e) {
             return "CS01";
+        }
+    }
+
+    private String getCourseNameByCustomerId(String customerId) {
+        if (customerId == null || customerId.trim().isEmpty()) {
+            return "コースなし";
+        }
+        try {
+            String courseName = jdbcTemplate.queryForObject(
+                "SELECT cm.course_name FROM 顧客テーブル c " +
+                "LEFT JOIN コースマスタテーブル cm ON TRIM(c.course_id) = TRIM(cm.course_id) " +
+                "WHERE c.customer_id = ?",
+                String.class,
+                customerId
+            );
+            return (courseName != null) ? courseName.trim() : "コースなし";
+        } catch (Exception e) {
+            return "コースなし";
         }
     }
 }

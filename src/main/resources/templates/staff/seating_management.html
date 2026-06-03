@@ -716,6 +716,7 @@
                      th:data-customer-id="${seat['customerId']}"
                      th:data-members="${seat['numberOfMembers']}"
                      th:data-course-id="${seat['courseId']}"
+                     th:data-course-name="${seat['courseName']}"
                      th:data-entry-time="${seat['entryTime'] != null ? #dates.format(seat['entryTime'], 'HH:mm') : ''}"
                      th:data-parent-customer-id="${seat['parentCustomerId']}"
                      th:data-parent-seat-id="${seat['parentSeatId']}"
@@ -901,10 +902,11 @@
             const customerId = cardElement.getAttribute('data-customer-id');
             const members = cardElement.getAttribute('data-members');
             const courseId = cardElement.getAttribute('data-course-id');
+            const courseName = cardElement.getAttribute('data-course-name');
             const entryTime = cardElement.getAttribute('data-entry-time');
             const parentCustomerId = cardElement.getAttribute('data-parent-customer-id');
 
-            selectedSeat = { seatId, type, status, customerId, members, courseId, entryTime, parentCustomerId };
+            selectedSeat = { seatId, type, status, customerId, members, courseId, courseName, entryTime, parentCustomerId };
 
             // モーダルのテキスト設定
             document.getElementById('detailModalTitle').innerText = `座席ID ${seatId}`;
@@ -939,10 +941,7 @@
                 document.getElementById('detailCustomerId').innerText = customerId || '-';
                 document.getElementById('detailMembers').innerText = `${members}名` || '-';
                 
-                let courseText = 'コースなし';
-                if (courseId === 'CS01') courseText = 'premium コース';
-                else if (courseId === 'CS02') courseText = 'standard コース';
-                document.getElementById('detailCourse').innerText = courseText;
+                document.getElementById('detailCourse').innerText = courseName || 'コースなし';
                 document.getElementById('detailEntryTime').innerText = entryTime || '-';
 
                 formOpen.style.display = 'none';

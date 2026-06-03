@@ -25,7 +25,10 @@ public class SeatingService {
 
         String customerId = idGenerator.generateNextId(storeId);
         
-        // 📄 SeatingService.java の該当箇所
+        String targetCourseId = courseId;
+        if (targetCourseId == null || "none".equals(targetCourseId.trim())) {
+            targetCourseId = "CS01";
+        }
 
         String sql = "INSERT INTO 顧客テーブル " +
                     "(customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount, number_of_members) " +
@@ -35,7 +38,7 @@ public class SeatingService {
             customerId,
             storeId,
             seatId,
-            courseId, // 💡 三項演算子を消して、画面から来たコード（CS01, CS02, CS03）をそのまま保存！
+            targetCourseId, // 💡 三項演算子を消して、画面から来たコード（CS01, CS02, CS03）をそのまま保存！
             LocalDateTime.now(),
             0, // 0:利用中
             0, // 初期合計金額は0円
@@ -58,11 +61,12 @@ public class SeatingService {
         return jdbcTemplate.queryForList(sql);
     }
 
-    /**
-     * 現在食事中（checkout_status = 0）の座席詳細一覧を取得します。
-     */
     public java.util.List<java.util.Map<String, Object>> getActiveSeatsDetail() {
-        String sql = "SELECT seat_id, customer_id, number_of_members, course_id, entry_time, parent_customer_id FROM 顧客テーブル WHERE checkout_status = 0 ORDER BY seat_id ASC";
+        String sql = "SELECT c.seat_id, c.customer_id, c.number_of_members, c.course_id, cm.course_name, c.entry_time, c.parent_customer_id " +
+                     "FROM 顧客テーブル c " +
+                     "LEFT JOIN コースマスタテーブル cm ON TRIM(c.course_id) = TRIM(cm.course_id) " +
+                     "WHERE c.checkout_status = 0 " +
+                     "ORDER BY c.seat_id ASC";
         return jdbcTemplate.queryForList(sql);
     }
 
