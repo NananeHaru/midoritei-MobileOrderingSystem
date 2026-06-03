@@ -254,6 +254,16 @@ SELECT 'PR0002', 3 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づ�
 INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
 SELECT 'PR0002', 4 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 4);
 
+-- 13.もし無ければ、INSERT文の前にこれを書き足す
+CREATE TABLE IF NOT EXISTS コースマスタテーブル (
+    course_id VARCHAR(10) PRIMARY KEY,
+    course_name VARCHAR(50) NOT NULL,
+    price INT NOT NULL,
+    time_limit INT NOT NULL
+);
+
+-- (この下に、さっきの INSERT INTO コースマスタテーブル ... を続ける)
+
 -- 📄 コースマスタテーブルへの初期データ投入
 
 -- CS01: コースなし（単品注文なので価格は0円、制限時間はなしとして0分、またはシステム用の値を設定）
