@@ -431,16 +431,29 @@ public class StaffController {
         Map<String, String> groupColors = new java.util.HashMap<>();
         String[] labels = {"A", "B", "C", "D", "E", "F"};
         String[] colors = {"#1a73e8", "#a142f4", "#e8710a", "#12b5cb", "#e52592", "#137333"};
-        int groupCount = 0;
 
         for (Map<String, Object> seat : activeSeats) {
             String parentCustId = (String) seat.get("parent_customer_id");
             if (parentCustId != null && !groupLabels.containsKey(parentCustId)) {
-                if (groupCount < labels.length) {
-                    groupLabels.put(parentCustId, labels[groupCount]);
-                    groupColors.put(parentCustId, colors[groupCount]);
-                    groupCount++;
+                // 親の顧客IDを持つ席を探索し、その席番号（数値）を元にユニークかつ固定のアルファベットを割り当てます
+                String parentSeatId = activeSeats.stream()
+                    .filter(s -> parentCustId.equals(s.get("customer_id")))
+                    .map(s -> String.valueOf(s.get("seat_id")))
+                    .findFirst()
+                    .orElse("1");
+                
+                int seatNum = 1;
+                try {
+                    seatNum = Integer.parseInt(parentSeatId.trim());
+                } catch (Exception e) {
+                    // 解析失敗時のフォールバック
                 }
+                
+                int labelIndex = (seatNum - 1) % labels.length;
+                if (labelIndex < 0) labelIndex = 0;
+
+                groupLabels.put(parentCustId, labels[labelIndex]);
+                groupColors.put(parentCustId, colors[labelIndex]);
             }
         }
         

@@ -521,7 +521,7 @@
             </a>
             <div class="info-pill">
                 <div>座席ID <span th:text="${seatId}">-</span></div>
-                <div>合計金額 <span th:text="${totalAmount} + ' 円'">0 円</span></div>
+                <div>小計 <span th:text="${totalAmount} + ' 円'">0 円</span></div>
             </div>
             <button class="btn-submit-order" id="orderSubmitBtn" th:disabled="${#lists.isEmpty(cart)}">注文する</button>
         </div>
