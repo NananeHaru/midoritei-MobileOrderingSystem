@@ -59,21 +59,42 @@ public class ProductController {
 
     // メニュー一覧
     @GetMapping("/menu")
-    public String showMenu(Model model, HttpSession session) {
-        List<Product> allProducts = productService.getActiveProducts();
+    public String showMenu(@RequestParam(value = "categoryId", required = false) String categoryId, Model model, HttpSession session) {
+        
+        // 📥 DBからカテゴリーテーブルをそのまま取得（上書き処理は全部カット！）
+        String categorySql = "SELECT category_id, category_name FROM カテゴリーテーブル ORDER BY category_id";
+        List<Map<String, Object>> categories = jdbcTemplate.queryForList(categorySql);
+        model.addAttribute("categories", categories);
 
-        // 💡 【追加】セッションからお客様情報（席開設時に入れたもの）を取得
+        // 🎯 初期表示のときは、1番目のカテゴリーを自動選択
+        if ((categoryId == null || categoryId.isEmpty()) && !categories.isEmpty()) {
+            categoryId = (String) categories.get(0).get("category_id");
+        }
+        model.addAttribute("currentCategoryId", categoryId);
+
+        // 🍱 全商品を取得し、選択されたカテゴリーだけで絞り込む
+        List<Product> allProducts = productService.getActiveProducts();
+        
+        final String finalCategoryId = categoryId;
+        List<Product> filteredProducts = allProducts;
+        if (finalCategoryId != null && !finalCategoryId.isEmpty()) {
+            filteredProducts = allProducts.stream()
+                .filter(p -> finalCategoryId.equals(p.getCategoryId()))
+                .toList();
+        }
+
+        // 💡 セッションからお客様情報を取得
         com.example.midoritei.entity.CustomerSession customerSession = 
             (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
         
-        // 💡 【追加】コースIDを画面に渡す（もしセッションになければ安全のために「CS01:コースなし」にする）
         String userCourseId = (customerSession != null) ? customerSession.getCourse() : "CS01";
         model.addAttribute("userCourseId", userCourseId);
 
         // コースに応じた商品価格の調整
-        adjustProductPricesByCourse(allProducts, userCourseId);
-        model.addAttribute("products", allProducts);
+        adjustProductPricesByCourse(filteredProducts, userCourseId);
+        model.addAttribute("products", filteredProducts);
 
+        // カート内の計算処理
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart == null) { cart = new ArrayList<>(); }
         for (CartItem item : cart) {
