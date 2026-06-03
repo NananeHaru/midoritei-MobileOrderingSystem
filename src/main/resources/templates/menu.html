@@ -13,7 +13,6 @@
             background-color: #f9f9f9;
         }
 
-        /* 💡 ヘッダー：絶対配置の基準(relative)にし、タイマーがしっかり収まる高さ(60px)を確保 */
         header {
             background-color: #fff;
             border-bottom: 3px solid #f3b123;
@@ -27,7 +26,6 @@
             box-sizing: border-box;
         }
 
-        /* 💡 ホームボタン：左端に絶対配置 */
         .home-btn {
             color: #f3b123;
             font-size: 28px;
@@ -37,18 +35,16 @@
             z-index: 101;
         }
 
-        /* 💡 タイトル「注文」：画面の横幅に対して完全にど真ん中（50%の位置）に固定 */
         header h1 {
             margin: 0;
             font-size: 22px;
             color: #333;
             position: absolute;
             left: 50%;
-            transform: translateX(-50%); /* 💡 これで1文字でも完全に中央に寄ります */
+            transform: translateX(-50%);
             white-space: nowrap;
         }
 
-        /* 💡 タイマー：右端に絶対配置し、2行がきれいに入る行間を設定 */
         .timer {
             font-size: 14px;
             text-align: right;
@@ -76,11 +72,15 @@
             color: #666;
             white-space: nowrap;
             cursor: pointer;
+            text-decoration: none;
+            border-radius: 20px;
+            border: 1px solid #ccc;
         }
 
         .tab-btn.active {
-            color: #f3b123;
-            border-bottom: 2px solid #f3b123;
+            color: #fff;
+            background-color: #f3b123;
+            border-color: #f3b123;
             font-weight: bold;
         }
 
@@ -91,7 +91,6 @@
             gap: 15px;
         }
 
-        /* aタグになってもデザインが崩れないように修正 */
         .product-card {
             background: #fff;
             border: 1px solid #ccc;
@@ -207,25 +206,42 @@
     </header>
 
     <div class="category-tabs">
-        <button class="tab-btn active" onclick="filterCategory('all', this)">おすすめ</button>
-        <button class="tab-btn" onclick="filterCategory('CT01', this)">お酒</button>
-        <button class="tab-btn" onclick="filterCategory('CT02', this)">スピードメニュー</button>
-        <button class="tab-btn" onclick="filterCategory('CT03', this)">メイン・揚げ物</button>
+        <a th:each="cat : ${categories}" 
+           th:href="@{/menu(categoryId=${cat.category_id})}" 
+           th:classappend="${cat.category_id == currentCategoryId} ? 'active' : ''" 
+           class="tab-btn" 
+           th:text="${cat.category_name}">
+           カテゴリー名
+        </a>
     </div>
 
     <div class="menu-list">
         <a th:href="@{/menu/detail/{id}(id=${p.productId})}" class="product-card" th:each="p : ${products}">
             <div class="product-info">
                 <h3 class="product-name" th:text="${p.productName}">商品名</h3>
-                <span class="product-price" th:text="${p.price} + '円(税込)'">0円</span>
+                
+                <div class="product-price">
+                    <span th:if="${userCourseId == 'CS03' && (p.courseId == 'CS02' || p.courseId == 'cs02' || p.courseId == 'CS03' || p.courseId == 'cs03')}" 
+                        style="color: #28a745; font-weight: bold; background-color: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 16px;">
+                        0円 (コース込)
+                    </span>
+
+                    <span th:if="${userCourseId == 'CS02' && (p.courseId == 'CS02' || p.courseId == 'cs02')}" 
+                        style="color: #28a745; font-weight: bold; background-color: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 16px;">
+                        0円 (コース込)
+                    </span>
+
+                    <span th:unless="${(userCourseId == 'CS03' && (p.courseId == 'CS02' || p.courseId == 'cs02' || p.courseId == 'CS03' || p.courseId == 'cs03')) || (userCourseId == 'CS02' && (p.courseId == 'CS02' || p.courseId == 'cs02'))}" 
+                        th:text="${p.price} + '円(税込)'">
+                        0円(税込)
+                    </span>
+                </div>
             </div>
-            <!-- エラー時の代替画像表示を維持します -->
             <img class="product-img" th:src="${p.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
         </a>
     </div>
 
     <div class="cart-footer">
-        <!-- 「小計 〇〇 円(税込)」の表記を採用します -->
         <div class="total-price">小計 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span th:text="${totalAmount}">0</span> 円(税込)</div>
         <a th:href="@{/cart}" class="view-cart-btn">カゴを見る（<span th:text="${cartCount}">0</span>）</a>
     </div>
@@ -242,30 +258,6 @@
         </a>
     </nav>
 </body>
-
-<script>
-    function filterCategory(categoryId, element) {
-        // 1. すべてのタブボタンから 'active' クラスを外す
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        // 2. 今クリックされたボタンに 'active' クラスをつける
-        element.classList.add('active');
-
-        // 3. カテゴリで絞り込み
-        document.querySelectorAll('.product-card').forEach(card => {
-            if (categoryId === 'all') {
-                card.style.display = 'block';
-            } else {
-                if (card.getAttribute('data-category') === categoryId) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
-            }
-        });
-    }
-</script>
 
 <script th:inline="javascript">
     document.addEventListener("DOMContentLoaded", function() {
