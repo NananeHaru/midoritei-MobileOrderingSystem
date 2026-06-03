@@ -28,13 +28,15 @@
             <input type="hidden" name="members" th:value="${param.members}">
             <input type="hidden" name="course_id" id="courseInput" value="none">
 
-            <button type="button" class="course-btn premium" onclick="selectCourse('CS01', this)">
+            <button type="button" class="course-btn premium" onclick="selectCourse('CS03', this)">
                 <i class="fas fa-wine-glass-alt"></i> premium コース
             </button>
+
             <button type="button" class="course-btn standard" onclick="selectCourse('CS02', this)">
                 <i class="fas fa-beer"></i> standard コース
             </button>
-            <button type="button" class="course-btn none" onclick="selectCourse('none', this)">
+
+            <button type="button" class="course-btn none" onclick="selectCourse('CS01', this)">
                 コースなし
             </button>
 

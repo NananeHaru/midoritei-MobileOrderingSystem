@@ -21,15 +21,17 @@ public class SeatingService {
     public String openTable(String storeId, String seatId, String courseId, int numberOfMembers) {
         String customerId = idGenerator.generateNextId(storeId);
         
+        // 📄 SeatingService.java の該当箇所
+
         String sql = "INSERT INTO 顧客テーブル " +
-                     "(customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount, number_of_members) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        
+                    "(customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount, number_of_members) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
         jdbcTemplate.update(sql,
             customerId,
             storeId,
             seatId,
-            "none".equals(courseId) ? null : courseId,
+            courseId, // 💡 三項演算子を消して、画面から来たコード（CS01, CS02, CS03）をそのまま保存！
             LocalDateTime.now(),
             0, // 0:利用中
             0, // 初期合計金額は0円

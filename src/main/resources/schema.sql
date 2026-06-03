@@ -32,19 +32,6 @@ CREATE TABLE IF NOT EXISTS 商品マスタテーブル (
     image_path VARCHAR(255)
 );
 
--- 4. テスト用のメニューデータを何件か入れておく（テーブルが空のときだけ実行）
-INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
-SELECT 'PR0001', 'CT01', '生ビール（中）', 450, NULL, 0, 'のどごし爽快な、みどり亭定番の生ビールです。お食事によく合います。', 0, '/images/PR0001.png' WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0001');
-INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
-SELECT 'PR0002', 'CT01', 'レモンサワー', 380, NULL, 0, 'すっきりレモン果汁がたっぷり入った人気のレモンサワーです。', 0, '/images/PR0002.png' WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0002');
-INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
-SELECT 'PR0003', 'CT01', 'ウーロン茶', 250, NULL, 0, 'さっぱりとしたウーロン茶です。お口直しにもどうぞ。', 0, '/images/PR0003.png' WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0003');
-INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
-SELECT 'FP0001', 'CT02', '枝豆', 300, NULL, 0, '塩味が効いた、おつまみの定番の枝豆です。すぐにお持ちします。', 0, '/images/FP0001.png' WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'FP0001');
-INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
-SELECT 'FP0002', 'CT02', '自家製から揚げ', 520, NULL, 0, '外はサクサク、中はジューシーに揚げた自家製のから揚げです。', 0, '/images/FP0002.png' WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'FP0002');
-INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
-SELECT 'FP0003', 'CT02', 'フライドポテト', 400, NULL, 0, '外はカリッと、中はホクホクに揚げたフライドポテトです。', 0, '/images/FP0003.png' WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'FP0003');
 
 -- 5. オプションマスタテーブル
 CREATE TABLE IF NOT EXISTS オプションマスタテーブル (
@@ -135,6 +122,8 @@ INSERT INTO カテゴリーテーブル (category_id, category_name, display_ord
 SELECT 'CT06', '早出し', 6 WHERE NOT EXISTS (SELECT 1 FROM カテゴリーテーブル WHERE category_id = 'CT06');
 INSERT INTO カテゴリーテーブル (category_id, category_name, display_order)
 SELECT 'CT07', 'おつまみ', 7 WHERE NOT EXISTS (SELECT 1 FROM カテゴリーテーブル WHERE category_id = 'CT07');
+INSERT INTO カテゴリーテーブル (category_id, category_name, display_order)
+SELECT 'CT08', 'ソフトドリンク', 7 WHERE NOT EXISTS (SELECT 1 FROM カテゴリーテーブル WHERE category_id = 'CT08');
 
 -- 10. 分類・オプション紐づけテーブル
 CREATE TABLE IF NOT EXISTS "分類・オプション紐づけテーブル" (
@@ -202,3 +191,83 @@ INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
 SELECT 'PR0002', 3 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 3);
 INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
 SELECT 'PR0002', 4 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 4);
+
+-- 📄 コースマスタテーブルへの初期データ投入
+
+-- CS01: コースなし（単品注文なので価格は0円、制限時間はなしとして0分、またはシステム用の値を設定）
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
+SELECT 'CS01', 'コースなし（単品注文）', 0, 0 
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS01');
+
+-- CS02: スターンバードコース（例: 2時間飲み放題 2000円）
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
+SELECT 'CS02', 'スタンダード2時間飲み放題', 2000, 120 
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS02');
+
+-- CS03: プレミアムコース（例: 2時間プレミアム飲み放題 3500円）
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
+SELECT 'CS03', 'プレミアム2時間贅沢飲み放題', 3500, 120 
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS03');
+
+
+--テストデータ
+-- 🍺 ドリンク（カテゴリー: CT01）
+
+-- ウーロン茶：どのコース（CS02, CS03）でも0円になる（スタンダード以上対象）
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'PR0003', 'CT01', 'ウーロン茶', 250, 'CS02', 0, 'さっぱりとしたウーロン茶です。お口直しにもどうぞ。', 0, '/images/PR0003.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0003');
+
+-- オレンジジュース：どのコース（CS02, CS03）でも0円になる（スタンダード以上対象）
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'PR0004', 'CT01', 'オレンジジュース', 250, 'CS02', 0, '果汁100%のみずみずしいオレンジジュースです。', 0, '/images/PR0004.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0004');
+
+-- レモンサワー：どのコース（CS02, CS03）でも0円になる（スタンダード以上対象）
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'PR0002', 'CT01', 'レモンサワー', 380, 'CS02', 0, 'すっきりレモン果汁がたっぷり入った人気のレモンサワーです。', 0, '/images/PR0002.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0002');
+
+-- ハイボール：どのコース（CS02, CS03）でも0円になる（スタンダード以上対象）
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'PR0005', 'CT01', '角ハイボール', 420, 'CS02', 0, '強炭酸でキレ味抜群の定番ハイボールです。', 0, '/images/PR0005.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0005');
+
+-- 生ビール：どのコース（CS02, CS03）でも0円になる（スタンダード以上対象）
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'PR0001', 'CT01', '生ビール（中）', 450, 'CS02', 0, 'のどごし爽快な、みどり亭定番の生ビールです。お食事によく合います。', 0, '/images/PR0001.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0001');
+
+-- プレミアム生日本酒：プレミアム（CS03）の人のみ0円！スタンダード（CS02）やコースなしの人は通常価格
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'PR0006', 'CT01', '特選プレミアム日本酒', 850, 'CS03', 0, 'プレミアムコース限定で飲み放題になる、芳醇な香りの限定日本酒です。', 0, '/images/PR0006.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0006');
+
+-- 高級ウイスキー：プレミアム（CS03）の人のみ0円！スタンダードやコースなしは通常価格
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'PR0007', 'CT01', '山崎プレミアムハイボール', 950, 'CS03', 0, 'プレミアムコースの方だけが飲み放題で楽しめる、贅沢な一杯です。', 0, '/images/PR0007.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'PR0007');
+
+
+-- 🍗 フード・スピードメニュー（カテゴリー: CT02、すべて通常価格＝NULL）
+-- ※今回はフードは飲み放題（0円）の対象外、単品での注文（コースなし含む）を想定しています。
+
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'FP0001', 'CT02', '枝豆', 300, NULL, 0, '塩味が効いた、おつまみの定番の枝豆です。すぐにお持ちします。', 0, '/images/FP0001.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'FP0001');
+
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'FP0003', 'CT02', 'フライドポテト', 400, NULL, 0, '外はカリッと、中はホクホクに揚げたフライドポテトです。', 0, '/images/FP0003.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'FP0003');
+
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'FP0002', 'CT02', '自家製から揚げ', 520, NULL, 0, '外はサクサク、中はジューシーに揚げた自家製のから揚げです。', 0, '/images/FP0002.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'FP0002');
+
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'FP0004', 'CT02', 'なんこつの唐揚げ', 450, NULL, 0, 'コリコリとした食感がクセになる、おつまみにぴったりの唐揚げです。', 0, '/images/FP0004.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'FP0004');
+
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'FP0005', 'CT02', 'おつまみ塩キャベツ', 350, NULL, 0, '特製の塩ダレとごま油がキャベツの旨味を引き立てるスピードメニューです。', 0, '/images/FP0005.png' 
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'FP0005');
