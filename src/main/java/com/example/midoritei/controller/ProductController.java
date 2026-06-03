@@ -63,6 +63,14 @@ public class ProductController {
         List<Product> allProducts = productService.getActiveProducts();
         model.addAttribute("products", allProducts);
 
+        // 💡 【追加】セッションからお客様情報（席開設時に入れたもの）を取得
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+        
+        // 💡 【追加】コースIDを画面に渡す（もしセッションになければ安全のために「CS01:コースなし」にする）
+        String userCourseId = (customerSession != null) ? customerSession.getCourse() : "CS01";
+        model.addAttribute("userCourseId", userCourseId);
+
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart == null) { cart = new ArrayList<>(); }
 
@@ -72,6 +80,7 @@ public class ProductController {
 
         return "menu";
     }
+
     // 商品詳細画面
     @GetMapping("/menu/detail/{productId}")
     public String showDetail(@PathVariable("productId") String productId, Model model) {

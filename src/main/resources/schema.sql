@@ -172,44 +172,6 @@ INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, add
 SELECT '01', '緑橋一号店', '06-XXXX-XXXX', '大阪府大阪市東成区...' 
 WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = '01');
 
--- 商品オプション紐づけ初期データ
--- 生ビール(PR0001)、レモンサワー(PR0002)にロック(1)・ソーダ割り(2)・ストレート(3)・水割り(4)を紐づけ
-INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
-SELECT 'PR0001', 1 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0001' AND option_id = 1);
-INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
-SELECT 'PR0001', 2 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0001' AND option_id = 2);
-INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
-SELECT 'PR0001', 3 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0001' AND option_id = 3);
-INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
-SELECT 'PR0001', 4 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0001' AND option_id = 4);
-
-INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
-SELECT 'PR0002', 1 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 1);
-INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
-SELECT 'PR0002', 2 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 2);
-INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
-SELECT 'PR0002', 3 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 3);
-INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
-SELECT 'PR0002', 4 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 4);
-
--- 📄 コースマスタテーブルへの初期データ投入
-
--- CS01: コースなし（単品注文なので価格は0円、制限時間はなしとして0分、またはシステム用の値を設定）
-INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
-SELECT 'CS01', 'コースなし（単品注文）', 0, 0 
-WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS01');
-
--- CS02: スターンバードコース（例: 2時間飲み放題 2000円）
-INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
-SELECT 'CS02', 'スタンダード2時間飲み放題', 2000, 120 
-WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS02');
-
--- CS03: プレミアムコース（例: 2時間プレミアム飲み放題 3500円）
-INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
-SELECT 'CS03', 'プレミアム2時間贅沢飲み放題', 3500, 120 
-WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS03');
-
-
 --テストデータ
 -- 🍺 ドリンク（カテゴリー: CT01）
 
@@ -271,3 +233,42 @@ WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = '
 INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
 SELECT 'FP0005', 'CT02', 'おつまみ塩キャベツ', 350, NULL, 0, '特製の塩ダレとごま油がキャベツの旨味を引き立てるスピードメニューです。', 0, '/images/FP0005.png' 
 WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'FP0005');
+
+-- 商品オプション紐づけ初期データ
+-- 生ビール(PR0001)、レモンサワー(PR0002)にロック(1)・ソーダ割り(2)・ストレート(3)・水割り(4)を紐づけ
+INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
+SELECT 'PR0001', 1 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0001' AND option_id = 1);
+INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
+SELECT 'PR0001', 2 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0001' AND option_id = 2);
+INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
+SELECT 'PR0001', 3 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0001' AND option_id = 3);
+INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
+SELECT 'PR0001', 4 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0001' AND option_id = 4);
+
+INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
+SELECT 'PR0002', 1 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 1);
+INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
+SELECT 'PR0002', 2 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 2);
+INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
+SELECT 'PR0002', 3 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 3);
+INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
+SELECT 'PR0002', 4 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づけテーブル" WHERE product_id = 'PR0002' AND option_id = 4);
+
+-- 📄 コースマスタテーブルへの初期データ投入
+
+-- CS01: コースなし（単品注文なので価格は0円、制限時間はなしとして0分、またはシステム用の値を設定）
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
+SELECT 'CS01', 'コースなし（単品注文）', 0, 0 
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS01');
+
+-- CS02: スターンバードコース（例: 2時間飲み放題 2000円）
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
+SELECT 'CS02', 'スタンダード2時間飲み放題', 2000, 120 
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS02');
+
+-- CS03: プレミアムコース（例: 2時間プレミアム飲み放題 3500円）
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
+SELECT 'CS03', 'プレミアム2時間贅沢飲み放題', 3500, 120 
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS03');
+
+
