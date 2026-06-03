@@ -102,6 +102,19 @@
                 minusBtn.style.opacity = "1";   // 元の明るさに戻す
             }
         }
+
+        function selectOption(optionName, optionPrice, btnElement) {
+            // すべてのオプションボタンからselectedクラスを削除
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            
+            // クリックされたボタンにselectedクラスを追加
+            btnElement.classList.add('selected');
+            
+            // フォームのhiddenフィールドに値を設定
+            document.getElementById('optionInput').value = optionName;
+            document.getElementById('optionPriceInput').value = optionPrice;
+        }
     </script>
     <script th:inline="javascript">
         document.addEventListener("DOMContentLoaded", function() {
