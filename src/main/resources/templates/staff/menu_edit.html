@@ -544,7 +544,7 @@
 
             <!-- 編集カード -->
             <div class="edit-card">
-                <form id="editForm" method="post" th:action="@{/staff/menu/edit}">
+                <form id="editForm" method="post" th:action="@{/staff/menu/edit}" enctype="multipart/form-data">
                     <!-- 送信用隠しフィールド -->
                     <input type="hidden" name="productId" th:value="${product.productId}">
                     <input type="hidden" name="courseId" id="courseIdInput" th:value="${product.courseId}">
@@ -616,7 +616,9 @@
                             <div class="image-box">
                                 <img class="img-preview" id="imgPreview" th:src="${product.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
                             </div>
-                            <button type="button" class="btn-img-change" onclick="changeImage()">画像変更</button>
+                            <!-- ファイル選択用の隠しinput -->
+                            <input type="file" name="imageFile" id="imageFileInput" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                            <button type="button" class="btn-img-change" onclick="document.getElementById('imageFileInput').click()">画像変更</button>
                             
                             <button type="button" class="btn-action-yellow" style="width: 100%; margin-top: auto;" onclick="openConfirmModal()">確定</button>
                         </div>
@@ -741,21 +743,16 @@
                 });
         }
 
-        // 画像変更処理 (おじさんモック画像風などデモ巡回)
-        let imgState = 0;
-        function changeImage() {
-            const imgEl = document.getElementById('imgPreview');
-            const inputEl = document.getElementById('imagePathInput');
-            
-            // 演習用に、数パターンの画像パスをデモで切り替える
-            if (imgState === 0) {
-                imgEl.src = "/images/FP0002_edit.png"; // おじさん風
-                inputEl.value = "/images/FP0002_edit.png";
-                imgState = 1;
-            } else {
-                imgEl.src = "/images/PR0001.png"; // 生ビール
-                inputEl.value = "/images/PR0001.png";
-                imgState = 0;
+        // 画像のリアルタイムプレビュー
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imgPreview').src = e.target.result;
+                    document.getElementById('imagePathInput').value = "";
+                };
+                reader.readAsDataURL(file);
             }
         }
 

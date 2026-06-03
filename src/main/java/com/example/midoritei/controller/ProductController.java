@@ -140,8 +140,13 @@ public class ProductController {
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         
         if (cart != null && !cart.isEmpty()) {
-            // 本来はログイン中のお客さんのIDを使いますが、演習用にダミー「0100001」で保存します
-            orderService.submitOrder("0100001", cart);
+            String customerId = "0100001";
+            com.example.midoritei.entity.CustomerSession customerSession = 
+                (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+            if (customerSession != null) {
+                customerId = customerSession.getCustomerId();
+            }
+            orderService.submitOrder(customerId, cart);
             
             // 注文が確定したのでカゴを空っぽにする
             session.removeAttribute("cart");
@@ -155,8 +160,14 @@ public class ProductController {
      * 7. 注文履歴画面を表示
      */
     @GetMapping("/orders/history")
-    public String showOrderHistory(Model model) {
-        List<Map<String, Object>> historyList = orderService.getOrderHistory("0100001");
+    public String showOrderHistory(Model model, HttpSession session) {
+        String customerId = "0100001";
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+        if (customerSession != null) {
+            customerId = customerSession.getCustomerId();
+        }
+        List<Map<String, Object>> historyList = orderService.getOrderHistory(customerId);
         model.addAttribute("historyList", historyList);
         return "history"; // ★ここが "seating/history" になっていたり、綴りが違っていませんか？
     }
@@ -167,6 +178,11 @@ public class ProductController {
     @GetMapping("/orders/billing")
     public String showBilling(Model model, HttpSession session) {
         String customerId = "0100001"; // 演習用の固定顧客ID
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+        if (customerSession != null) {
+            customerId = customerSession.getCustomerId();
+        }
         
         List<Map<String, Object>> billDetails = orderService.getOrderHistory(customerId);
         int finalAmount = orderService.getTotalBillingAmount(customerId);
@@ -183,13 +199,22 @@ public class ProductController {
     
 
 @GetMapping("/orders/billing/complete")
-public String showBillingComplete(@RequestParam(required = false, defaultValue = "0100001") String id, Model model) {
+public String showBillingComplete(@RequestParam(required = false) String id, Model model, HttpSession session) {
+    String customerId = id;
+    if (customerId == null || customerId.trim().isEmpty()) {
+        customerId = "0100001";
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+        if (customerSession != null) {
+            customerId = customerSession.getCustomerId();
+        }
+    }
     
     try {
         // 1. 仕様書に合わせるデータ（オブジェクト）を作成
         PaymentUpdateRequest requestData = new PaymentUpdateRequest();
         requestData.setMethod("updateStatus");   // 仕様書の method 値
-        requestData.setCustomerId(id);           // 顧客ID（"0100001"）
+        requestData.setCustomerId(customerId);   // 顧客ID
         requestData.setHash(null);               // ハッシュ値（今回は同一性判定しないのでnull）
         requestData.setBillStatus(8);            // 会計中ステータス（値: 8）
 
@@ -209,7 +234,7 @@ public String showBillingComplete(@RequestParam(required = false, defaultValue =
     }
 
     // 完了画面に顧客IDを引き渡す処理（既存）
-    model.addAttribute("orderId", id);
+    model.addAttribute("orderId", customerId);
     return "billing_complete"; 
 }
 

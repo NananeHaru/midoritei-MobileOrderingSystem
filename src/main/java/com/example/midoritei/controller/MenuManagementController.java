@@ -251,6 +251,7 @@ public class MenuManagementController {
     public String submitMenuEdit(@ModelAttribute Product product,
                                  @RequestParam(value = "seasonalStatusToggle", required = false) String seasonalToggle,
                                  @RequestParam(value = "optionIds", required = false) List<Integer> optionIds,
+                                 @RequestParam(value = "imageFile", required = false) org.springframework.web.multipart.MultipartFile imageFile,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
@@ -260,9 +261,38 @@ public class MenuManagementController {
         // トグルスイッチの値を設定
         product.setIsSeasonal("on".equals(seasonalToggle) ? 1 : 0);
         
-        // デフォルト画像パスの補正
-        if (product.getImagePath() == null || product.getImagePath().trim().isEmpty()) {
-            product.setImagePath("/images/no-image.png");
+        // 画像アップロードの処理
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                String originalFilename = imageFile.getOriginalFilename();
+                String ext = "";
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String fileName = java.util.UUID.randomUUID().toString() + ext;
+                
+                String userDir = System.getProperty("user.dir");
+                // src/main/resources/static/images に書き込み
+                java.nio.file.Path srcDir = java.nio.file.Paths.get(userDir, "src", "main", "resources", "static", "images");
+                java.nio.file.Files.createDirectories(srcDir);
+                java.nio.file.Path srcPath = srcDir.resolve(fileName);
+                java.nio.file.Files.copy(imageFile.getInputStream(), srcPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                
+                // target/classes/static/images にも書き込み（即時反映用）
+                java.nio.file.Path targetDir = java.nio.file.Paths.get(userDir, "target", "classes", "static", "images");
+                java.nio.file.Files.createDirectories(targetDir);
+                java.nio.file.Path targetPath = targetDir.resolve(fileName);
+                java.nio.file.Files.copy(imageFile.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                
+                product.setImagePath("/images/" + fileName);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            // デフォルト画像パスの補正
+            if (product.getImagePath() == null || product.getImagePath().trim().isEmpty()) {
+                product.setImagePath("/images/no-image.png");
+            }
         }
 
         productService.saveProduct(product);
@@ -296,6 +326,7 @@ public class MenuManagementController {
     public String submitMenuAdd(@ModelAttribute Product product,
                                 @RequestParam(value = "seasonalStatusToggle", required = false) String seasonalToggle,
                                 @RequestParam(value = "optionIds", required = false) List<Integer> optionIds,
+                                @RequestParam(value = "imageFile", required = false) org.springframework.web.multipart.MultipartFile imageFile,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
@@ -305,34 +336,42 @@ public class MenuManagementController {
         // トグルスイッチ設定
         product.setIsSeasonal("on".equals(seasonalToggle) ? 1 : 0);
         
-        // 画像が設定されていない場合はモック画像
-        if (product.getImagePath() == null || product.getImagePath().trim().isEmpty()) {
-            product.setImagePath("/images/no-image.png");
+        // 画像アップロードの処理
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                String originalFilename = imageFile.getOriginalFilename();
+                String ext = "";
+                if (originalFilename != null && originalFilename.contains(".")) {
+                    ext = originalFilename.substring(originalFilename.lastIndexOf("."));
+                }
+                String fileName = java.util.UUID.randomUUID().toString() + ext;
+                
+                String userDir = System.getProperty("user.dir");
+                // src/main/resources/static/images に書き込み
+                java.nio.file.Path srcDir = java.nio.file.Paths.get(userDir, "src", "main", "resources", "static", "images");
+                java.nio.file.Files.createDirectories(srcDir);
+                java.nio.file.Path srcPath = srcDir.resolve(fileName);
+                java.nio.file.Files.copy(imageFile.getInputStream(), srcPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                
+                // target/classes/static/images にも書き込み（即時反映用）
+                java.nio.file.Path targetDir = java.nio.file.Paths.get(userDir, "target", "classes", "static", "images");
+                java.nio.file.Files.createDirectories(targetDir);
+                java.nio.file.Path targetPath = targetDir.resolve(fileName);
+                java.nio.file.Files.copy(imageFile.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                
+                product.setImagePath("/images/" + fileName);
+            } catch (Exception e) {
+                e.printStackTrace();
+                product.setImagePath("/images/no-image.png");
+            }
+        } else {
+            // 画像が設定されていない場合はモック画像
+            if (product.getImagePath() == null || product.getImagePath().trim().isEmpty()) {
+                product.setImagePath("/images/no-image.png");
+            }
         }
 
         // 先に商品をセーブしてIDを確定（自動採番含む）させる
-        productService.saveProduct(product);
-        // 保存された商品のID（自動採番で上書きされている可能性があるため、saveProduct後のIDを使用するべきだが、
-        // saveProductメソッド内で引数のproductオブジェクトのproductIdフィールドを更新していない場合は
-        // 自動採番されたIDを特定するため、別途ロジックが必要になります。
-        // だが ProductService.java を見ると:
-        // String nextId = product.getProductId();
-        // if (nextId == null || nextId.trim().isEmpty()) {
-        //     nextId = generateNextProductId(product.getCategoryId());
-        // }
-        // となっており、productオブジェクトのproductIdは更新していません！
-        // なので、自動採番された新しいIDを特定するために、productService.saveProductの戻り値、
-        // または、productIdをあらかじめ generateNextProductId(categoryId) してセットしておく必要があります。
-        // これについて、saveProductの前に generateNextProductId を呼び出して product.setProductId にセットしておくのが最も確実です！
-        if (product.getProductId() == null || product.getProductId().trim().isEmpty()) {
-            // Service内の generateNextProductId は private なので、直接呼び出せないか？
-            // あ、ProductService.java 内では saveProduct(Product product) で nextId を生成して insert しています。
-            // しかし、コントローラ側で nextId を知りたいですね。
-            // ProductService.java の saveProduct を修正して、自動採番したIDを product.setProductId() で設定するようにするか、
-            // もしくは、saveProduct が String を返すようにすれば簡単です。
-            // この問題は後ほど ProductService.java を微調整して解決しましょう。
-        }
-        // とりあえずコントローラ側は product.getProductId() を渡しておき、Service側で product の ID を自動セットするように修正します。
         productService.saveProduct(product);
         productService.saveProductOptions(product.getProductId(), optionIds);
 

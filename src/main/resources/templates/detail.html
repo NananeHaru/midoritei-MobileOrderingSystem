@@ -46,7 +46,7 @@
     <div class="detail-container">
         <h2 class="product-name" th:text="${product.productName}">商品名</h2>
         <div class="product-price" th:text="${product.price} + '円(税込)'">0円</div>
-        <img class="product-img" th:src="${product.imagePath}" alt="商品画像">
+        <img class="product-img" th:src="${product.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
         
         <p class="description" th:text="${product.description != null && !product.description.isEmpty()} ? ${product.description} : (${product.categoryId == 'CT01'} ? '上手いです。用法用量を守りましょう。' : 'こだわり素材で作りました。出来立てをどうぞ！')"></p>
 
@@ -101,6 +101,19 @@
                 minusBtn.disabled = false;
                 minusBtn.style.opacity = "1";   // 元の明るさに戻す
             }
+        }
+
+        function selectOption(optionName, optionPrice, btnElement) {
+            // すべてのオプションボタンからselectedクラスを削除
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            
+            // クリックされたボタンにselectedクラスを追加
+            btnElement.classList.add('selected');
+            
+            // フォームのhiddenフィールドに値を設定
+            document.getElementById('optionInput').value = optionName;
+            document.getElementById('optionPriceInput').value = optionPrice;
         }
     </script>
     <script th:inline="javascript">
