@@ -20,6 +20,6 @@
         
         <div class="store-name" th:text="${storeName}">緑橋一号店</div>
     </div>
-    <a th:href="@{/seating/members(store_id='01', seat_id='SE01')}" class="start-btn">注文開始</a>
+    <a th:href="@{/seating/members(store_id=${storeId}, seat_id=${seatId})}" class="start-btn">注文開始</a>
 </body>
 </html>

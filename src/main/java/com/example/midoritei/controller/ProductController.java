@@ -61,7 +61,6 @@ public class ProductController {
     @GetMapping("/menu")
     public String showMenu(Model model, HttpSession session) {
         List<Product> allProducts = productService.getActiveProducts();
-        model.addAttribute("products", allProducts);
 
         // 💡 【追加】セッションからお客様情報（席開設時に入れたもの）を取得
         com.example.midoritei.entity.CustomerSession customerSession = 
@@ -71,8 +70,15 @@ public class ProductController {
         String userCourseId = (customerSession != null) ? customerSession.getCourse() : "CS01";
         model.addAttribute("userCourseId", userCourseId);
 
+        // コースに応じた商品価格の調整
+        adjustProductPricesByCourse(allProducts, userCourseId);
+        model.addAttribute("products", allProducts);
+
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart == null) { cart = new ArrayList<>(); }
+        for (CartItem item : cart) {
+            adjustProductPriceByCourse(item.getProduct(), userCourseId);
+        }
 
         int totalAmount = cart.stream().mapToInt(CartItem::getSubtotal).sum();
         model.addAttribute("totalAmount", totalAmount);
@@ -83,7 +89,7 @@ public class ProductController {
 
     // 商品詳細画面
     @GetMapping("/menu/detail/{productId}")
-    public String showDetail(@PathVariable("productId") String productId, Model model) {
+    public String showDetail(@PathVariable("productId") String productId, Model model, HttpSession session) {
         List<Product> allProducts = productService.getActiveProducts();
         Product targetProduct = allProducts.stream()
                 .filter(p -> p.getProductId().equals(productId))
@@ -91,6 +97,11 @@ public class ProductController {
                 .orElse(null);
 
         if (targetProduct == null) { return "redirect:/menu"; }
+
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+        String userCourseId = (customerSession != null) ? customerSession.getCourse() : "CS01";
+        adjustProductPriceByCourse(targetProduct, userCourseId);
 
         model.addAttribute("product", targetProduct);
         model.addAttribute("options", productService.getOptionsByProductId(targetProduct.getProductId()));
@@ -112,6 +123,11 @@ public class ProductController {
                 .orElse(null);
 
         if (product != null) {
+            com.example.midoritei.entity.CustomerSession customerSession = 
+                (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+            String userCourseId = (customerSession != null) ? customerSession.getCourse() : "CS01";
+            adjustProductPriceByCourse(product, userCourseId);
+
             List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
             if (cart == null) { cart = new ArrayList<>(); }
             cart.add(new CartItem(product, quantity, selectedOption, optionAddPrice));
@@ -125,6 +141,13 @@ public class ProductController {
     public String showCart(Model model, HttpSession session) {
         List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
         if (cart == null) { cart = new ArrayList<>(); }
+
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+        String userCourseId = (customerSession != null) ? customerSession.getCourse() : "CS01";
+        for (CartItem item : cart) {
+            adjustProductPriceByCourse(item.getProduct(), userCourseId);
+        }
 
         int totalAmount = cart.stream().mapToInt(CartItem::getSubtotal).sum();
         model.addAttribute("cart", cart);
@@ -256,5 +279,28 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
         
         // 最初の「注文開始（席選択）」画面にリダイレクト
         return "redirect:/seating/start"; 
+    }
+
+    private void adjustProductPriceByCourse(Product product, String courseId) {
+        if (product == null) return;
+        String trimmedCourseId = (courseId != null) ? courseId.trim() : "";
+        String prodCourseId = (product.getCourseId() != null) ? product.getCourseId().trim() : "";
+        if ("CS03".equals(trimmedCourseId)) { // premium
+            if ("CS02".equals(prodCourseId) || "CS03".equals(prodCourseId)) {
+                product.setPrice(0);
+            }
+        } else if ("CS02".equals(trimmedCourseId)) { // standard
+            if ("CS02".equals(prodCourseId)) {
+                product.setPrice(0);
+            }
+        }
+    }
+
+    private void adjustProductPricesByCourse(List<Product> products, String courseId) {
+        if (products != null) {
+            for (Product product : products) {
+                adjustProductPriceByCourse(product, courseId);
+            }
+        }
     }
 }

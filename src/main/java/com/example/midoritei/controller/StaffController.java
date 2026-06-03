@@ -32,6 +32,9 @@ public class StaffController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     /**
      * ログイン画面を表示します。
      */
@@ -206,9 +209,12 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         String seatId = (String) session.getAttribute("staffSeatId");
+        String customerId = (String) session.getAttribute("staffCustomerId");
         if (seatId == null) {
             return "redirect:/staff/orders/add";
         }
+
+        String courseId = getCourseIdByCustomerId(customerId);
 
         List<CartItem> cart = (List<CartItem>) session.getAttribute("staffCart");
         if (cart == null) {
@@ -216,11 +222,18 @@ public class StaffController {
             session.setAttribute("staffCart", cart);
         }
 
+        for (CartItem item : cart) {
+            adjustProductPriceByCourse(item.getProduct(), courseId);
+        }
+
         int totalAmount = cart.stream().mapToInt(CartItem::getSubtotal).sum();
+
+        List<Product> activeProducts = productService.getActiveProducts();
+        adjustProductPricesByCourse(activeProducts, courseId);
 
         model.addAttribute("seatId", seatId);
         model.addAttribute("totalAmount", totalAmount);
-        model.addAttribute("products", productService.getActiveProducts());
+        model.addAttribute("products", activeProducts);
         return "staff/orders_add_menu";
     }
 
@@ -236,6 +249,9 @@ public class StaffController {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
+        String customerId = (String) session.getAttribute("staffCustomerId");
+        String courseId = getCourseIdByCustomerId(customerId);
+
         List<CartItem> cart = (List<CartItem>) session.getAttribute("staffCart");
         if (cart == null) {
             cart = new ArrayList<>();
@@ -249,6 +265,8 @@ public class StaffController {
                 .orElse(null);
 
         if (product != null) {
+            adjustProductPriceByCourse(product, courseId);
+
             // 代理注文における同一商品のマージ処理 (商品IDとオプション情報が両方一致する場合のみマージ)
             boolean exists = false;
             for (int i = 0; i < cart.size(); i++) {
@@ -277,14 +295,21 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         String seatId = (String) session.getAttribute("staffSeatId");
+        String customerId = (String) session.getAttribute("staffCustomerId");
         if (seatId == null) {
             return "redirect:/staff/orders/add";
         }
+
+        String courseId = getCourseIdByCustomerId(customerId);
 
         List<CartItem> cart = (List<CartItem>) session.getAttribute("staffCart");
         if (cart == null) {
             cart = new ArrayList<>();
             session.setAttribute("staffCart", cart);
+        }
+
+        for (CartItem item : cart) {
+            adjustProductPriceByCourse(item.getProduct(), courseId);
         }
 
         int totalAmount = cart.stream().mapToInt(CartItem::getSubtotal).sum();
@@ -306,6 +331,9 @@ public class StaffController {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
+        String customerId = (String) session.getAttribute("staffCustomerId");
+        String courseId = getCourseIdByCustomerId(customerId);
+
         List<CartItem> cart = (List<CartItem>) session.getAttribute("staffCart");
         if (cart != null) {
             for (int i = 0; i < cart.size(); i++) {
@@ -314,6 +342,7 @@ public class StaffController {
                     if (remove || quantity <= 0) {
                         cart.remove(i);
                     } else {
+                        adjustProductPriceByCourse(item.getProduct(), courseId);
                         cart.set(i, new CartItem(item.getProduct(), quantity, item.getSelectedOption(), item.getOptionAddPrice()));
                     }
                     break;
@@ -336,6 +365,11 @@ public class StaffController {
         List<CartItem> cart = (List<CartItem>) session.getAttribute("staffCart");
 
         if (customerId != null && cart != null && !cart.isEmpty()) {
+            String courseId = getCourseIdByCustomerId(customerId);
+            for (CartItem item : cart) {
+                adjustProductPriceByCourse(item.getProduct(), courseId);
+            }
+
             orderService.submitOrder(customerId, cart);
 
             session.setAttribute("lastOrderSeatId", session.getAttribute("staffSeatId"));
@@ -550,5 +584,44 @@ public class StaffController {
         
         seatingService.unmergeSeat(seatId);
         return "redirect:/staff/seating";
+    }
+
+    private void adjustProductPriceByCourse(Product product, String courseId) {
+        if (product == null) return;
+        String trimmedCourseId = (courseId != null) ? courseId.trim() : "";
+        String prodCourseId = (product.getCourseId() != null) ? product.getCourseId().trim() : "";
+        if ("CS03".equals(trimmedCourseId)) { // premium
+            if ("CS02".equals(prodCourseId) || "CS03".equals(prodCourseId)) {
+                product.setPrice(0);
+            }
+        } else if ("CS02".equals(trimmedCourseId)) { // standard
+            if ("CS02".equals(prodCourseId)) {
+                product.setPrice(0);
+            }
+        }
+    }
+
+    private void adjustProductPricesByCourse(List<Product> products, String courseId) {
+        if (products != null) {
+            for (Product product : products) {
+                adjustProductPriceByCourse(product, courseId);
+            }
+        }
+    }
+
+    private String getCourseIdByCustomerId(String customerId) {
+        if (customerId == null || customerId.trim().isEmpty()) {
+            return "CS01";
+        }
+        try {
+            String courseId = jdbcTemplate.queryForObject(
+                "SELECT course_id FROM 顧客テーブル WHERE customer_id = ?",
+                String.class,
+                customerId
+            );
+            return (courseId != null) ? courseId.trim() : "CS01";
+        } catch (Exception e) {
+            return "CS01";
+        }
     }
 }

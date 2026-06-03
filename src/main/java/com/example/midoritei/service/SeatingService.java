@@ -19,6 +19,10 @@ public class SeatingService {
     // 人数を指定してテーブルを開設するオーバーロードメソッド
     @Transactional
     public String openTable(String storeId, String seatId, String courseId, int numberOfMembers) {
+        // 同一の座席で既に利用中のレコードがあれば削除してリセットする
+        String deleteSql = "DELETE FROM 顧客テーブル WHERE seat_id = ? AND checkout_status = 0";
+        jdbcTemplate.update(deleteSql, seatId);
+
         String customerId = idGenerator.generateNextId(storeId);
         
         // 📄 SeatingService.java の該当箇所

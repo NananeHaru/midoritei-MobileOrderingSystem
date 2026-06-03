@@ -20,16 +20,26 @@ public class SeatingController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    // QRコードシミュレーター画面を表示
+    @GetMapping("/qr-simulator")
+    public String qrSimulator() {
+        return "seating/qr_simulator";
+    }
+
     // 1. トップ画面を表示（/seating/start でアクセスされた時）
     @GetMapping("/start")
-    public String startPage(Model model) {
+    public String startPage(@RequestParam(value = "store_id", defaultValue = "01") String storeId,
+                            @RequestParam(value = "seat_id", defaultValue = "1") String seatId,
+                            Model model) {
         try {
-            String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = '01'";
-            String storeName = jdbcTemplate.queryForObject(sql, String.class);
+            String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = ?";
+            String storeName = jdbcTemplate.queryForObject(sql, String.class, storeId);
             model.addAttribute("storeName", storeName); 
         } catch (Exception e) {
             model.addAttribute("storeName", "緑橋一号店");
         }
+        model.addAttribute("storeId", storeId);
+        model.addAttribute("seatId", seatId);
         return "index";
     }
 
@@ -69,18 +79,8 @@ public class SeatingController {
 // 💡 http://localhost:8080/ (スラッシュだけ) でアクセスされた時も確実に同じ画面を出し、DB連動させるための別クラス
 @Controller
 class MainRootController {
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     @GetMapping("/")
-    public String rootPage(Model model) {
-        try {
-            String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = '01'";
-            String storeName = jdbcTemplate.queryForObject(sql, String.class);
-            model.addAttribute("storeName", storeName); 
-        } catch (Exception e) {
-            model.addAttribute("storeName", "緑橋一号店");
-        }
-        return "index";
+    public String rootPage() {
+        return "redirect:/seating/qr-simulator";
     }
 }

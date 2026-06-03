@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class QrController {
@@ -23,5 +25,20 @@ public class QrController {
         
         // QRコード画像を生成してブラウザにそのまま返却
         return qrService.generateQrCode(paymentUrl);
+    }
+
+    /**
+     * 店舗IDと座席IDを受け取り、その座席での注文開始URLを埋め込んだQRコード画像を返す
+     */
+    @GetMapping(value = "/seating/qr-image", produces = MediaType.IMAGE_PNG_VALUE)
+    public byte[] getSeatingQrImage(@RequestParam("store_id") String storeId,
+                                    @RequestParam("seat_id") String seatId,
+                                    HttpServletRequest request) throws Exception {
+        String scheme = request.getScheme();
+        String serverName = request.getServerName();
+        int serverPort = request.getServerPort();
+        String baseUrl = scheme + "://" + serverName + ":" + serverPort;
+        String seatingUrl = baseUrl + "/seating/start?store_id=" + storeId + "&seat_id=" + seatId;
+        return qrService.generateQrCode(seatingUrl);
     }
 }

@@ -27,6 +27,39 @@ public class OrderService {
     public void submitOrder(String customerId, List<CartItem> cartItems) {
         if (cartItems == null || cartItems.isEmpty()) return;
 
+        // 顧客のコースIDを取得（CS01: コースなし, CS02: スタンダード, CS03: プレミアム）
+        String courseId = "CS01";
+        try {
+            courseId = jdbcTemplate.queryForObject(
+                "SELECT course_id FROM 顧客テーブル WHERE customer_id = ?",
+                String.class,
+                customerId
+            );
+        } catch (Exception e) {
+            // 例外時はデフォルト値とする
+        }
+        if (courseId == null) {
+            courseId = "CS01";
+        }
+        String trimmedCourseId = courseId.trim();
+
+        // コースに応じてカート内商品の単価を０円に変更
+        for (CartItem item : cartItems) {
+            com.example.midoritei.entity.Product product = item.getProduct();
+            if (product != null) {
+                String prodCourseId = (product.getCourseId() != null) ? product.getCourseId().trim() : "";
+                if ("CS03".equals(trimmedCourseId)) { // premium
+                    if ("CS02".equals(prodCourseId) || "CS03".equals(prodCourseId)) {
+                        product.setPrice(0);
+                    }
+                } else if ("CS02".equals(trimmedCourseId)) { // standard
+                    if ("CS02".equals(prodCourseId)) {
+                        product.setPrice(0);
+                    }
+                }
+            }
+        }
+
         // 1. 注文ID（15桁）を生成 (例: OR + yyMMddHHmmss + ランダム1桁)
         String orderId = "OR" + java.time.format.DateTimeFormatter.ofPattern("yyMMddHHmmss").format(java.time.LocalDateTime.now()) + (int)(Math.random() * 10);
 
@@ -55,7 +88,7 @@ public class OrderService {
                 orderId,
                 item.getProduct().getProductId(),
                 item.getQuantity(),
-                item.getProduct().getPrice(), // unit_price
+                item.getProduct().getPrice(), // unit_price (すでに0円調整済み)
                 optionId,
                 item.getSelectedOption(),
                 item.getOptionAddPrice()
@@ -78,7 +111,7 @@ public class OrderService {
                      "  p.product_name, " +
                      "  d.quantity, " +
                      "  d.option_info, " +
-                     "  p.price, " +
+                     "  d.unit_price AS price, " + // p.price から d.unit_price に変更
                      "  d.option_add_price " +
                      "FROM 注文テーブル o " +
                      "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
@@ -93,10 +126,9 @@ public class OrderService {
     // OrderService.java の一番下にある getTotalBillingAmount を以下に差し替えます
 
     public int getTotalBillingAmount(String customerId) {
-        String sql = "SELECT SUM((p.price + d.option_add_price) * d.quantity) " +
+        String sql = "SELECT SUM((d.unit_price + d.option_add_price) * d.quantity) " +
                     "FROM 注文テーブル o " +
                     "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
-                    "JOIN 商品マスタテーブル p ON d.product_id = p.product_id " +
                     "WHERE o.customer_id = ? AND d.serve_status != 9";
         
         // queryForObjectで直接intに変換するのではなく、一度「Map」として1行だけ取得します
