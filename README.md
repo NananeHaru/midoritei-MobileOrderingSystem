@@ -41,6 +41,10 @@ mvn spring-boot:run
 ```
 http://localhost:8080
 ```
+http://localhost:8080/staff/
+
+スタッフID staff01
+パスワード password
 
 ## プロジェクト構成
 
