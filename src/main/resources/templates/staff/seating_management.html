@@ -103,28 +103,29 @@
             width: 240px;
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border-color);
-            padding: 20px 0;
             position: fixed;
             top: 60px;
             bottom: 0;
             left: 0;
+            padding-top: 10px;
             z-index: 90;
         }
 
         .menu-item {
             display: flex;
             align-items: center;
-            padding: 14px 24px;
+            gap: 12px;
+            padding: 18px 24px;
             color: #555555;
             text-decoration: none;
-            font-size: 15px;
             font-weight: 500;
-            transition: var(--transition);
+            transition: background-color 0.2s, color 0.2s;
             border-left: 4px solid transparent;
+            font-size: 1.05rem;
         }
 
         .menu-item:hover {
-            background-color: #E5E5E5;
+            background-color: rgba(0,0,0,0.03);
             color: #111111;
         }
 
@@ -136,17 +137,19 @@
         }
 
         .menu-icon {
-            margin-right: 12px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
         }
 
         /* コンテンツ */
         .content {
             margin-left: 240px;
-            flex: 1;
             padding: 30px;
-            overflow-y: auto;
+            flex: 1;
+            max-width: calc(100% - 240px);
         }
 
         /* 画面タイトルと操作エリア */
@@ -569,26 +572,7 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* レスポンシブ */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 70px;
-            }
-            .menu-item span:not(.menu-icon) {
-                display: none;
-            }
-            .content {
-                margin-left: 70px;
-                padding: 15px;
-            }
-            .menu-item {
-                padding: 14px;
-                justify-content: center;
-            }
-            .menu-icon {
-                margin-right: 0;
-            }
-        }
+
     </style>
 </head>
 <body>
