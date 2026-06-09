@@ -75,18 +75,20 @@ public class StaffController {
      */
     @GetMapping("/orders")
     public String ordersPage(@RequestParam(value = "date", required = false) String dateStr,
+                             @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter,
                              Model model) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             dateStr = LocalDate.now().toString();
         }
 
         // 注文一覧データおよび集計値の取得
-        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr);
+        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, statusFilter);
         Map<String, Object> stats = orderService.getOrderStats(dateStr);
 
         model.addAttribute("orderDetails", orderDetails);
         model.addAttribute("stats", stats);
         model.addAttribute("selectedDate", dateStr);
+        model.addAttribute("statusFilter", statusFilter);
 
         return "staff/orders";
     }
@@ -147,14 +149,15 @@ public class StaffController {
     @PostMapping("/orders/status")
     public String updateStatus(@RequestParam("orderItemId") int orderItemId,
                                @RequestParam("status") int status,
-                               @RequestParam(value = "date", required = false) String dateStr) {
+                               @RequestParam(value = "date", required = false) String dateStr,
+                               @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter) {
         orderService.updateOrderStatus(orderItemId, status);
         
         // 元々選択されていた日付を引き継いでリダイレクト
         if (dateStr == null || dateStr.trim().isEmpty()) {
             dateStr = LocalDate.now().toString();
         }
-        return "redirect:/staff/orders?date=" + dateStr;
+        return "redirect:/staff/orders?date=" + dateStr + "&statusFilter=" + statusFilter;
     }
 
     /**

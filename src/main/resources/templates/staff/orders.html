@@ -326,6 +326,36 @@
             color: var(--card-green);
             border: 1px solid var(--card-green);
         }
+
+        .status-toggle-group {
+            display: flex;
+            background-color: #EFEFEF;
+            border-radius: 6px;
+            padding: 3px;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-toggle-group input[type="radio"] {
+            display: none;
+        }
+
+        .status-toggle-group label {
+            padding: 6px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #666666;
+            transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+            user-select: none;
+        }
+
+        .status-toggle-group input[type="radio"]:checked + label {
+            background-color: #FFFFFF;
+            color: var(--primary-color);
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
     </style>
 </head>
 <body>
@@ -425,10 +455,20 @@
         <div class="order-section">
             <div class="order-header">
                 <h2 class="order-title">注文一覧</h2>
-                <!-- 日付フィルター -->
+                <!-- 日付・提供状況フィルター -->
                 <form th:action="@{/staff/orders}" method="GET" class="filter-bar">
                     <div class="date-input-wrapper">
                         <input type="date" name="date" class="date-input" th:value="${selectedDate}">
+                    </div>
+                    <div class="status-toggle-group">
+                        <input type="radio" id="filter-all" name="statusFilter" value="all" th:checked="${statusFilter == 'all'}" onchange="this.form.submit()">
+                        <label for="filter-all">すべて</label>
+                        
+                        <input type="radio" id="filter-delivered" name="statusFilter" value="delivered" th:checked="${statusFilter == 'delivered'}" onchange="this.form.submit()">
+                        <label for="filter-delivered">提供済</label>
+                        
+                        <input type="radio" id="filter-undelivered" name="statusFilter" value="undelivered" th:checked="${statusFilter == 'undelivered'}" onchange="this.form.submit()">
+                        <label for="filter-undelivered">未提供</label>
                     </div>
                     <button type="submit" class="btn-update">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -473,6 +513,7 @@
                                 <input type="hidden" name="orderItemId" th:value="${order.order_detail_id}">
                                 <input type="hidden" name="status" value="1">
                                 <input type="hidden" name="date" th:value="${selectedDate}">
+                                <input type="hidden" name="statusFilter" th:value="${statusFilter}">
                                 <button type="submit" class="btn-status cooking">調理中</button>
                             </form>
                             <!-- 提供済: 1 の場合、クリックで調理中に戻す -->
@@ -480,6 +521,7 @@
                                 <input type="hidden" name="orderItemId" th:value="${order.order_detail_id}">
                                 <input type="hidden" name="status" value="0">
                                 <input type="hidden" name="date" th:value="${selectedDate}">
+                                <input type="hidden" name="statusFilter" th:value="${statusFilter}">
                                 <button type="submit" class="btn-status served">提供済</button>
                             </form>
                         </td>

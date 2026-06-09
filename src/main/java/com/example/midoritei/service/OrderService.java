@@ -153,6 +153,13 @@ public class OrderService {
      * 日付指定がない場合は本日分を取得します。
      */
     public List<Map<String, Object>> getAllOrderDetails(String dateStr) {
+        return getAllOrderDetails(dateStr, "all");
+    }
+
+    /**
+     * 指定された日付（yyyy-MM-dd）の注文詳細を取得し、提供状況で絞り込みます。
+     */
+    public List<Map<String, Object>> getAllOrderDetails(String dateStr, String statusFilter) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             dateStr = java.time.LocalDate.now().toString();
         }
@@ -176,8 +183,15 @@ public class OrderService {
                      "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
                      "JOIN 商品マスタテーブル p ON d.product_id = p.product_id " +
                      "JOIN 顧客テーブル c ON o.customer_id = c.customer_id " +
-                     "WHERE o.order_time >= ? AND o.order_time <= ? AND d.serve_status != 9 " +
-                     "ORDER BY o.order_time DESC, d.order_item_id ASC";
+                     "WHERE o.order_time >= ? AND o.order_time <= ? AND d.serve_status != 9 ";
+
+        if ("undelivered".equals(statusFilter)) {
+            sql += "AND d.serve_status = 0 ";
+        } else if ("delivered".equals(statusFilter)) {
+            sql += "AND d.serve_status = 1 ";
+        }
+
+        sql += "ORDER BY o.order_time DESC, d.order_item_id ASC";
 
         return jdbcTemplate.queryForList(sql, start, end);
     }
