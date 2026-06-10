@@ -32,7 +32,7 @@ public class ProductController {
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     // -------------------------------------------------------------
-    // ⏱️ ★新しく追加：すべての画面で自動的に残り秒数を引き渡す共通処理
+    // ⏱️ 【修正】コースなしの場合は制限時間をなくす共通処理
     // -------------------------------------------------------------
     @ModelAttribute
     public void addRemainingSeconds(jakarta.servlet.http.HttpSession session, Model model) {
@@ -44,16 +44,24 @@ public class ProductController {
             (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
         
         if (customerSession != null) {
-            long endTime = customerSession.getSessionEndTime();
-            remainingSeconds = (endTime - currentTime) / 1000;
+            String courseId = customerSession.getCourse();
+            
+            // 💡 コースIdが空、または「CS01」(コースなし)の場合は、残り時間を「-1」にして時間制限なしとする
+            if (courseId == null || "CS01".equals(courseId.trim())) {
+                remainingSeconds = -1; 
+            } else {
+                // コースあり（CS02, CS03）なら通常通り残り秒数を計算
+                long endTime = customerSession.getSessionEndTime();
+                remainingSeconds = (endTime - currentTime) / 1000;
+            }
         }
         
-        if (remainingSeconds < 0) {
+        // -1（制限時間なし）以外で、もし計算結果がマイナスになっていたら0秒で固定する安全ガード
+        if (remainingSeconds < 0 && remainingSeconds != -1) {
             remainingSeconds = 0;
         }
 
-        // これを書くだけで、このController内にあるすべての画面（/menu, /cart, /orders/history等）に
-        // 自動的に remainingSeconds が引き渡されるようになります！
+        // 画面（ThymeleafやJavaScript）にこの値を引き渡す
         model.addAttribute("remainingSeconds", remainingSeconds);
     }
 

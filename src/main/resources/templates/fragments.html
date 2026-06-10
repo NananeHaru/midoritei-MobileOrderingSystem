@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+
+    <div th:fragment="timer-script">
+        <script th:inline="javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                let totalSeconds = /*[[${remainingSeconds}]]*/ 7200;
+                const timerElement = document.getElementById("countdown-timer");
+
+                if (totalSeconds === -1) {
+                    if (timerElement) {
+                        timerElement.closest('.timer').textContent = "制限時間なし";
+                    }
+                    return;
+                }
+
+                function updateTimer() {
+                    if (totalSeconds === -1 || totalSeconds === null) {
+                        return;
+                    }
+
+                    if (totalSeconds <= 0) {
+                        if (timerElement) timerElement.textContent = "00:00:00";
+                        clearInterval(timerInterval);
+                        alert("制限時間になりました。");
+
+                        const cartBtn = document.querySelector(".view-cart-btn");
+                        if (cartBtn) {
+                            cartBtn.style.backgroundColor = "#ccc"; 
+                            cartBtn.style.pointerEvents = "none";  
+                            cartBtn.textContent = "時間切れ";       
+                        }
+                        return;
+                    }
+                    
+                    let hours = Math.floor(totalSeconds / 3600);
+                    let minutes = Math.floor((totalSeconds % 3600) / 60);
+                    let seconds = totalSeconds % 60;
+
+                    let hStr = String(hours).padStart(2, '0');
+                    let mStr = String(minutes).padStart(2, '0');
+                    let sStr = String(seconds).padStart(2, '0');
+
+                    if (timerElement) {
+                        timerElement.textContent = `${hStr}:${mStr}:${sStr}`;
+                    }
+                    totalSeconds--;
+                }
+                
+                const timerInterval = setInterval(updateTimer, 1000);
+                updateTimer();
+            });
+        </script>
+    </div>
+
+</body>
+</html>

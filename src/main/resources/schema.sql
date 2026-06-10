@@ -279,7 +279,7 @@ WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id =
 
 -- CS03: プレミアムコース（例: 2時間プレミアム飲み放題 3500円）
 INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
-SELECT 'CS03', 'プレミアム2時間贅沢飲み放題', 3500, 120 
+SELECT 'CS03', 'プレミアム2時間贅沢飲み放題', 3500, 120
 WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS03');
 
 

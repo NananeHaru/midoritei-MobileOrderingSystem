@@ -259,39 +259,5 @@
     </nav>
 </body>
 
-<script th:inline="javascript">
-    document.addEventListener("DOMContentLoaded", function() {
-        let totalSeconds = /*[[${remainingSeconds}]]*/ 4800;
-        const timerElement = document.getElementById("countdown-timer");
-
-        function updateTimer() {
-            if (totalSeconds <= 0) {
-                timerElement.textContent = "00:00:00";
-                clearInterval(timerInterval);
-                alert("制限時間になりました。");
-
-                const cartBtn = document.querySelector(".view-cart-btn");
-                if (cartBtn) {
-                    cartBtn.style.backgroundColor = "#ccc"; 
-                    cartBtn.style.pointerEvents = "none";  
-                    cartBtn.textContent = "時間切れ";       
-                }
-                return;
-            }
-            
-            let hours = Math.floor(totalSeconds / 3600);
-            let minutes = Math.floor((totalSeconds % 3600) / 60);
-            let seconds = totalSeconds % 60;
-
-            let hStr = String(hours).padStart(2, '0');
-            let mStr = String(minutes).padStart(2, '0');
-            let sStr = String(seconds).padStart(2, '0');
-
-            timerElement.textContent = `${hStr}:${mStr}:${sStr}`;
-            totalSeconds--;
-        }
-        const timerInterval = setInterval(updateTimer, 1000);
-        updateTimer();
-    });
-</script>
+<div th:replace="~{fragments :: timer-script}"></div>
 </html>
