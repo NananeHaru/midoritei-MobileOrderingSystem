@@ -226,11 +226,20 @@
         <p class="subtitle">座席を選択し、生成されたQRコードをスキャンする（またはボタンをクリックする）ことで、その席の客として注文を開始できます。</p>
 
         <!-- 店舗選択 -->
-        <div class="control-group" style="display: none;">
-            <label for="storeSelect">店舗選択</label>
+        <div class="control-group">
+            <label for="storeSelect"><i class="fas fa-store"></i> 店舗選択 (シミュレートする店舗)</label>
             <div class="select-wrapper">
                 <select id="storeSelect" onchange="updateQr()">
-                    <option value="01">緑橋一号店</option>
+                    <option value="MH">緑橋店</option>
+                    <option value="MN">森ノ宮店</option>
+                    <option value="TM">玉造店</option>
+                    <option value="TH">鶴橋店</option>
+                    <option value="IM">今里店</option>
+                    <option value="FB">深江橋店</option>
+                    <option value="TY">谷町四丁目店</option>
+                    <option value="HM">本町店</option>
+                    <option value="KB">京橋店</option>
+                    <option value="NB">なんば店</option>
                 </select>
             </div>
         </div>

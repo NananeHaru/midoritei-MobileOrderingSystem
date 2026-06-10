@@ -57,16 +57,35 @@ public class SeatingService {
      * 現在食事中（checkout_status = 0）の座席と顧客ID一覧を取得します。
      */
     public java.util.List<java.util.Map<String, Object>> getActiveSeats() {
-        String sql = "SELECT seat_id, customer_id FROM 顧客テーブル WHERE checkout_status = 0 ORDER BY seat_id ASC";
+        return getActiveSeats(null);
+    }
+
+    public java.util.List<java.util.Map<String, Object>> getActiveSeats(String storeId) {
+        String sql = "SELECT seat_id, customer_id FROM 顧客テーブル WHERE checkout_status = 0 ";
+        if (storeId != null && !storeId.trim().isEmpty()) {
+            sql += "AND store_id = ? ";
+            sql += "ORDER BY seat_id ASC";
+            return jdbcTemplate.queryForList(sql, storeId);
+        }
+        sql += "ORDER BY seat_id ASC";
         return jdbcTemplate.queryForList(sql);
     }
 
     public java.util.List<java.util.Map<String, Object>> getActiveSeatsDetail() {
+        return getActiveSeatsDetail(null);
+    }
+
+    public java.util.List<java.util.Map<String, Object>> getActiveSeatsDetail(String storeId) {
         String sql = "SELECT c.seat_id, c.customer_id, c.number_of_members, c.course_id, cm.course_name, c.entry_time, c.parent_customer_id " +
                      "FROM 顧客テーブル c " +
                      "LEFT JOIN コースマスタテーブル cm ON TRIM(c.course_id) = TRIM(cm.course_id) " +
-                     "WHERE c.checkout_status = 0 " +
-                     "ORDER BY c.seat_id ASC";
+                     "WHERE c.checkout_status = 0 ";
+        if (storeId != null && !storeId.trim().isEmpty()) {
+            sql += "AND c.store_id = ? ";
+            sql += "ORDER BY c.seat_id ASC";
+            return jdbcTemplate.queryForList(sql, storeId);
+        }
+        sql += "ORDER BY c.seat_id ASC";
         return jdbcTemplate.queryForList(sql);
     }
 
