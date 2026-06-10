@@ -48,12 +48,28 @@
             <div class="item-info">
                 <h3 class="item-name" th:text="${item.product.productName}">商品名</h3>
                 <div class="item-option" th:if="${item.selectedOption != 'なし'}" th:text="'オプション: ' + ${item.selectedOption}">オプション</div>
-                <div class="item-meta">
-                    <span th:text="${item.product.price + item.optionAddPrice} + '円'">0円</span> × 
-                    <span th:text="${item.quantity} + '個'">1個</span> &nbsp;&nbsp;
-                    <strong th:text="'小計: ' + ${item.subtotal} + '円'">0円</strong>
+                
+                <div class="item-meta" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span th:text="${item.product.price + item.optionAddPrice} + '円'">0円</span> × 
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; background: #f0f0f0; padding: 4px 10px; border-radius: 20px;">
+                        <button type="button" class="btn-quantity" th:data-index="${stat.index}" data-action="decrease" th:data-url="@{/cart/update-quantity}"
+                                style="width: 28px; height: 28px; border-radius: 50%; border: none; background: #fff; font-size: 16px; font-weight: bold; color: #e67e22; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">-</button>
+                        
+                        <span th:id="'qty-' + ${stat.index}" th:text="${item.quantity}" style="font-size: 16px; font-weight: bold; min-width: 15px; text-align: center; color: #333;">1</span>
+                        
+                        <button type="button" class="btn-quantity" th:data-index="${stat.index}" data-action="increase" th:data-url="@{/cart/update-quantity}"
+                                style="width: 28px; height: 28px; border-radius: 50%; border: none; background: #fff; font-size: 16px; font-weight: bold; color: #e67e22; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">+</button>
+                    </div>
+
+                    <div>
+                        <strong th:text="'小計: ' + ${item.subtotal} + '円'">0円</strong>
+                    </div>
                 </div>
             </div>
+            
             <form th:action="@{/cart/remove}" method="post">
                 <input type="hidden" name="index" th:value="${stat.index}">
                 <button type="submit" class="delete-btn"><i class="fas fa-trash-alt"></i></button>
@@ -76,5 +92,47 @@
     </nav>
 
     <div th:replace="~{fragments :: timer-script}"></div>
+
+    <script>
+        document.querySelectorAll('.btn-quantity').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                const action = this.getAttribute('data-action');
+                const targetUrl = this.getAttribute('data-url');
+                
+                const qtyElement = document.getElementById('qty-' + index);
+                let currentQty = parseInt(qtyElement.textContent);
+                
+                if (action === 'increase') {
+                    currentQty += 1;
+                } else if (action === 'decrease') {
+                    currentQty -= 1;
+                }
+                
+                if (currentQty < 1) {
+                    return; 
+                }
+                
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = targetUrl;
+                
+                const indexInput = document.createElement('input');
+                indexInput.type = 'hidden';
+                indexInput.name = 'index';
+                indexInput.value = index;
+                
+                const qtyInput = document.createElement('input');
+                qtyInput.type = 'hidden';
+                qtyInput.name = 'quantity';
+                qtyInput.value = currentQty;
+                
+                form.appendChild(indexInput);
+                form.appendChild(qtyInput);
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+    </script>
 </body>
 </html>
