@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS 顧客テーブル (
     customer_id CHAR(7) PRIMARY KEY,
     store_id CHAR(2),
     seat_id VARCHAR(20),
-    course_id CHAR(7),
+    course_id CHAR(4),
     entry_time TIMESTAMP,
     end_time TIMESTAMP, -- 👈 ★ここに新しく終了時刻の項目を追加！
     checkout_status INT,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS 商品マスタテーブル (
     category_id VARCHAR(20),
     product_name VARCHAR(100),
     price INT,
-    course_id CHAR(7),
+    course_id CHAR(4),
     sales_status INT,
     description VARCHAR(255),
     is_seasonal INT NOT NULL DEFAULT 0,
@@ -257,7 +257,7 @@ SELECT 'PR0002', 4 WHERE NOT EXISTS (SELECT 1 FROM "商品オプション紐づ�
 
 -- 13.もし無ければ、INSERT文の前にこれを書き足す
 CREATE TABLE IF NOT EXISTS コースマスタテーブル (
-    course_id VARCHAR(10) PRIMARY KEY,
+    course_id char(4) PRIMARY KEY,
     course_name VARCHAR(50) NOT NULL,
     price INT NOT NULL,
     time_limit INT NOT NULL

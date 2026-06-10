@@ -63,24 +63,36 @@ public class SeatingController {
                             @RequestParam("members") int members, 
                             jakarta.servlet.http.HttpSession session) {
         
-        // 💡 サービス側の処理に「members」を渡す
+        // 💡 サービス側の処理に「members」を渡す（ここで顧客テーブルにレコードが作られます）
         String customerId = seatingService.openTable(storeId, seatId, courseId, members);
         
-        // 💡 【新しく追加】DBのコースマスタテーブルから、選択されたコースの制限時間（分）を取得する
+        // 💡 DBのコースマスタテーブルから、制限時間（分）と【コース料金(price)】を取得する
         int timeLimitMinutes = 0;
+        int coursePrice = 0;
         try {
-            String sql = "SELECT time_limit FROM コースマスタテーブル WHERE course_id = ?";
-            timeLimitMinutes = jdbcTemplate.queryForObject(sql, Integer.class, courseId.trim());
+            // 💡 price と time_limit をまとめて取得
+            String sql = "SELECT time_limit, price FROM コースマスタテーブル WHERE course_id = ?";
+            java.util.Map<String, Object> courseMap = jdbcTemplate.queryForMap(sql, courseId.trim());
+            timeLimitMinutes = ((Number) courseMap.get("time_limit")).intValue();
+            coursePrice = ((Number) courseMap.get("price")).intValue();
         } catch (Exception e) {
-            // 万が一DBから取れなかった場合のバックアップ（2時間＝120分）
             timeLimitMinutes = 120;
+            coursePrice = 0;
+        }
+
+        // 💡 【ここが重要！】新しく作られた顧客テーブルの total_amount に、コース料金を初期値としてセットする
+        try {
+            String updateAmountSql = "UPDATE 顧客テーブル SET total_amount = ? WHERE customer_id = ?";
+            jdbcTemplate.update(updateAmountSql, coursePrice, customerId);
+            System.out.println("★顧客テーブルの初期合計金額にコース料金（" + coursePrice + "円）を設定しました。");
+        } catch (Exception e) {
+            System.out.println("⚠️ 顧客テーブルの金額更新に失敗しました: " + e.getMessage());
         }
 
         // セッション側にお客様情報をセット
         com.example.midoritei.entity.CustomerSession customerSession = 
             new com.example.midoritei.entity.CustomerSession(customerId, members, courseId);
         
-        // 💡 【新しく追加】コースなし(CS01)以外の場合、正しい終了時刻（現在時刻 + DBの制限時間）を計算してセットする
         if (!"CS01".equals(courseId.trim())) {
             long endTime = System.currentTimeMillis() + ((long) timeLimitMinutes * 60 * 1000);
             customerSession.setSessionEndTime(endTime);

@@ -122,30 +122,17 @@ public class OrderService {
         return jdbcTemplate.queryForList(sql, customerId);
     }
 
-    // （既存のクラスの中に追記してください）
-    // OrderService.java の一番下にある getTotalBillingAmount を以下に差し替えます
-
+    // -------------------------------------------------------------
+    // 💰 【修正版】DB（顧客テーブル）に保存されている合計金額をそのまま返す
+    // -------------------------------------------------------------
     public int getTotalBillingAmount(String customerId) {
-        String sql = "SELECT SUM((d.unit_price + d.option_add_price) * d.quantity) " +
-                    "FROM 注文テーブル o " +
-                    "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
-                    "WHERE o.customer_id = ? AND d.serve_status != 9";
-        
-        // queryForObjectで直接intに変換するのではなく、一度「Map」として1行だけ取得します
+        String sql = "SELECT total_amount FROM 顧客テーブル WHERE customer_id = ?";
         try {
-            java.util.Map<String, Object> result = jdbcTemplate.queryForMap(sql, customerId);
-            // SUMの結果（最初のカラム）を取り出す
-            Object totalObj = result.values().iterator().next();
-            
-            if (totalObj != null) {
-                // H2データベースのSUM関数は通常 Long や BigDecimal で返ってくることがあるため、安全にintへ変換します
-                return ((Number) totalObj).intValue();
-            }
+            return jdbcTemplate.queryForObject(sql, Integer.class, customerId);
         } catch (Exception e) {
-            // まだ注文データが1件もない場合などはここに入ります
+            System.out.println("⚠️ 顧客テーブルからの合計金額取得に失敗しました: " + e.getMessage());
             return 0;
         }
-        return 0;
     }
 
     /**

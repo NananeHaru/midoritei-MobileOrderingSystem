@@ -233,31 +233,89 @@ public class ProductController {
         return "history"; // ★ここが "seating/history" になっていたり、綴りが違っていませんか？
     }
 
-    // （既存のクラスの中に追記してください）
-
-    // ★会計画面の表示（本番環境ルート完全対応版・共通化スッキリ版）
+    // =============================================================
+    // 💰 【大改修・完全決着版】(null)もカッコも出さない美しいお会計画面
+    // =============================================================
     @GetMapping("/orders/billing")
     public String showBilling(Model model, HttpSession session) {
-        String customerId = "0100001"; // 演習用の固定顧客ID
+        // 1. セッションから現在ログイン中の顧客IDを取得
+        String customerId = "0100001"; 
         com.example.midoritei.entity.CustomerSession customerSession = 
             (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
         if (customerSession != null) {
             customerId = customerSession.getCustomerId();
         }
-        
-        List<Map<String, Object>> billDetails = orderService.getOrderHistory(customerId);
+
+        // 2. 料理やドリンクの注文内訳をサービスから取得
+        List<Map<String, Object>> billDetails = new java.util.ArrayList<>(orderService.getOrderHistory(customerId));
+
+        // 3. 本物の顧客テーブルとコースマスタテーブルから情報を安全に取得
+        String customerSql = "SELECT course_id, number_of_members FROM 顧客テーブル WHERE customer_id = ?";
+        String courseSql = "SELECT course_name, price FROM コースマスタテーブル WHERE course_id = ?";
+
+        try {
+            Map<String, Object> customerData = jdbcTemplate.queryForMap(customerSql, customerId);
+            String courseId = (String) customerData.get("course_id");
+            if (courseId == null) courseId = (String) customerData.get("COURSE_ID");
+            
+            Number membersNum = (Number) customerData.get("number_of_members");
+            if (membersNum == null) membersNum = (Number) customerData.get("NUMBER_OF_MEMBERS");
+            int members = (membersNum != null) ? membersNum.intValue() : 1;
+
+            // コースなし(CS01)以外の場合、マスタから料金と名前を引っ張って明細に差し込む
+            if (courseId != null && !"CS01".equals(courseId.trim())) {
+                Map<String, Object> courseMaster = jdbcTemplate.queryForMap(courseSql, courseId);
+                
+                String courseName = (String) courseMaster.get("course_name");
+                if (courseName == null) courseName = (String) courseMaster.get("COURSE_NAME");
+                
+                Number priceNum = (Number) courseMaster.get("price");
+                if (priceNum == null) priceNum = (Number) courseMaster.get("PRICE");
+                int unitPrice = (priceNum != null) ? priceNum.intValue() : 0;
+
+                // =============================================================
+                // 🎯 【最終解決・絶対に壊れない版】'なし'をセットして安全に消し去る
+                // =============================================================
+                Map<String, Object> courseLine = new java.util.HashMap<>();
+
+                // 基本情報のセット
+                courseLine.put("product_name", courseName);
+                courseLine.put("PRODUCT_NAME", courseName);
+
+                courseLine.put("quantity", Long.valueOf(members));
+                courseLine.put("QUANTITY", Long.valueOf(members));
+
+                courseLine.put("price", Long.valueOf(unitPrice));
+                courseLine.put("PRICE", Long.valueOf(unitPrice));
+
+                // 💡 ここが最大のポイント！
+                // HTML側の条件「item.option_info != 'なし'」を逆手に取り、
+                // 最初から 'なし' という文字列を渡すことで、HTMLに「描画をスキップ」させます。
+                courseLine.put("option_info", "なし");
+                courseLine.put("OPTION_INFO", "なし");
+
+                // 追加料金も0にして完全にガードします
+                courseLine.put("option_add_price", Integer.valueOf(0));
+                courseLine.put("OPTION_ADD_PRICE", Integer.valueOf(0));
+
+                // 明細リストの先頭に追加
+                billDetails.add(0, courseLine);
+                System.out.println("🎯 【成功】(null)を永久追放したコース明細を先頭に追加しました: " + courseName);
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ コース明細のDB取得中にエラーが発生（安全スキップ）: " + e.getMessage());
+        }
+
+        // 4. 最終合計金額をサービスから取得
         int finalAmount = orderService.getTotalBillingAmount(customerId);
-        
+
         model.addAttribute("billDetails", billDetails);
         model.addAttribute("finalAmount", finalAmount);
-        model.addAttribute("orderId", customerId); 
+        model.addAttribute("orderId", customerId);
 
-        // 💡 タイマー計算のロジック（remainingSecondsの計算部分）は
-        // まるごと消去しました！自動で共通処理から引き渡されます。
-        
-        return "billing"; 
+        return "billing";
     }
-    
+
 
 @GetMapping("/orders/billing/complete")
 public String showBillingComplete(@RequestParam(required = false) String id, Model model, HttpSession session) {
