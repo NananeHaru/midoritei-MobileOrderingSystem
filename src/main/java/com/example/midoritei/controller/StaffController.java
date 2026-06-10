@@ -36,13 +36,28 @@ public class StaffController {
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     /**
-     * ログイン画面を表示します。
+     * スタッフのルートURL（/staff または /staff/）にアクセスした際、
+     * ログイン状態であれば注文一覧へ、未ログインであればログイン画面へリダイレクトします。
      */
-    @GetMapping("/login")
-    public String loginPage(HttpSession session) {
+    @GetMapping({"", "/"})
+    public String index(HttpSession session) {
         if (session != null && session.getAttribute("loggedInStaff") != null) {
             return "redirect:/staff/orders";
         }
+        return "redirect:/staff/login";
+    }
+
+    /**
+     * ログイン画面を表示します。
+     */
+    @GetMapping("/login")
+    public String loginPage(HttpSession session, Model model) {
+        if (session != null && session.getAttribute("loggedInStaff") != null) {
+            return "redirect:/staff/orders";
+        }
+        // 店舗リストを取得してモデルに追加
+        List<Map<String, Object>> stores = jdbcTemplate.queryForList("SELECT store_id, store_name FROM 店舗マスタテーブル");
+        model.addAttribute("stores", stores);
         return "staff/login";
     }
 
@@ -52,6 +67,7 @@ public class StaffController {
     @PostMapping("/login")
     public String login(@RequestParam("employeeId") String employeeId,
                         @RequestParam("password") String password,
+                        @RequestParam("storeId") String storeId,
                         HttpSession session,
                         Model model) {
         // 仮のアカウント情報 (プランA)
@@ -63,8 +79,25 @@ public class StaffController {
 
         if (isValid) {
             session.setAttribute("loggedInStaff", employeeId);
+            session.setAttribute("loggedInStoreId", storeId);
+            
+            // 店舗名を取得してセッションに格納
+            try {
+                String storeName = jdbcTemplate.queryForObject(
+                    "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = ?",
+                    String.class,
+                    storeId
+                );
+                session.setAttribute("loggedInStoreName", storeName);
+            } catch (Exception e) {
+                session.setAttribute("loggedInStoreName", "不明な店舗");
+            }
+            
             return "redirect:/staff/orders";
         } else {
+            // 店舗リストを再取得してモデルに追加
+            List<Map<String, Object>> stores = jdbcTemplate.queryForList("SELECT store_id, store_name FROM 店舗マスタテーブル");
+            model.addAttribute("stores", stores);
             model.addAttribute("error", "従業員IDまたはパスワードが正しくありません。");
             return "staff/login";
         }
@@ -76,14 +109,20 @@ public class StaffController {
     @GetMapping("/orders")
     public String ordersPage(@RequestParam(value = "date", required = false) String dateStr,
                              @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter,
+                             HttpSession session,
                              Model model) {
+        if (session == null || session.getAttribute("loggedInStaff") == null) {
+            return "redirect:/staff/login";
+        }
         if (dateStr == null || dateStr.trim().isEmpty()) {
             dateStr = LocalDate.now().toString();
         }
 
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+
         // 注文一覧データおよび集計値の取得
-        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, statusFilter);
-        Map<String, Object> stats = orderService.getOrderStats(dateStr);
+        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, statusFilter, storeId);
+        Map<String, Object> stats = orderService.getOrderStats(dateStr, storeId);
 
         model.addAttribute("orderDetails", orderDetails);
         model.addAttribute("stats", stats);
@@ -107,7 +146,9 @@ public class StaffController {
             dateStr = LocalDate.now().toString();
         }
 
-        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr);
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+
+        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, "all", storeId);
         model.addAttribute("orderDetails", orderDetails);
         model.addAttribute("selectedDate", dateStr);
 
@@ -183,7 +224,8 @@ public class StaffController {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
-        model.addAttribute("activeSeats", seatingService.getActiveSeats());
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+        model.addAttribute("activeSeats", seatingService.getActiveSeats(storeId));
         return "staff/orders_add_seating";
     }
 
@@ -431,8 +473,10 @@ public class StaffController {
             return "redirect:/staff/login";
         }
 
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+
         // 食事中（checkout_status = 0）の席一覧を取得
-        List<Map<String, Object>> activeSeats = seatingService.getActiveSeatsDetail();
+        List<Map<String, Object>> activeSeats = seatingService.getActiveSeatsDetail(storeId);
         
         // 親子関係を持つグループの整理
         // 親の顧客ID -> グループ情報 (ラベル, カラー)
@@ -546,8 +590,9 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         
-        // 初期値：店舗ID="99", 人数=0名, コース=なし(CS01)
-        seatingService.openTable("99", seatId, "CS01", 0);
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+        // 初期値：店舗ID=storeId, 人数=0名, コース=なし(CS01)
+        seatingService.openTable(storeId, seatId, "CS01", 0);
         return "redirect:/staff/seating";
     }
 

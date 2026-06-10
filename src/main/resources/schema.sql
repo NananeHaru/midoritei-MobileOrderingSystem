@@ -168,10 +168,27 @@ CREATE TABLE IF NOT EXISTS 店舗マスタテーブル (
     PRIMARY KEY (store_id)
 );
 
--- 「緑橋一号店」の初期データを登録（テーブルが空のときだけ実行）
+-- 各店舗の初期データを登録
 INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
-SELECT '01', '緑橋一号店', '06-XXXX-XXXX', '大阪府大阪市東成区...' 
-WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = '01');
+SELECT 'MH', '緑橋店', '06-XXXX-XXXX', '大阪府大阪市東成区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'MH');
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT 'MN', '森ノ宮店', '06-YYYY-YYYY', '大阪府大阪市中央区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'MN');
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT 'TM', '玉造店', '06-ZZZZ-ZZZZ', '大阪府大阪市中央区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'TM');
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT 'TH', '鶴橋店', '06-AAAA-AAAA', '大阪府大阪市天王寺区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'TH');
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT 'IM', '今里店', '06-BBBB-BBBB', '大阪府大阪市東成区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'IM');
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT 'FB', '深江橋店', '06-CCCC-CCCC', '大阪府大阪市城東区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'FB');
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT 'TY', '谷町四丁目店', '06-DDDD-DDDD', '大阪府大阪市中央区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'TY');
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT 'HM', '本町店', '06-EEEE-EEEE', '大阪府大阪市中央区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'HM');
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT 'KB', '京橋店', '06-FFFF-FFFF', '大阪府大阪市都島区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'KB');
+INSERT INTO 店舗マスタテーブル (store_id, store_name, phone_number, address)
+SELECT 'NB', 'なんば店', '06-GGGG-GGGG', '大阪府大阪市中央区...' WHERE NOT EXISTS (SELECT 1 FROM 店舗マスタテーブル WHERE store_id = 'NB');
 
 --テストデータ
 -- 🍺 ドリンク（カテゴリー: CT01）
