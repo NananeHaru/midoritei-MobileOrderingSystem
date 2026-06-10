@@ -59,6 +59,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- MariaDB Connector (本番用) -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Lombok (ボイラープレートコード削減) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
