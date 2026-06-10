@@ -62,7 +62,7 @@ public class ProductService {
     public List<Map<String, Object>> getOptionsByCategoryId(String categoryId) {
         String sql = "SELECT o.option_id, o.option_name, o.option_add_price " +
                      "FROM オプションマスタテーブル o " +
-                     "JOIN \"分類・オプション紐づけテーブル\" m ON o.option_id = m.option_id " +
+                     "JOIN `分類・オプション紐づけテーブル` m ON o.option_id = m.option_id " +
                      "WHERE m.category_id = ? " +
                      "ORDER BY o.option_id ASC";
         return jdbcTemplate.queryForList(sql, categoryId);
@@ -320,7 +320,7 @@ public class ProductService {
     public List<Map<String, Object>> getOptionsByProductId(String productId) {
         String sql = "SELECT o.option_id, o.option_name, o.option_add_price " +
                      "FROM オプションマスタテーブル o " +
-                     "JOIN \"商品オプション紐づけテーブル\" m ON o.option_id = m.option_id " +
+                     "JOIN `商品オプション紐づけテーブル` m ON o.option_id = m.option_id " +
                      "WHERE m.product_id = ? " +
                      "ORDER BY o.option_id ASC";
         return jdbcTemplate.queryForList(sql, productId);
@@ -332,12 +332,12 @@ public class ProductService {
     @Transactional
     public void saveProductOptions(String productId, List<Integer> optionIds) {
         // 一度、既存の紐づけを全削除
-        String deleteSql = "DELETE FROM \"商品オプション紐づけテーブル\" WHERE product_id = ?";
+        String deleteSql = "DELETE FROM `商品オプション紐づけテーブル` WHERE product_id = ?";
         jdbcTemplate.update(deleteSql, productId);
 
         // 新しくチェックされたオプションIDをインサート
         if (optionIds != null && !optionIds.isEmpty()) {
-            String insertSql = "INSERT INTO \"商品オプション紐づけテーブル\" (product_id, option_id) VALUES (?, ?)";
+            String insertSql = "INSERT INTO `商品オプション紐づけテーブル` (product_id, option_id) VALUES (?, ?)";
             for (Integer optionId : optionIds) {
                 jdbcTemplate.update(insertSql, productId, optionId);
             }
