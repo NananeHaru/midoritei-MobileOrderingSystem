@@ -28,7 +28,7 @@ public class SeatingController {
 
     // 1. トップ画面を表示（/seating/start でアクセスされた時）
     @GetMapping("/start")
-    public String startPage(@RequestParam(value = "store_id", defaultValue = "01") String storeId,
+    public String startPage(@RequestParam(value = "store_id", defaultValue = "MH") String storeId,
                             @RequestParam(value = "seat_id", defaultValue = "1") String seatId,
                             Model model) {
         try {

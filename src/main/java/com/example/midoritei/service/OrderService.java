@@ -153,13 +153,20 @@ public class OrderService {
      * 日付指定がない場合は本日分を取得します。
      */
     public List<Map<String, Object>> getAllOrderDetails(String dateStr) {
-        return getAllOrderDetails(dateStr, "all");
+        return getAllOrderDetails(dateStr, "all", null);
     }
 
     /**
      * 指定された日付（yyyy-MM-dd）の注文詳細を取得し、提供状況で絞り込みます。
      */
     public List<Map<String, Object>> getAllOrderDetails(String dateStr, String statusFilter) {
+        return getAllOrderDetails(dateStr, statusFilter, null);
+    }
+
+    /**
+     * 指定された日付（yyyy-MM-dd）および店舗IDの注文詳細を取得し、提供状況で絞り込みます。
+     */
+    public List<Map<String, Object>> getAllOrderDetails(String dateStr, String statusFilter, String storeId) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             dateStr = java.time.LocalDate.now().toString();
         }
@@ -173,8 +180,8 @@ public class OrderService {
                      "  p.product_name, " +
                      "  d.quantity, " +
                      "  d.option_info, " +
-                     "  d.serve_status AS order_status, " + // 既存Thymeleafテンプレートの互換用のエイリアス
-                     "  d.order_item_id AS order_detail_id, " + // 既存コントローラ・ビュー互換用のエイリアス
+                     "  d.serve_status AS order_status, " +
+                     "  d.order_item_id AS order_detail_id, " +
                      "  d.product_id, " +
                      "  d.unit_price, " +
                      "  d.option_add_price, " +
@@ -185,6 +192,10 @@ public class OrderService {
                      "JOIN 顧客テーブル c ON o.customer_id = c.customer_id " +
                      "WHERE o.order_time >= ? AND o.order_time <= ? AND d.serve_status != 9 ";
 
+        if (storeId != null && !storeId.trim().isEmpty()) {
+            sql += "AND c.store_id = ? ";
+        }
+
         if ("undelivered".equals(statusFilter)) {
             sql += "AND d.serve_status = 0 ";
         } else if ("delivered".equals(statusFilter)) {
@@ -193,7 +204,11 @@ public class OrderService {
 
         sql += "ORDER BY o.order_time DESC, d.order_item_id ASC";
 
-        return jdbcTemplate.queryForList(sql, start, end);
+        if (storeId != null && !storeId.trim().isEmpty()) {
+            return jdbcTemplate.queryForList(sql, start, end, storeId);
+        } else {
+            return jdbcTemplate.queryForList(sql, start, end);
+        }
     }
 
     /**
@@ -277,6 +292,13 @@ public class OrderService {
      * 指定された日付の本日の提供数・未提供数の統計を取得します。
      */
     public Map<String, Object> getOrderStats(String dateStr) {
+        return getOrderStats(dateStr, null);
+    }
+
+    /**
+     * 指定された日付および店舗IDの本日の提供数・未提供数の統計を取得します。
+     */
+    public Map<String, Object> getOrderStats(String dateStr, String storeId) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             dateStr = java.time.LocalDate.now().toString();
         }
@@ -289,8 +311,14 @@ public class OrderService {
                      "  COALESCE(SUM(CASE WHEN d.serve_status = 1 THEN d.quantity ELSE 0 END), 0) AS paid_count " +
                      "FROM 注文テーブル o " +
                      "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
-                     "WHERE o.order_time >= ? AND o.order_time <= ?";
+                     "JOIN 顧客テーブル c ON o.customer_id = c.customer_id " +
+                     "WHERE o.order_time >= ? AND o.order_time <= ? ";
 
-        return jdbcTemplate.queryForMap(sql, start, end);
+        if (storeId != null && !storeId.trim().isEmpty()) {
+            sql += "AND c.store_id = ? ";
+            return jdbcTemplate.queryForMap(sql, start, end, storeId);
+        } else {
+            return jdbcTemplate.queryForMap(sql, start, end);
+        }
     }
 }

@@ -200,6 +200,16 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label for="storeId">勤務店舗</label>
+                <div class="input-wrapper">
+                    <select id="storeId" name="storeId" class="form-control" style="appearance: auto; cursor: pointer;" required>
+                        <option value="" disabled selected>店舗を選択してください</option>
+                        <option th:each="store : ${stores}" th:value="${store.store_id}" th:text="${store.store_name}"></option>
+                    </select>
+                </div>
+            </div>
+
             <button type="submit" class="btn-login">ログイン</button>
         </form>
     </div>
