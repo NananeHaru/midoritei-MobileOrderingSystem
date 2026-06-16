@@ -199,11 +199,21 @@
 </head>
 
 <body>
-    <header>
-        <a th:href="@{/menu}" class="home-btn"><i class="fas fa-home"></i></a>
+    <header class="main-header">
+    <a th:href="@{/menu}" class="home-btn"><i class="fas fa-home"></i></a>
+    
+    <div class="center-content">
         <h1>注文</h1>
-        <div class="timer">残り時間<br><strong id="countdown-timer">01:20:00</strong></div>
-    </header>
+        <div class="seat-info">
+            テーブル番号: <span th:text="${seatId}">01</span>
+        </div>
+    </div>
+    
+    <div class="timer">
+        残り時間<br>
+        <strong id="countdown-timer">01:20:00</strong>
+    </div>
+</header>
 
     <div class="category-tabs">
         <a th:each="cat : ${categories}" 

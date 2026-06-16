@@ -71,6 +71,24 @@ public class ProductController {
     @GetMapping("/menu")
     public String showMenu(@RequestParam(value = "categoryId", required = false) String categoryId, Model model, HttpSession session) {
         
+        // 1. セッションから顧客情報を取得
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+
+        if (customerSession != null) {
+            String customerId = customerSession.getCustomerId();
+            
+            // 2. DBからその顧客のテーブル番号(seat_id)を取得
+            // ※テーブル名は実際の環境に合わせてください
+            String seatSql = "SELECT seat_id FROM 顧客テーブル WHERE customer_id = ?";
+            try {
+                String seatId = jdbcTemplate.queryForObject(seatSql, String.class, customerId);
+                model.addAttribute("seatId", seatId); // 画面で使えるようにモデルに追加
+            } catch (Exception e) {
+                model.addAttribute("seatId", "不明");
+            }
+        }
+
         // 📥 DBからカテゴリーテーブルをそのまま取得（上書き処理は全部カット！）
         String categorySql = "SELECT category_id, category_name FROM カテゴリーテーブル ORDER BY category_id";
         List<Map<String, Object>> categories = jdbcTemplate.queryForList(categorySql);
@@ -93,9 +111,6 @@ public class ProductController {
                 .toList();
         }
 
-        // 💡 セッションからお客様情報を取得
-        com.example.midoritei.entity.CustomerSession customerSession = 
-            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
         
         String userCourseId = (customerSession != null) ? customerSession.getCourse() : "CS01";
         model.addAttribute("userCourseId", userCourseId);
