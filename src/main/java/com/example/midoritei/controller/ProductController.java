@@ -390,4 +390,20 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
             }
         }
     }
+    // ★このメソッドを ProductController.java の最後にコピーしてください
+    @PostMapping("/cart/update-quantity")
+    public String updateQuantity(@RequestParam("index") int index, 
+                                 @RequestParam("quantity") int quantity, 
+                                 HttpSession session) {
+        List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
+        if (cart != null && index >= 0 && index < cart.size()) {
+            if (quantity <= 0) {
+                cart.remove(index);
+            } else {
+                cart.get(index).setQuantity(quantity);
+            }
+            session.setAttribute("cart", cart);
+        }
+        return "redirect:/cart";
+    }
 }
