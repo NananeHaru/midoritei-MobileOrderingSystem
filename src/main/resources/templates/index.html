@@ -22,4 +22,17 @@
     </div>
     <a th:href="@{/seating/members(store_id=${storeId}, seat_id=${seatId})}" class="start-btn">注文開始</a>
 </body>
+<script>
+    // ページ読み込み時に履歴を一つ追加して、その場に留まらせる
+    history.pushState(null, null, location.href);
+
+    // ユーザーが戻るボタンを押した時のイベント
+    window.addEventListener('popstate', function(event) {
+        // 再度履歴を追加して進む状態を作る
+        history.pushState(null, null, location.href);
+        
+        // 強制リロードでサーバーに確認させ、インターセプター(門番)を確実に発動させる
+        window.location.reload(); 
+    });
+</script>
 </html>

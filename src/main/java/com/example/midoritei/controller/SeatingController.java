@@ -1,6 +1,9 @@
 package com.example.midoritei.controller;
 
 import com.example.midoritei.service.SeatingService;
+
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model; 
@@ -50,15 +53,23 @@ public class SeatingController {
         return "index";
     }
 
-    // 2. 人数選択画面へ案内
+    // 2. 人数選択画面
     @GetMapping("/members")
-    public String membersPage() {
+    public String membersPage(HttpSession session) {
+        // もしすでに注文中ならメニューへ！
+        if (session.getAttribute("customerSession") != null) {
+            return "redirect:/menu"; 
+        }
         return "seating/members";
     }
 
-    // 3. コース選択画面へ案内
+    // 3. コース選択画面
     @GetMapping("/course")
-    public String coursePage() {
+    public String coursePage(HttpSession session) {
+        // もしすでに注文中ならメニューへ！
+        if (session.getAttribute("customerSession") != null) {
+            return "redirect:/menu"; 
+        }
         return "seating/course";
     }
 
