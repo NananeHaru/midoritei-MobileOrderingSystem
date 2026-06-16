@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -322,9 +322,20 @@
                         <option th:each="seat : ${activeSeats}" 
                                 th:value="${seat.seat_id}" 
                                 th:data-customer-id="${seat.customer_id}" 
+                                th:data-course-id="${seat.course_id}"
                                 th:text="${'座席ID ' + seat.seat_id}"></option>
                     </select>
                 </div>
+
+                <div class="select-wrapper" id="courseWrapper">
+                    <select name="courseId" id="courseSelect" class="seat-select" required>
+                        <option value="" disabled selected>コースを選択してください</option>
+                        <option th:each="course : ${courses}"
+                                th:value="${course.course_id}"
+                                th:text="${course.course_name}"></option>
+                    </select>
+                </div>
+
                 <!-- customer_id をJavaScriptでバインドして送信 -->
                 <input type="hidden" name="customerId" id="customerIdInput">
                 
@@ -339,15 +350,23 @@
 </div>
 
 <script>
-    // セレクトボックス変更時に隠しinputへcustomerIdをセットする
+    // セレクトボックス変更時に隠しinputへcustomerIdをセットし、現在のコースを自動選択する
     const seatSelect = document.getElementById('seatSelect');
     const customerIdInput = document.getElementById('customerIdInput');
     const selectWrapper = document.getElementById('selectWrapper');
+    const courseSelect = document.getElementById('courseSelect');
+    const courseWrapper = document.getElementById('courseWrapper');
 
     seatSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const customerId = selectedOption.getAttribute('data-customer-id');
         customerIdInput.value = customerId;
+
+        // 現在設定されているコースを自動選択
+        const courseId = selectedOption.getAttribute('data-course-id');
+        if (courseId) {
+            courseSelect.value = courseId.trim();
+        }
     });
 
     // ドロップダウンが開閉したときに矢印の向きをCSSで制御
@@ -356,6 +375,13 @@
     });
     seatSelect.addEventListener('blur', function() {
         selectWrapper.classList.remove('open');
+    });
+
+    courseSelect.addEventListener('click', function() {
+        courseWrapper.classList.toggle('open');
+    });
+    courseSelect.addEventListener('blur', function() {
+        courseWrapper.classList.remove('open');
     });
 </script>
 

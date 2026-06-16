@@ -20,6 +20,16 @@
         
         <div class="store-name" th:text="${storeName}">緑橋一号店</div>
     </div>
-    <a th:href="@{/seating/members(store_id=${storeId}, seat_id=${seatId})}" class="start-btn">注文開始</a>
+    <div th:if="${isBlocked}" style="text-align: center; max-width: 450px; padding: 25px; border: 2px dashed #f04134; border-radius: 12px; background-color: #fff1f0; color: #f04134; font-weight: bold; font-size: 1.1rem; line-height: 1.6; box-shadow: 0 4px 12px rgba(240, 65, 52, 0.1);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; color: #f04134; display: inline-block;">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span style="display: block;">このお席は現在ご利用いただけません。</span>
+        <span style="display: block; font-size: 0.95rem; font-weight: 500; margin-top: 8px; color: #666;">お手数ですが、スタッフがご案内し席を開設するまでしばらくお待ちください。</span>
+    </div>
+    
+    <a th:if="${!isBlocked}" th:href="@{/seating/members(store_id=${storeId}, seat_id=${seatId})}" class="start-btn">注文開始</a>
 </body>
 </html>

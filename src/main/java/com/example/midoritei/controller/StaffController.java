@@ -109,6 +109,7 @@ public class StaffController {
     @GetMapping("/orders")
     public String ordersPage(@RequestParam(value = "date", required = false) String dateStr,
                              @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter,
+                             @RequestParam(value = "seatId", required = false) String seatId,
                              HttpSession session,
                              Model model) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
@@ -121,13 +122,14 @@ public class StaffController {
         String storeId = (String) session.getAttribute("loggedInStoreId");
 
         // 注文一覧データおよび集計値の取得
-        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, statusFilter, storeId);
+        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, statusFilter, storeId, seatId);
         Map<String, Object> stats = orderService.getOrderStats(dateStr, storeId);
 
         model.addAttribute("orderDetails", orderDetails);
         model.addAttribute("stats", stats);
         model.addAttribute("selectedDate", dateStr);
         model.addAttribute("statusFilter", statusFilter);
+        model.addAttribute("selectedSeatId", seatId);
 
         return "staff/orders";
     }
@@ -191,14 +193,19 @@ public class StaffController {
     public String updateStatus(@RequestParam("orderItemId") int orderItemId,
                                @RequestParam("status") int status,
                                @RequestParam(value = "date", required = false) String dateStr,
-                               @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter) {
+                               @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter,
+                               @RequestParam(value = "seatId", required = false) String seatId) {
         orderService.updateOrderStatus(orderItemId, status);
         
         // 元々選択されていた日付を引き継いでリダイレクト
         if (dateStr == null || dateStr.trim().isEmpty()) {
             dateStr = LocalDate.now().toString();
         }
-        return "redirect:/staff/orders?date=" + dateStr + "&statusFilter=" + statusFilter;
+        String redirectUrl = "redirect:/staff/orders?date=" + dateStr + "&statusFilter=" + statusFilter;
+        if (seatId != null && !seatId.trim().isEmpty()) {
+            redirectUrl += "&seatId=" + seatId;
+        }
+        return redirectUrl;
     }
 
     /**
@@ -225,7 +232,13 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         String storeId = (String) session.getAttribute("loggedInStoreId");
-        model.addAttribute("activeSeats", seatingService.getActiveSeats(storeId));
+        model.addAttribute("activeSeats", seatingService.getActiveSeatsDetail(storeId));
+        
+        List<Map<String, Object>> courses = jdbcTemplate.queryForList(
+            "SELECT course_id, course_name FROM コースマスタテーブル ORDER BY course_id ASC"
+        );
+        model.addAttribute("courses", courses);
+        
         return "staff/orders_add_seating";
     }
 
@@ -235,10 +248,19 @@ public class StaffController {
     @PostMapping("/orders/add/select-seat")
     public String selectSeat(@RequestParam("seatId") String seatId,
                              @RequestParam("customerId") String customerId,
+                             @RequestParam("courseId") String courseId,
                              HttpSession session) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
+        
+        // 顧客テーブルのコースを更新
+        jdbcTemplate.update(
+            "UPDATE 顧客テーブル SET course_id = ? WHERE customer_id = ?",
+            courseId,
+            customerId
+        );
+        
         session.setAttribute("staffSeatId", seatId);
         session.setAttribute("staffCustomerId", customerId);
         session.setAttribute("staffCart", new ArrayList<CartItem>()); // カート初期化

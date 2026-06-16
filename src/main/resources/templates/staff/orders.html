@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -460,6 +460,15 @@
                     <div class="date-input-wrapper">
                         <input type="date" name="date" class="date-input" th:value="${selectedDate}">
                     </div>
+                    <div class="date-input-wrapper">
+                        <select name="seatId" class="date-input" onchange="this.form.submit()">
+                            <option value="">すべての座席</option>
+                            <option th:each="i : ${#numbers.sequence(1, 15)}"
+                                    th:value="${i}"
+                                    th:text="${i} + '番'"
+                                    th:selected="${selectedSeatId == #strings.toString(i)}"></option>
+                        </select>
+                    </div>
                     <div class="status-toggle-group">
                         <input type="radio" id="filter-all" name="statusFilter" value="all" th:checked="${statusFilter == 'all'}" onchange="this.form.submit()">
                         <label for="filter-all">すべて</label>
@@ -514,6 +523,7 @@
                                 <input type="hidden" name="status" value="1">
                                 <input type="hidden" name="date" th:value="${selectedDate}">
                                 <input type="hidden" name="statusFilter" th:value="${statusFilter}">
+                                <input type="hidden" name="seatId" th:value="${selectedSeatId}">
                                 <button type="submit" class="btn-status cooking">調理中</button>
                             </form>
                             <!-- 提供済: 1 の場合、クリックで調理中に戻す -->
@@ -522,6 +532,7 @@
                                 <input type="hidden" name="status" value="0">
                                 <input type="hidden" name="date" th:value="${selectedDate}">
                                 <input type="hidden" name="statusFilter" th:value="${statusFilter}">
+                                <input type="hidden" name="seatId" th:value="${selectedSeatId}">
                                 <button type="submit" class="btn-status served">提供済</button>
                             </form>
                         </td>

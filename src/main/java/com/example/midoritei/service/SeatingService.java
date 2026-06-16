@@ -64,10 +64,10 @@ public class SeatingService {
         String sql = "SELECT seat_id, customer_id FROM 顧客テーブル WHERE checkout_status = 0 ";
         if (storeId != null && !storeId.trim().isEmpty()) {
             sql += "AND store_id = ? ";
-            sql += "ORDER BY seat_id ASC";
+            sql += "ORDER BY LENGTH(seat_id) ASC, seat_id ASC";
             return jdbcTemplate.queryForList(sql, storeId);
         }
-        sql += "ORDER BY seat_id ASC";
+        sql += "ORDER BY LENGTH(seat_id) ASC, seat_id ASC";
         return jdbcTemplate.queryForList(sql);
     }
 
@@ -82,10 +82,10 @@ public class SeatingService {
                      "WHERE c.checkout_status = 0 ";
         if (storeId != null && !storeId.trim().isEmpty()) {
             sql += "AND c.store_id = ? ";
-            sql += "ORDER BY c.seat_id ASC";
+            sql += "ORDER BY LENGTH(c.seat_id) ASC, c.seat_id ASC";
             return jdbcTemplate.queryForList(sql, storeId);
         }
-        sql += "ORDER BY c.seat_id ASC";
+        sql += "ORDER BY LENGTH(c.seat_id) ASC, c.seat_id ASC";
         return jdbcTemplate.queryForList(sql);
     }
 

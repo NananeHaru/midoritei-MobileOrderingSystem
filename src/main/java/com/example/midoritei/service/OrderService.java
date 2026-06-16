@@ -140,20 +140,27 @@ public class OrderService {
      * 日付指定がない場合は本日分を取得します。
      */
     public List<Map<String, Object>> getAllOrderDetails(String dateStr) {
-        return getAllOrderDetails(dateStr, "all", null);
+        return getAllOrderDetails(dateStr, "all", null, null);
     }
 
     /**
      * 指定された日付（yyyy-MM-dd）の注文詳細を取得し、提供状況で絞り込みます。
      */
     public List<Map<String, Object>> getAllOrderDetails(String dateStr, String statusFilter) {
-        return getAllOrderDetails(dateStr, statusFilter, null);
+        return getAllOrderDetails(dateStr, statusFilter, null, null);
     }
 
     /**
      * 指定された日付（yyyy-MM-dd）および店舗IDの注文詳細を取得し、提供状況で絞り込みます。
      */
     public List<Map<String, Object>> getAllOrderDetails(String dateStr, String statusFilter, String storeId) {
+        return getAllOrderDetails(dateStr, statusFilter, storeId, null);
+    }
+
+    /**
+     * 指定された日付（yyyy-MM-dd）、店舗ID、および座席番号の注文詳細を取得し、提供状況で絞り込みます。
+     */
+    public List<Map<String, Object>> getAllOrderDetails(String dateStr, String statusFilter, String storeId, String seatId) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             dateStr = java.time.LocalDate.now().toString();
         }
@@ -179,8 +186,13 @@ public class OrderService {
                      "JOIN 顧客テーブル c ON o.customer_id = c.customer_id " +
                      "WHERE o.order_time >= ? AND o.order_time <= ? AND d.serve_status != 9 ";
 
+        java.util.List<Object> params = new java.util.ArrayList<>();
+        params.add(start);
+        params.add(end);
+
         if (storeId != null && !storeId.trim().isEmpty()) {
             sql += "AND c.store_id = ? ";
+            params.add(storeId);
         }
 
         if ("undelivered".equals(statusFilter)) {
