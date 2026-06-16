@@ -30,7 +30,14 @@ public class SeatingController {
     @GetMapping("/start")
     public String startPage(@RequestParam(value = "store_id", defaultValue = "MH") String storeId,
                             @RequestParam(value = "seat_id", defaultValue = "1") String seatId,
-                            Model model) {
+                            Model model, 
+                            jakarta.servlet.http.HttpSession session) { // 💡 session を引数に追加
+        
+        // ★ここに追加：すでにセッションがあれば注文画面へスキップ！
+        if (session.getAttribute("customerSession") != null) {
+            return "redirect:/menu"; 
+        }
+
         try {
             String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = ?";
             String storeName = jdbcTemplate.queryForObject(sql, String.class, storeId);

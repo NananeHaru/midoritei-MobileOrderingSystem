@@ -1,10 +1,10 @@
 package com.example.midoritei.controller;
 
-import com.example.midoritei.entity.CartItem;
-import com.example.midoritei.entity.Product;
-import com.example.midoritei.service.ProductService;
-import com.example.midoritei.service.OrderService;
-import jakarta.servlet.http.HttpSession;
+// ★この2行が足りていないとエラーになります！
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,10 +14,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-// ★この2行が足りていないとエラーになります！
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.example.midoritei.entity.CartItem;
+import com.example.midoritei.entity.Product;
+import com.example.midoritei.service.OrderService;
+import com.example.midoritei.service.ProductService;
+
+import jakarta.servlet.http.HttpSession;
 @Controller
 public class ProductController {
 
@@ -406,4 +408,6 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
         }
         return "redirect:/cart";
     }
+
+    
 }
