@@ -223,7 +223,7 @@
     <div class="simulator-card">
         <span class="badge"><i class="fas fa-microchip"></i> Simulator Mode</span>
         <h1>QRコードスキャン シミュレーター</h1>
-        <p class="subtitle">座�        <!-- 店舗選択 -->
+        <p class="subtitle">座席       <!-- 店舗選択 -->
         <div class="control-group">
             <label for="storeSelect"><i class="fas fa-store"></i> 店舗選択 (シミュレートする店舗)</label>
             <div class="select-wrapper">
@@ -317,23 +317,6 @@
         // 初期ロード時に更新を実行
         document.addEventListener('DOMContentLoaded', () => {
             updateSeatsAndQr();
-        });
-    </script>
-</body>
-</html> document.getElementById('seatSelect').value;
-            
-            // QRコード画像を動的リクエスト
-            const qrImg = document.getElementById('qrImg');
-            qrImg.src = `/seating/qr-image?store_id=${storeId}&seat_id=${seatId}`;
-            
-            // 擬似アクセスボタンのリンク先を動的更新
-            const scanLink = document.getElementById('scanLink');
-            scanLink.href = `/seating/start?store_id=${storeId}&seat_id=${seatId}`;
-        }
-
-        // 初期ロード時に更新を実行
-        document.addEventListener('DOMContentLoaded', () => {
-            updateQr();
         });
     </script>
 </body>

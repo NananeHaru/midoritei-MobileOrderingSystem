@@ -1156,7 +1156,8 @@ CREATE TABLE IF NOT EXISTS 座席マスタテーブル (
     seat_id VARCHAR(20) NOT NULL,
     seat_type VARCHAR(20) NOT NULL,
     PRIMARY KEY (store_id, seat_id),
-    FOREIGN KEY (store_id) REFERENCES 店舗マスタテーブル (store_id) ON DELETE CASCADE seat_status int(3) NOT NULL
+    FOREIGN KEY (store_id) REFERENCES 店舗マスタテーブル (store_id) ON DELETE CASCADE,
+    seat_status int(3) NOT NULL DEFAULT 0
 );
 
 -- 各店舗の初期座席データ（1〜10番: counter, 11〜15番: table）
