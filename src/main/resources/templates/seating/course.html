@@ -15,6 +15,26 @@
         .standard { background: linear-gradient(to bottom, #00adef, #008cc9); }
         .none { background: linear-gradient(to bottom, #999, #777); font-size: 26px; }
         .next-btn { background-color: #f3b123; color: white; border: none; padding: 15px 40px; font-size: 22px; font-weight: bold; border-radius: 8px; margin-top: 30px; cursor: pointer; align-self: flex-end; }
+        /* 詳細エリアのデザイン */
+        .details {
+            display: none;
+            margin-top: -10px; /* ボタンとくっつける */
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 0 0 12px 12px; /* 下側だけ角を丸く */
+            padding: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .detail-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+            font-size: 20px;
+            cursor: pointer;
+            color: #555;
+        }
+        .detail-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -26,15 +46,27 @@
             <input type="hidden" name="store_id" th:value="${param.store_id}">
             <input type="hidden" name="seat_id" th:value="${param.seat_id}">
             <input type="hidden" name="members" th:value="${param.members}">
-            <input type="hidden" name="course_id" id="courseInput" value="none">
+            <input type="hidden" name="course_id" id="courseInput" value="">
 
-            <button type="button" class="course-btn premium" onclick="selectCourse('CS03', this)">
-                <i class="fas fa-wine-glass-alt"></i> premium コース
-            </button>
+            <div class="course-group">
+                <button type="button" class="course-btn premium" onclick="toggleDetails('premium-details')">
+                    <i class="fas fa-wine-glass-alt"></i> premium コース
+                </button>
+                <div id="premium-details" class="details">
+                    <div class="detail-item" onclick="selectCourse('CS03', this.parentElement.previousElementSibling)">2時間：3500円</div>
+                    <div class="detail-item" onclick="selectCourse('CS30', this.parentElement.previousElementSibling)">3時間：4500円</div>
+                </div>
+            </div>
 
-            <button type="button" class="course-btn standard" onclick="selectCourse('CS02', this)">
-                <i class="fas fa-beer"></i> standard コース
-            </button>
+            <div class="course-group">
+                <button type="button" class="course-btn standard" onclick="toggleDetails('standard-details')">
+                    <i class="fas fa-beer"></i> standard コース
+                </button>
+                <div id="standard-details" class="details">
+                    <div class="detail-item" onclick="selectCourse('CS02', this.parentElement.previousElementSibling)">2時間：2000円</div>
+                    <div class="detail-item" onclick="selectCourse('CS20', this.parentElement.previousElementSibling)">3時間：2500円</div>
+                </div>
+            </div>
 
             <button type="button" class="course-btn none" onclick="selectCourse('CS01', this)">
                 コースなし
@@ -43,14 +75,37 @@
             <button type="submit" class="next-btn">次へ</button>
         </form>
     </div>
-    <script>
-        function selectCourse(courseId, element) {
-            document.getElementById('courseInput').value = courseId;
-            document.querySelectorAll('.course-btn').forEach(btn => btn.style.borderColor = 'transparent');
-            element.style.borderColor = '#f3b123';
-        }
-    </script>
+    
 </body>
+<script>
+    function toggleDetails(id) {
+        // すべての details を一度閉じる
+        document.querySelectorAll('.details').forEach(el => el.style.display = 'none');
+        
+        // 押されたIDのみ開く
+        const target = document.getElementById(id);
+        target.style.display = 'block';
+    }
+
+    function selectCourse(courseId, element) {
+        // 隠しフィールドにIDをセット
+        document.getElementById('courseInput').value = courseId;
+        
+        // 全ボタン（プレミアム・スタンダード・コースなし）の枠線をリセット
+        document.querySelectorAll('.course-btn').forEach(btn => {
+            btn.style.border = '3px solid transparent';
+        });
+
+        // 押されたのが詳細内の要素(div)か、コースなしボタン(button)かで判定
+        if (element) {
+            // 詳細アイテムが押された場合、その親ボタンを光らせる
+            element.style.border = '5px solid #f3b123';
+        } else {
+            // コースなしボタンが直接押された場合
+            event.currentTarget.style.border = '5px solid #f3b123';
+        }
+    }
+</script>
 <script>
     // 1. ページが読み込まれた瞬間に、現在のURLを履歴の「最前列」にセットする
     // これにより、「戻る」ボタンを押したときの遷移先が「現在のページ」自身になります

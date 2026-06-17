@@ -1133,6 +1133,10 @@ WHERE
             course_id = 'CS02'
     );
 
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
+SELECT 'CS20', 'スタンダード3時間飲み放題', 2500, 180
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS20');
+
 -- CS03: プレミアムコース（例: 2時間プレミアム飲み放題 3500円）
 INSERT INTO
     コースマスタテーブル (
@@ -1149,6 +1153,11 @@ WHERE
         WHERE
             course_id = 'CS03'
     );
+
+-- プレミアム3時間も同様に修正
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
+SELECT 'CS30', 'プレミアム3時間贅沢飲み放題', 4500, 180
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS30');
 
 -- 14. 座席マスタテーブル
 CREATE TABLE IF NOT EXISTS 座席マスタテーブル (
