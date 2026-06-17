@@ -258,6 +258,22 @@
         </a>
     </nav>
 </body>
+<script>
+    // 1. ページが読み込まれた瞬間に、現在のURLを履歴の「最前列」にセットする
+    // これにより、「戻る」ボタンを押したときの遷移先が「現在のページ」自身になります
+    history.pushState(null, null, location.href);
+
+    // 2. ブラウザの戻る操作(popstate)を検知して割り込む
+    window.addEventListener('popstate', function(event) {
+        // 再度履歴を現在のURLで上書きする（戻るのを防ぐ）
+        history.pushState(null, null, location.href);
+        
+        // 3. 強制リロードを実行
+        // リロードすることで、サーバー側のインターセプター（門番）が再起動し、
+        // 「注文中ならメニュー画面に戻す」というサーバー側のルールを確実に実行させる
+        window.location.reload(); 
+    });
+</script>
 
 <div th:replace="~{fragments :: timer-script}"></div>
 </html>
