@@ -223,23 +223,12 @@
     <div class="simulator-card">
         <span class="badge"><i class="fas fa-microchip"></i> Simulator Mode</span>
         <h1>QRコードスキャン シミュレーター</h1>
-        <p class="subtitle">座席を選択し、生成されたQRコードをスキャンする（またはボタンをクリックする）ことで、その席の客として注文を開始できます。</p>
-
-        <!-- 店舗選択 -->
+        <p class="subtitle">座�        <!-- 店舗選択 -->
         <div class="control-group">
             <label for="storeSelect"><i class="fas fa-store"></i> 店舗選択 (シミュレートする店舗)</label>
             <div class="select-wrapper">
-                <select id="storeSelect" onchange="updateQr()">
-                    <option value="MH">緑橋店</option>
-                    <option value="MN">森ノ宮店</option>
-                    <option value="TM">玉造店</option>
-                    <option value="TH">鶴橋店</option>
-                    <option value="IM">今里店</option>
-                    <option value="FB">深江橋店</option>
-                    <option value="TY">谷町四丁目店</option>
-                    <option value="HM">本町店</option>
-                    <option value="KB">京橋店</option>
-                    <option value="NB">なんば店</option>
+                <select id="storeSelect" onchange="updateSeatsAndQr()">
+                    <option th:each="store : ${stores}" th:value="${store.store_id}" th:text="${store.store_name}"></option>
                 </select>
             </div>
         </div>
@@ -249,18 +238,7 @@
             <label for="seatSelect"><i class="fas fa-chair"></i> 座席選択 (シミュレートする席)</label>
             <div class="select-wrapper">
                 <select id="seatSelect" onchange="updateQr()">
-                    <option value="1">1番テーブル</option>
-                    <option value="2">2番テーブル</option>
-                    <option value="3">3番テーブル</option>
-                    <option value="4">4番テーブル</option>
-                    <option value="5">5番テーブル</option>
-                    <option value="6">6番テーブル</option>
-                    <option value="7">7番テーブル</option>
-                    <option value="8">8番テーブル</option>
-                    <option value="9">9番テーブル</option>
-                    <option value="10">10番テーブル</option>
-                    <option value="11">11番テーブル</option>
-                    <option value="12">12番テーブル</option>
+                    <!-- JavaScriptで動的生成します -->
                 </select>
             </div>
         </div>
@@ -280,10 +258,69 @@
         </p>
     </div>
 
-    <script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const allSeats = /*[[${seats}]]*/ [];
+        /*]]>*/
+
+        function updateSeatsAndQr() {
+            const storeId = document.getElementById('storeSelect').value;
+            const seatSelect = document.getElementById('seatSelect');
+            
+            // 現在の選択値を保存
+            const previousSeatId = seatSelect.value;
+
+            // 座席セレクトボックスのクリア
+            seatSelect.innerHTML = '';
+
+            // 対象店舗の座席だけを抽出
+            const storeSeats = allSeats.filter(s => s.store_id === storeId);
+            
+            storeSeats.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.seat_id;
+                opt.textContent = `${s.seat_id}番テーブル`;
+                seatSelect.appendChild(opt);
+            });
+
+            // 以前の選択値が新しい店舗にも存在すればそれを選択、なければ最初の座席を選択
+            if (storeSeats.some(s => s.seat_id === previousSeatId)) {
+                seatSelect.value = previousSeatId;
+            } else if (storeSeats.length > 0) {
+                seatSelect.value = storeSeats[0].seat_id;
+            }
+
+            updateQr();
+        }
+
         function updateQr() {
             const storeId = document.getElementById('storeSelect').value;
-            const seatId = document.getElementById('seatSelect').value;
+            const seatSelect = document.getElementById('seatSelect');
+            const seatId = seatSelect.value;
+            
+            const qrImg = document.getElementById('qrImg');
+            const scanLink = document.getElementById('scanLink');
+            
+            if (!seatId) {
+                qrImg.src = '';
+                scanLink.href = '#';
+                return;
+            }
+
+            // QRコード画像を動的リクエスト
+            qrImg.src = `/seating/qr-image?store_id=${storeId}&seat_id=${seatId}`;
+            
+            // 擬似アクセスボタンのリンク先を動的更新
+            scanLink.href = `/seating/start?store_id=${storeId}&seat_id=${seatId}`;
+        }
+
+        // 初期ロード時に更新を実行
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSeatsAndQr();
+        });
+    </script>
+</body>
+</html> document.getElementById('seatSelect').value;
             
             // QRコード画像を動的リクエスト
             const qrImg = document.getElementById('qrImg');

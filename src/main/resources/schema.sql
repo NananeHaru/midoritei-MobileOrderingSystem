@@ -300,3 +300,185 @@ SELECT 'CS03', 'プレミアム2時間贅沢飲み放題', 3500, 120
 WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS03');
 
 
+-- 14. 座席マスタテーブル
+CREATE TABLE IF NOT EXISTS 座席マスタテーブル (
+    store_id CHAR(2) NOT NULL,
+    seat_id VARCHAR(20) NOT NULL,
+    seat_type VARCHAR(20) NOT NULL,
+    PRIMARY KEY (store_id, seat_id),
+    FOREIGN KEY (store_id) REFERENCES 店舗マスタテーブル(store_id) ON DELETE CASCADE
+);
+
+-- 各店舗の初期座席データ（1〜10番: counter, 11〜15番: table）
+-- MH (緑橋店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MH', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MH' AND seat_id = '15');
+
+-- MN (森ノ宮店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'MN', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'MN' AND seat_id = '15');
+
+-- TM (玉造店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TM', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TM' AND seat_id = '15');
+
+-- TH (鶴橋店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TH', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TH' AND seat_id = '15');
+
+-- IM (今里店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'IM', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'IM' AND seat_id = '15');
+
+-- FB (深江橋店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'FB', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'FB' AND seat_id = '15');
+
+-- TY (谷町四丁目店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'TY', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'TY' AND seat_id = '15');
+
+-- HM (本町店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'HM', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'HM' AND seat_id = '15');
+
+-- KB (京橋店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'KB', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'KB' AND seat_id = '15');
+
+-- NB (なんば店)
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '1', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '1');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '2', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '2');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '3', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '3');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '4', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '4');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '5', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '5');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '6', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '6');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '7', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '7');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '8', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '8');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '9', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '9');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '10', 'counter' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '10');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '11', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '11');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '12', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '12');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '13', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '13');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '14');
+INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '15');
+
+
+
