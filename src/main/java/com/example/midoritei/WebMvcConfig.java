@@ -11,6 +11,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private StaffInterceptor staffInterceptor;
 
+    @Autowired
+    private CustomerInterceptor customerInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(staffInterceptor)
@@ -21,6 +24,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/js/**",
                         "/images/**",
                         "/webjars/**"
+                );
+
+        registry.addInterceptor(customerInterceptor)
+                .addPathPatterns(
+                        "/menu", "/menu/**",
+                        "/cart", "/cart/**",
+                        "/orders", "/orders/**"
                 );
     }
 }

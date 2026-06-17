@@ -22,7 +22,15 @@ public class SeatingController {
 
     // QRコードシミュレーター画面を表示
     @GetMapping("/qr-simulator")
-    public String qrSimulator() {
+    public String qrSimulator(Model model) {
+        java.util.List<java.util.Map<String, Object>> stores = jdbcTemplate.queryForList(
+            "SELECT store_id, store_name FROM 店舗マスタテーブル"
+        );
+        java.util.List<java.util.Map<String, Object>> seats = jdbcTemplate.queryForList(
+            "SELECT store_id, seat_id FROM 座席マスタテーブル ORDER BY store_id, LENGTH(seat_id) ASC, seat_id ASC"
+        );
+        model.addAttribute("stores", stores);
+        model.addAttribute("seats", seats);
         return "seating/qr_simulator";
     }
 
@@ -33,19 +41,7 @@ public class SeatingController {
                             jakarta.servlet.http.HttpSession session,
                             Model model) {
         
-        // ★ここに追加：すでにセッションがあれば注文画面へスキップ！
-        // ただし、別のテーブルのQRコードからアクセスした場合はセッションをクリアして新しい席の登録フローへ
-        com.example.midoritei.entity.CustomerSession currentSession = 
-            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
-        if (currentSession != null) {
-            if (storeId.equals(currentSession.getStoreId()) && seatId.equals(currentSession.getSeatId())) {
-                return "redirect:/menu"; 
-            } else {
-                // 別のテーブルからアクセスされたため、古いセッション情報とカート情報をクリアする
-                session.removeAttribute("customerSession");
-                session.removeAttribute("cart");
-            }
-        }
+        // 店舗名の設定
         try {
             String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = ?";
             String storeName = jdbcTemplate.queryForObject(sql, String.class, storeId);
@@ -56,44 +52,59 @@ public class SeatingController {
         model.addAttribute("storeId", storeId);
         model.addAttribute("seatId", seatId);
 
-        // 対象座席の利用中顧客セッションを検索
+        // 対象座席の利用中顧客データを検索
         java.util.Map<String, Object> cust = getActiveCustomerData(storeId, seatId);
         if (cust == null) {
-            // 空席状態なのでアクセスをブロックする
+            // 空席状態なのでセッションをクリアしてアクセスをブロックする
+            session.removeAttribute("customerSession");
+            session.removeAttribute("cart");
             model.addAttribute("isBlocked", true);
             return "index";
         }
 
-        int members = ((Number) cust.get("number_of_members")).intValue();
-        if (members > 0) {
-            // 既に設定済み（自動ログインしてメニュー画面へ遷移）
-            String customerId = (String) cust.get("customer_id");
-            String courseId = (String) cust.get("course_id");
-            java.sql.Timestamp entryTime = (java.sql.Timestamp) cust.get("entry_time");
+        String dbCustomerId = (String) cust.get("customer_id");
+        int dbMembers = ((Number) cust.get("number_of_members")).intValue();
+        String dbCourseId = (String) cust.get("course_id");
+        java.sql.Timestamp dbEntryTime = (java.sql.Timestamp) cust.get("entry_time");
 
-            int timeLimitMinutes = 120;
-            try {
-                String timeSql = "SELECT time_limit FROM コースマスタテーブル WHERE course_id = ?";
-                timeLimitMinutes = jdbcTemplate.queryForObject(timeSql, Integer.class, courseId.trim());
-            } catch (Exception e) {
-                // デフォルト120分
-            }
+        // セッションから現在の客の座席状況を取り出す
+        com.example.midoritei.entity.CustomerSession currentSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
 
-            com.example.midoritei.entity.CustomerSession customerSession = 
-                new com.example.midoritei.entity.CustomerSession(customerId, members, courseId, storeId, seatId);
-            
-            if (!"CS01".equals(courseId.trim())) {
-                long endTime = entryTime.getTime() + ((long) timeLimitMinutes * 60 * 1000);
-                customerSession.setSessionEndTime(endTime);
-            }
-            
-            session.setAttribute("customerSession", customerSession);
-            return "redirect:/menu";
+        // DBの顧客IDとセッションの顧客IDが完全に一致する場合のみ、正常なリロードとしてメニューへスキップ
+        if (currentSession != null && dbCustomerId.equals(currentSession.getCustomerId())) {
+            return "redirect:/menu"; 
         }
 
-        // スタッフによる着席処理は完了しているが、人数・コースが未設定 (0名) の場合
-        model.addAttribute("isBlocked", false);
-        return "index";
+        // 不一致またはセッションがない（新規着席や店員による再オープン等）場合は、古いセッション情報とカート情報をクリアする
+        session.removeAttribute("customerSession");
+        session.removeAttribute("cart");
+
+        // 人数が 0名（未設定）の場合は人数選択・コース選択フローへ進めるため「注文開始」画面を表示する
+        if (dbMembers == 0) {
+            model.addAttribute("isBlocked", false);
+            return "index";
+        }
+
+        // 人数が設定済みの場合は自動ログイン処理
+        int timeLimitMinutes = 120;
+        try {
+            String timeSql = "SELECT time_limit FROM コースマスタテーブル WHERE course_id = ?";
+            timeLimitMinutes = jdbcTemplate.queryForObject(timeSql, Integer.class, dbCourseId.trim());
+        } catch (Exception e) {
+            // デフォルト120分
+        }
+
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            new com.example.midoritei.entity.CustomerSession(dbCustomerId, dbMembers, dbCourseId, storeId, seatId);
+        
+        if (!"CS01".equals(dbCourseId.trim())) {
+            long endTime = dbEntryTime.getTime() + ((long) timeLimitMinutes * 60 * 1000);
+            customerSession.setSessionEndTime(endTime);
+        }
+        
+        session.setAttribute("customerSession", customerSession);
+        return "redirect:/menu";
     }
 
     // 2. 人数選択画面へ案内

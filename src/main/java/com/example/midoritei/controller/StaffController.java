@@ -532,17 +532,24 @@ public class StaffController {
             }
         }
         
-        // 1番〜15番の座席状態をマージしたデータを構築
+        // データベースから店舗の全座席を取得
+        List<Map<String, Object>> storeSeats = jdbcTemplate.queryForList(
+            "SELECT seat_id, seat_type FROM 座席マスタテーブル WHERE store_id = ? ORDER BY LENGTH(seat_id) ASC, seat_id ASC",
+            storeId
+        );
+        
+        // 座席状態をマージしたデータを構築
         List<Map<String, Object>> seats = new java.util.ArrayList<>();
-        for (int i = 1; i <= 15; i++) {
-            final String seatId = String.valueOf(i);
+        for (Map<String, Object> s : storeSeats) {
+            final String seatId = (String) s.get("seat_id");
+            final String seatType = (String) s.get("seat_type");
             Map<String, Object> seatMap = new java.util.HashMap<>();
             seatMap.put("seatId", seatId);
-            seatMap.put("type", i <= 10 ? "counter" : "table");
+            seatMap.put("type", seatType);
             
             // 現在の席データがあるか探索
             Map<String, Object> activeSeat = activeSeats.stream()
-                .filter(s -> seatId.equals(String.valueOf(s.get("seat_id"))))
+                .filter(as -> seatId.equals(String.valueOf(as.get("seat_id"))))
                 .findFirst()
                 .orElse(null);
             
@@ -563,8 +570,8 @@ public class StaffController {
                     seatMap.put("parentCustomerId", parentCustomerId);
                     // 親座席の番号を取得
                     String parentSeatId = activeSeats.stream()
-                        .filter(s -> parentCustomerId.equals(s.get("customer_id")))
-                        .map(s -> String.valueOf(s.get("seat_id")))
+                        .filter(as -> parentCustomerId.equals(as.get("customer_id")))
+                        .map(as -> String.valueOf(as.get("seat_id")))
                         .findFirst()
                         .orElse(null);
                     seatMap.put("parentSeatId", parentSeatId);
@@ -579,8 +586,8 @@ public class StaffController {
                     // 自分は親席、あるいは単独席
                     // 自分が親（＝自分を親顧客IDとしている子がいる）か確認
                     List<String> childSeatIds = activeSeats.stream()
-                        .filter(s -> myCustomerId.equals(s.get("parent_customer_id")))
-                        .map(s -> String.valueOf(s.get("seat_id")))
+                        .filter(as -> myCustomerId.equals(as.get("parent_customer_id")))
+                        .map(as -> String.valueOf(as.get("seat_id")))
                         .collect(java.util.stream.Collectors.toList());
                     
                     if (!childSeatIds.isEmpty()) {
