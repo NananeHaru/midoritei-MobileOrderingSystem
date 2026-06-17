@@ -9,7 +9,9 @@ public class CustomerSession {
     private int numberOfMembers;
     private String course;
     private long sessionStartTime;
-    private long sessionEndTime; // 👈 ★この行を追加します！
+    private long sessionEndTime; 
+    private String storeId; // 👈 ★追加：店舗ID
+    private String seatId;  // 👈 ★追加：座席ID
     
     public CustomerSession() {
     }
@@ -24,6 +26,13 @@ public class CustomerSession {
         // 💡 とりあえず「一律で80分（1時間20分）」を終了時刻として計算してセットする例
         // 80分 ＝ 80 * 60秒 * 1000ミリ秒
         this.sessionEndTime = this.sessionStartTime + (80L * 60L * 1000L);
+    }
+
+    // 👈 ★追加：店舗IDと座席IDもセットできるコンストラクタ
+    public CustomerSession(String customerId, int numberOfMembers, String course, String storeId, String seatId) {
+        this(customerId, numberOfMembers, course);
+        this.storeId = storeId;
+        this.seatId = seatId;
     }
     
     public String getCustomerId() {
@@ -65,5 +74,22 @@ public class CustomerSession {
 
     public void setSessionEndTime(long sessionEndTime) {
         this.sessionEndTime = sessionEndTime;
+    }
+
+    // 👈 ★追加：店舗IDと座席IDのゲッターとセッター
+    public String getStoreId() {
+        return storeId;
+    }
+
+    public void setStoreId(String storeId) {
+        this.storeId = storeId;
+    }
+
+    public String getSeatId() {
+        return seatId;
+    }
+
+    public void setSeatId(String seatId) {
+        this.seatId = seatId;
     }
 }

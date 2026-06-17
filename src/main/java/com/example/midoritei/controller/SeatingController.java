@@ -34,8 +34,17 @@ public class SeatingController {
                             Model model) {
         
         // ★ここに追加：すでにセッションがあれば注文画面へスキップ！
-        if (session.getAttribute("customerSession") != null) {
-            return "redirect:/menu"; 
+        // ただし、別のテーブルのQRコードからアクセスした場合はセッションをクリアして新しい席の登録フローへ
+        com.example.midoritei.entity.CustomerSession currentSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+        if (currentSession != null) {
+            if (storeId.equals(currentSession.getStoreId()) && seatId.equals(currentSession.getSeatId())) {
+                return "redirect:/menu"; 
+            } else {
+                // 別のテーブルからアクセスされたため、古いセッション情報とカート情報をクリアする
+                session.removeAttribute("customerSession");
+                session.removeAttribute("cart");
+            }
         }
         try {
             String sql = "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = ?";
@@ -71,7 +80,7 @@ public class SeatingController {
             }
 
             com.example.midoritei.entity.CustomerSession customerSession = 
-                new com.example.midoritei.entity.CustomerSession(customerId, members, courseId);
+                new com.example.midoritei.entity.CustomerSession(customerId, members, courseId, storeId, seatId);
             
             if (!"CS01".equals(courseId.trim())) {
                 long endTime = entryTime.getTime() + ((long) timeLimitMinutes * 60 * 1000);
@@ -154,7 +163,7 @@ public class SeatingController {
                 } catch (Exception e) {}
 
                 com.example.midoritei.entity.CustomerSession customerSession = 
-                    new com.example.midoritei.entity.CustomerSession(customerId, existingMembers, existingCourseId);
+                    new com.example.midoritei.entity.CustomerSession(customerId, existingMembers, existingCourseId, storeId, seatId);
                 
                 if (!"CS01".equals(existingCourseId.trim())) {
                     long endTime = entryTime.getTime() + ((long) timeLimitMinutes * 60 * 1000);
@@ -194,7 +203,7 @@ public class SeatingController {
 
         // セッション側にお客様情報をセット
         com.example.midoritei.entity.CustomerSession customerSession = 
-            new com.example.midoritei.entity.CustomerSession(customerId, members, courseId);
+            new com.example.midoritei.entity.CustomerSession(customerId, members, courseId, storeId, seatId);
         
         if (!"CS01".equals(courseId.trim())) {
             long endTime = System.currentTimeMillis() + ((long) timeLimitMinutes * 60 * 1000);
