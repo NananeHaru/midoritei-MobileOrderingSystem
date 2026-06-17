@@ -10,31 +10,21 @@
         header { background-color: #fff; border-bottom: 3px solid #f3b123; padding: 15px; display: flex; align-items: center; }
         header h1 { margin: 0 auto; font-size: 22px; color: #333; }
         .main-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-        .course-btn { width: 100%; border: 3px solid transparent; border-radius: 12px; padding: 25px; color: white; display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 22px; cursor: pointer; }
+        
+        .course-btn { width: 100%; border: 3px solid transparent; border-radius: 12px; padding: 25px; color: white; display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 22px; cursor: pointer; transition: all 0.2s ease; }
         .premium { background: linear-gradient(to bottom, #f37023, #d9531a); }
         .standard { background: linear-gradient(to bottom, #00adef, #008cc9); }
         .none { background: linear-gradient(to bottom, #999, #777); font-size: 26px; }
+        
+        /* 詳細エリアの設定 */
+        .details { display: none; padding: 10px; border: 1px solid #ddd; border-radius: 0 0 12px 12px; }
+        .detail-item { padding: 15px; text-align: center; font-size: 20px; cursor: pointer; color: #555; border-bottom: 1px solid #eee; }
+        
+        /* 選択時の強調 */
+        .course-btn.selected { border: 6px solid #ffd700 !important; box-shadow: 0 0 15px rgba(255, 215, 0, 0.8) !important; transform: scale(1.02) !important; }
+        .detail-item.selected { background-color: #f3b123 !important; color: white !important; font-weight: bold; }
+        
         .next-btn { background-color: #f3b123; color: white; border: none; padding: 15px 40px; font-size: 22px; font-weight: bold; border-radius: 8px; margin-top: 30px; cursor: pointer; align-self: flex-end; }
-        /* 詳細エリアのデザイン */
-        .details {
-            display: none;
-            margin-top: -10px; /* ボタンとくっつける */
-            background: #fff;
-            border: 2px solid #ddd;
-            border-radius: 0 0 12px 12px; /* 下側だけ角を丸く */
-            padding: 15px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .detail-item {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            text-align: center;
-            font-size: 20px;
-            cursor: pointer;
-            color: #555;
-        }
-        .detail-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -46,63 +36,77 @@
             <input type="hidden" name="store_id" th:value="${param.store_id}">
             <input type="hidden" name="seat_id" th:value="${param.seat_id}">
             <input type="hidden" name="members" th:value="${param.members}">
-            <input type="hidden" name="course_id" id="courseInput" value="">
+            <input type="hidden" name="course_id" id="courseInput" value="CS01">
 
             <div class="course-group">
-                <button type="button" class="course-btn premium" onclick="toggleDetails('premium-details')">
-                    <i class="fas fa-wine-glass-alt"></i> premium コース
-                </button>
+                <button type="button" class="course-btn premium" onclick="toggleDetails('premium-details')">Premium コース</button>
                 <div id="premium-details" class="details">
-                    <div class="detail-item" onclick="selectCourse('CS03', this.parentElement.previousElementSibling)">2時間：3500円</div>
-                    <div class="detail-item" onclick="selectCourse('CS30', this.parentElement.previousElementSibling)">3時間：4500円</div>
+                    <div class="detail-item" onclick="selectCourse('CS03', this)">2時間：3500円</div>
+                    <div class="detail-item" onclick="selectCourse('CS30', this)">3時間：4500円</div>
                 </div>
             </div>
 
             <div class="course-group">
-                <button type="button" class="course-btn standard" onclick="toggleDetails('standard-details')">
-                    <i class="fas fa-beer"></i> standard コース
-                </button>
+                <button type="button" class="course-btn standard" onclick="toggleDetails('standard-details')">Standard コース</button>
                 <div id="standard-details" class="details">
-                    <div class="detail-item" onclick="selectCourse('CS02', this.parentElement.previousElementSibling)">2時間：2000円</div>
-                    <div class="detail-item" onclick="selectCourse('CS20', this.parentElement.previousElementSibling)">3時間：2500円</div>
+                    <div class="detail-item" onclick="selectCourse('CS02', this)">2時間：2000円</div>
+                    <div class="detail-item" onclick="selectCourse('CS20', this)">3時間：2500円</div>
                 </div>
             </div>
-
-            <button type="button" class="course-btn none" onclick="selectCourse('CS01', this)">
+            <button type="button" class="course-btn none selected" onclick="selectCourse('CS01', this)">
                 コースなし
             </button>
 
-            <button type="submit" class="next-btn">次へ</button>
+            <button type="submit" class="next-btn" onclick="confirmOrder(event)">次へ</button>
         </form>
     </div>
     
 </body>
 <script>
     function toggleDetails(id) {
-        // すべての details を一度閉じる
         document.querySelectorAll('.details').forEach(el => el.style.display = 'none');
-        
-        // 押されたIDのみ開く
-        const target = document.getElementById(id);
-        target.style.display = 'block';
+        const targetDetails = document.getElementById(id);
+        targetDetails.style.display = 'block';
+
+        const firstItem = targetDetails.querySelector('.detail-item');
+        if (firstItem) {
+            firstItem.click();
+        }
     }
 
     function selectCourse(courseId, element) {
-        // 隠しフィールドにIDをセット
         document.getElementById('courseInput').value = courseId;
         
-        // 全ボタン（プレミアム・スタンダード・コースなし）の枠線をリセット
-        document.querySelectorAll('.course-btn').forEach(btn => {
-            btn.style.border = '3px solid transparent';
-        });
+        document.querySelectorAll('.course-btn').forEach(btn => btn.classList.remove('selected'));
+        document.querySelectorAll('.detail-item').forEach(item => item.classList.remove('selected'));
+        
+        element.classList.add('selected');
+        if (element.classList.contains('detail-item')) {
+            element.parentElement.previousElementSibling.classList.add('selected');
+        }
+    }
 
-        // 押されたのが詳細内の要素(div)か、コースなしボタン(button)かで判定
-        if (element) {
-            // 詳細アイテムが押された場合、その親ボタンを光らせる
-            element.style.border = '5px solid #f3b123';
+    function confirmOrder(event) {
+        // 1. 選択された項目（detail-item）またはボタン（course-btn）を取得
+        const selectedItem = document.querySelector('.detail-item.selected');
+        const selectedBtn = document.querySelector('.course-btn.selected');
+        
+        let message = "";
+
+        if (selectedItem) {
+            // 詳細項目が選ばれている場合：親ボタン名 + 項目名
+            const parentName = selectedItem.parentElement.previousElementSibling.innerText.trim();
+            const itemName = selectedItem.innerText.trim();
+            message = parentName + " の " + itemName;
+        } else if (selectedBtn) {
+            // コースなしボタンなどが選ばれている場合
+            message = selectedBtn.innerText.trim();
         } else {
-            // コースなしボタンが直接押された場合
-            event.currentTarget.style.border = '5px solid #f3b123';
+            message = "未選択";
+        }
+        
+        if (!confirm(message + " でよろしいですか？")) {
+            event.preventDefault();
         }
     }
 </script>
