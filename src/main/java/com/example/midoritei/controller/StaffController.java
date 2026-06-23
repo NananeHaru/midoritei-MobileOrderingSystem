@@ -688,11 +688,29 @@ public class StaffController {
         if (product == null) return;
         String trimmedCourseId = (courseId != null) ? courseId.trim() : "";
         String prodCourseId = (product.getCourseId() != null) ? product.getCourseId().trim() : "";
-        if ("CS03".equals(trimmedCourseId)) { // premium
+        
+        // 親コースID（parent_course_id）を引き当て
+        String parentCourseId = trimmedCourseId;
+        if (!trimmedCourseId.isEmpty()) {
+            try {
+                parentCourseId = jdbcTemplate.queryForObject(
+                    "SELECT COALESCE(parent_course_id, course_id) FROM コースマスタテーブル WHERE TRIM(course_id) = ?",
+                    String.class,
+                    trimmedCourseId
+                );
+                if (parentCourseId != null) {
+                    parentCourseId = parentCourseId.trim();
+                }
+            } catch (Exception e) {
+                parentCourseId = trimmedCourseId;
+            }
+        }
+
+        if ("CS03".equals(parentCourseId)) { // premium
             if ("CS02".equals(prodCourseId) || "CS03".equals(prodCourseId)) {
                 product.setPrice(0);
             }
-        } else if ("CS02".equals(trimmedCourseId)) { // standard
+        } else if ("CS02".equals(parentCourseId)) { // standard
             if ("CS02".equals(prodCourseId)) {
                 product.setPrice(0);
             }

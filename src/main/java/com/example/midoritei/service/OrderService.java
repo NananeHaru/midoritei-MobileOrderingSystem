@@ -43,16 +43,33 @@ public class OrderService {
         }
         String trimmedCourseId = courseId.trim();
 
+        // 親コースID（parent_course_id）を引き当て
+        String parentCourseId = trimmedCourseId;
+        if (!trimmedCourseId.isEmpty()) {
+            try {
+                parentCourseId = jdbcTemplate.queryForObject(
+                    "SELECT COALESCE(parent_course_id, course_id) FROM コースマスタテーブル WHERE TRIM(course_id) = ?",
+                    String.class,
+                    trimmedCourseId
+                );
+                if (parentCourseId != null) {
+                    parentCourseId = parentCourseId.trim();
+                }
+            } catch (Exception e) {
+                parentCourseId = trimmedCourseId;
+            }
+        }
+
         // コースに応じてカート内商品の単価を０円に変更
         for (CartItem item : cartItems) {
             com.example.midoritei.entity.Product product = item.getProduct();
             if (product != null) {
                 String prodCourseId = (product.getCourseId() != null) ? product.getCourseId().trim() : "";
-                if ("CS03".equals(trimmedCourseId)) { // premium
+                if ("CS03".equals(parentCourseId)) { // premium
                     if ("CS02".equals(prodCourseId) || "CS03".equals(prodCourseId)) {
                         product.setPrice(0);
                     }
-                } else if ("CS02".equals(trimmedCourseId)) { // standard
+                } else if ("CS02".equals(parentCourseId)) { // standard
                     if ("CS02".equals(prodCourseId)) {
                         product.setPrice(0);
                     }

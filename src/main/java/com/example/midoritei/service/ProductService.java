@@ -106,6 +106,14 @@ public class ProductService {
      */
     @Transactional
     public void saveProduct(Product product) {
+        if (product != null) {
+            String courseId = product.getCourseId();
+            if (courseId == null || courseId.trim().isEmpty() || "none".equalsIgnoreCase(courseId.trim())) {
+                product.setCourseId(null);
+            } else {
+                product.setCourseId(courseId.trim());
+            }
+        }
         Product existing = getProductById(product.getProductId());
         if (existing != null) {
             // 更新 (UPDATE)

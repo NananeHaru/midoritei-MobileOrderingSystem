@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -254,6 +254,10 @@
             margin-right: 8px;
         }
 
+        .course-badge.none {
+            background-color: #888888;
+        }
+
         .course-badge.standard {
             background-color: #00A2E8;
         }
@@ -471,8 +475,9 @@
 
                         <div class="info-label">対象コース</div>
                         <div class="info-value">
-                            <span class="course-badge standard" th:if="${product.courseId == null || product.courseId == 'none'}">standard</span>
-                            <span class="course-badge premium" th:if="${product.courseId != null && product.courseId != 'none'}">premium</span>
+                            <span class="course-badge standard" th:if="${product.courseId != null and #strings.trim(product.courseId) == 'CS02'}">スタンダード</span>
+                            <span class="course-badge premium" th:if="${product.courseId != null and #strings.trim(product.courseId) == 'CS03'}">プレミアム</span>
+                            <span class="course-badge none" th:if="${product.courseId == null or #strings.trim(product.courseId) == '' or #strings.trim(product.courseId) == 'none'}">コース対象外</span>
                         </div>
 
                         <div class="info-label">オプション</div>
