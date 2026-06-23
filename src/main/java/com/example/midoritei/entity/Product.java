@@ -63,4 +63,14 @@ public class Product {
 
     public int getIsSeasonal() { return isSeasonal; }
     public void setIsSeasonal(int isSeasonal) { this.isSeasonal = isSeasonal; }
+
+    // Product.java に追加
+    private boolean includedInCourse; // ★これです
+
+    public void setIncludedInCourse(boolean includedInCourse) {
+        this.includedInCourse = includedInCourse;
+    }
+    public boolean isIncludedInCourse() {
+        return includedInCourse;
+    }
 }

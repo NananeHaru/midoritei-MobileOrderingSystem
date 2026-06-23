@@ -215,29 +215,22 @@
         </a>
     </div>
 
-    <div class="menu-list">
+    <div class="product-list">
         <a th:href="@{/menu/detail/{id}(id=${p.productId})}" class="product-card" th:each="p : ${products}">
             <div class="product-info">
                 <h3 class="product-name" th:text="${p.productName}">商品名</h3>
                 
                 <div class="product-price">
-                    <span th:if="${userCourseId == 'CS03' && (p.courseId == 'CS02' || p.courseId == 'cs02' || p.courseId == 'CS03' || p.courseId == 'cs03')}" 
+                    <span th:if="${p.isIncluded}" 
                         style="color: #28a745; font-weight: bold; background-color: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 16px;">
                         0円 (コース込)
                     </span>
 
-                    <span th:if="${userCourseId == 'CS02' && (p.courseId == 'CS02' || p.courseId == 'cs02')}" 
-                        style="color: #28a745; font-weight: bold; background-color: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 16px;">
-                        0円 (コース込)
-                    </span>
-
-                    <span th:unless="${(userCourseId == 'CS03' && (p.courseId == 'CS02' || p.courseId == 'cs02' || p.courseId == 'CS03' || p.courseId == 'cs03')) || (userCourseId == 'CS02' && (p.courseId == 'CS02' || p.courseId == 'cs02'))}" 
-                        th:text="${p.price} + '円(税込)'">
+                    <span th:unless="${p.isIncluded}" th:text="${p.price} + '円(税込)'">
                         0円(税込)
                     </span>
                 </div>
             </div>
-            <img class="product-img" th:src="${p.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
         </a>
     </div>
 
