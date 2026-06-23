@@ -192,6 +192,13 @@
             box-shadow: 0 0 8px rgba(226, 154, 19, 0.15);
         }
 
+        .seat-select.readonly-select {
+            background-color: var(--bg-color);
+            color: #888888;
+            cursor: not-allowed;
+            border-color: var(--border-color);
+        }
+
         /* カスタム矢印 */
         .select-wrapper::after {
             content: '';
@@ -357,6 +364,12 @@
     const courseSelect = document.getElementById('courseSelect');
     const courseWrapper = document.getElementById('courseWrapper');
 
+    // 初期状態ではコース選択を無効化（座席が選ばれていないため）
+    Array.from(courseSelect.options).forEach(opt => {
+        opt.disabled = true;
+    });
+    courseSelect.classList.add('readonly-select');
+
     seatSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const customerId = selectedOption.getAttribute('data-customer-id');
@@ -365,7 +378,29 @@
         // 現在設定されているコースを自動選択
         const courseId = selectedOption.getAttribute('data-course-id');
         if (courseId) {
-            courseSelect.value = courseId.trim();
+            const normalizedCourseId = courseId.trim();
+            courseSelect.value = normalizedCourseId;
+
+            // コースなし（単品注文: CS01）の場合のみ変更可能にする
+            if (normalizedCourseId === 'CS01') {
+                // すべてのオプションを活性化（プレースホルダーを除く）
+                Array.from(courseSelect.options).forEach((opt, index) => {
+                    opt.disabled = (index === 0);
+                });
+                courseSelect.classList.remove('readonly-select');
+            } else {
+                // コースが既に決まっている場合は、現在のコース以外の選択肢をグレーアウト（無効化）する
+                Array.from(courseSelect.options).forEach(opt => {
+                    opt.disabled = (opt.value !== normalizedCourseId);
+                });
+                courseSelect.classList.add('readonly-select');
+            }
+        } else {
+            // 初期値（座席が選ばれていない、またはコース情報がない場合）は選択不可にする
+            Array.from(courseSelect.options).forEach(opt => {
+                opt.disabled = true;
+            });
+            courseSelect.classList.add('readonly-select');
         }
     });
 

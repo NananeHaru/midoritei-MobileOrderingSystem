@@ -254,11 +254,12 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         
-        // 顧客テーブルのコースを更新
+        // 顧客テーブルのコースを更新（現在のコースがコースなし「CS01」の場合のみ変更を許可）
         jdbcTemplate.update(
-            "UPDATE 顧客テーブル SET course_id = ? WHERE customer_id = ?",
+            "UPDATE 顧客テーブル SET course_id = ? WHERE customer_id = ? AND (TRIM(course_id) = 'CS01' OR TRIM(course_id) = ?)",
             courseId,
-            customerId
+            customerId,
+            courseId
         );
         
         session.setAttribute("staffSeatId", seatId);
