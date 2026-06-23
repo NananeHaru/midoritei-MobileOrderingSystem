@@ -29,6 +29,24 @@
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background-color: #fff; border-top: 2px solid #f3b123; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
         .nav-item { text-align: center; color: #666; text-decoration: none; width: 33.3%; font-size: 12px; font-weight: bold; }
         .nav-item.active { color: #f3b123; }
+
+        /* レシート風デザイン */
+        #receiptOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .receipt-container {
+            background: #fff; width: 90%; max-width: 400px; padding: 25px;
+            border-radius: 10px; border: 2px dashed #f3b123;
+        }
+        .receipt-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px dashed #ccc; padding-bottom: 10px; }
+        .receipt-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 18px; }
+        .receipt-total { border-top: 2px dashed #333; margin-top: 15px; padding-top: 10px; font-size: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -80,9 +98,24 @@
     <div class="cart-footer">
         <div class="total-price">小計: <span th:text="${totalAmount}">0</span> 円(税込)</div>
         
-        <form th:action="@{/cart/submit}" method="post" th:if="${!#lists.isEmpty(cart)}">
-            <button type="submit" class="submit-order-btn" onclick="return confirm('厨房に注文を送信します。よろしいですか？')">注文を確定する</button>
+        <form id="orderForm" th:action="@{/cart/submit}" method="post" th:if="${!#lists.isEmpty(cart)}">
+            <button type="button" class="submit-order-btn" onclick="showReceipt()">注文を確定する</button>
         </form>
+    </div>
+
+    <div id="receiptOverlay">
+        <div class="receipt-container">
+            <div class="receipt-title">注文内容確認</div>
+            <div id="receiptContent">
+                </div>
+            <div class="receipt-total" style="display: flex; justify-content: space-between;">
+                <span>合計</span><span th:text="${totalAmount} + '円'">0円</span>
+            </div>
+            <button type="button" onclick="document.getElementById('orderForm').submit()" 
+                    style="width: 100%; margin-top: 20px; padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 5px; font-size: 18px;">
+                確定して送信
+            </button>
+        </div>
     </div>
 
     <nav class="bottom-nav">
@@ -133,6 +166,24 @@
                 form.submit();
             });
         });
+    </script>
+
+    <script>
+        function showReceipt() {
+            // カートの内容をループして取得
+            let cartItems = [];
+            document.querySelectorAll('.cart-card').forEach(card => {
+                let name = card.querySelector('.item-name').innerText;
+                let qty = card.querySelector('[id^="qty-"]').innerText;
+                cartItems.push(`<div class="receipt-row"><span>${name}</span><span>× ${qty}</span></div>`);
+            });
+
+            // HTMLを埋め込んでレシートエリアを表示するだけにする
+            document.getElementById('receiptContent').innerHTML = cartItems.join('');
+            document.getElementById('receiptOverlay').style.display = 'flex';
+            
+            // アラートはここから削除しました！
+        }
     </script>
 </body>
 <script>
