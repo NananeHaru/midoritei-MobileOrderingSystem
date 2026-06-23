@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -257,6 +257,12 @@
             background-color: #FFFFFF;
             color: #888888;
             transition: all 0.2s;
+        }
+
+        .btn-course-choice.active.none {
+            border-color: #888888;
+            background-color: #888888;
+            color: #FFFFFF;
         }
 
         .btn-course-choice.active.standard {
@@ -581,8 +587,9 @@
                             <div class="form-row">
                                 <label class="form-label">対象コース :</label>
                                 <div class="course-btn-group">
-                                    <button type="button" class="btn-course-choice standard" id="btnCourseStandard" onclick="selectCourse('none')">standard</button>
-                                    <button type="button" class="btn-course-choice premium" id="btnCoursePremium" onclick="selectCourse('CS01')">premium</button>
+                                    <button type="button" class="btn-course-choice none" id="btnCourseNone" onclick="selectCourse('none')">コース対象外</button>
+                                    <button type="button" class="btn-course-choice standard" id="btnCourseStandard" onclick="selectCourse('CS02')">スタンダード</button>
+                                    <button type="button" class="btn-course-choice premium" id="btnCoursePremium" onclick="selectCourse('CS03')">プレミアム</button>
                                 </div>
                             </div>
 
@@ -653,17 +660,23 @@
 
         // コース選択トグル
         function selectCourse(courseId) {
-            document.getElementById('courseIdInput').value = courseId;
+            const normCourseId = (courseId !== null) ? courseId.trim() : '';
+            document.getElementById('courseIdInput').value = normCourseId;
+            
+            const btnNone = document.getElementById('btnCourseNone');
             const btnStd = document.getElementById('btnCourseStandard');
             const btnPrem = document.getElementById('btnCoursePremium');
 
+            btnNone.classList.remove('active');
             btnStd.classList.remove('active');
             btnPrem.classList.remove('active');
 
-            if (courseId === 'none' || courseId === '') {
+            if (normCourseId === 'CS02') {
                 btnStd.classList.add('active');
-            } else {
+            } else if (normCourseId === 'CS03') {
                 btnPrem.classList.add('active');
+            } else {
+                btnNone.classList.add('active');
             }
         }
 

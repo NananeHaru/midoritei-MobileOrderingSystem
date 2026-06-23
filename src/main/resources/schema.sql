@@ -277,7 +277,8 @@ CREATE TABLE IF NOT EXISTS コースマスタテーブル (
     course_id char(4) PRIMARY KEY,
     course_name VARCHAR(50) NOT NULL,
     price INT NOT NULL,
-    time_limit INT NOT NULL
+    time_limit INT NOT NULL,
+    parent_course_id CHAR(4)
 );
 
 -- (この下に、さっきの INSERT INTO コースマスタテーブル ... を続ける)
@@ -285,19 +286,29 @@ CREATE TABLE IF NOT EXISTS コースマスタテーブル (
 -- 📄 コースマスタテーブルへの初期データ投入
 
 -- CS01: コースなし（単品注文なので価格は0円、制限時間はなしとして0分、またはシステム用の値を設定）
-INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
-SELECT 'CS01', 'コースなし（単品注文）', 0, 0 
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit, parent_course_id)
+SELECT 'CS01', 'コースなし（単品注文）', 0, 0, 'CS01' 
 WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS01');
 
 -- CS02: スターンバードコース（例: 2時間飲み放題 2000円）
-INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
-SELECT 'CS02', 'スタンダード2時間飲み放題', 2000, 120 
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit, parent_course_id)
+SELECT 'CS02', 'スタンダード2時間飲み放題', 2000, 120, 'CS02' 
 WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS02');
 
+-- CS20: スタンダード3時間飲み放題
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit, parent_course_id)
+SELECT 'CS20', 'スタンダード3時間飲み放題', 2500, 180, 'CS02' 
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS20');
+
 -- CS03: プレミアムコース（例: 2時間プレミアム飲み放題 3500円）
-INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit)
-SELECT 'CS03', 'プレミアム2時間贅沢飲み放題', 3500, 120
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit, parent_course_id)
+SELECT 'CS03', 'プレミアム2時間贅沢飲み放題', 3500, 120, 'CS03' 
 WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS03');
+
+-- CS30: プレミアム3時間贅沢飲み放題
+INSERT INTO コースマスタテーブル (course_id, course_name, price, time_limit, parent_course_id)
+SELECT 'CS30', 'プレミアム3時間贅沢飲み放題', 4500, 180, 'CS03' 
+WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS30');
 
 
 -- 14. 座席マスタテーブル
@@ -480,5 +491,18 @@ INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'N
 INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '14', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '14');
 INSERT INTO 座席マスタテーブル (store_id, seat_id, seat_type) SELECT 'NB', '15', 'table' WHERE NOT EXISTS (SELECT 1 FROM 座席マスタテーブル WHERE store_id = 'NB' AND seat_id = '15');
 
+-- 古いUIで誤って設定されたコースIDの整合性補正
+-- フード商品（category_id = 'CT02'）はすべてコース対象外にする
+UPDATE 商品マスタテーブル SET course_id = NULL WHERE category_id = 'CT02';
 
+-- ドリンク商品（category_id = 'CT01'）の補正
+-- 旧UIのプレミアム（CS01） -> プレミアム（CS03）
+UPDATE 商品マスタテーブル SET course_id = 'CS03' WHERE category_id = 'CT01' AND (TRIM(course_id) = 'CS01');
+-- 旧UIのスタンダード（none）または空文字 -> スタンダード（CS02）
+UPDATE 商品マスタテーブル SET course_id = 'CS02' WHERE category_id = 'CT01' AND (TRIM(course_id) = 'none' OR TRIM(course_id) = '');
 
+-- コースマスタテーブルに parent_course_id 列を追加し、初期設定する
+ALTER TABLE コースマスタテーブル ADD COLUMN IF NOT EXISTS parent_course_id CHAR(4);
+UPDATE コースマスタテーブル SET parent_course_id = 'CS01' WHERE course_id = 'CS01';
+UPDATE コースマスタテーブル SET parent_course_id = 'CS02' WHERE course_id IN ('CS02', 'CS20');
+UPDATE コースマスタテーブル SET parent_course_id = 'CS03' WHERE course_id IN ('CS03', 'CS30');

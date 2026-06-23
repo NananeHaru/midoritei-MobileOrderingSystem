@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -457,11 +457,14 @@
                     <div class="form-group">
                         <label class="form-label">対象コース</label>
                         <div class="toggle-grid">
-                            <div class="btn-toggle" th:classappend="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'none')} ? 'selected'" onclick="toggleSelection(this, 'course_1')">スタンダード</div>
-                            <input type="checkbox" name="courses" value="none" id="course_1" class="hidden-checkbox" th:checked="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'none')}">
+                            <div class="btn-toggle" th:classappend="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'none')} ? 'selected'" onclick="toggleSelection(this, 'course_none')">コース対象外</div>
+                            <input type="checkbox" name="courses" value="none" id="course_none" class="hidden-checkbox" th:checked="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'none')}">
+
+                            <div class="btn-toggle" th:classappend="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'CS02')} ? 'selected'" onclick="toggleSelection(this, 'course_standard')">スタンダード</div>
+                            <input type="checkbox" name="courses" value="CS02" id="course_standard" class="hidden-checkbox" th:checked="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'CS02')}">
                             
-                            <div class="btn-toggle" th:classappend="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'CS01')} ? 'selected'" onclick="toggleSelection(this, 'course_2')">プレミアム</div>
-                            <input type="checkbox" name="courses" value="CS01" id="course_2" class="hidden-checkbox" th:checked="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'CS01')}">
+                            <div class="btn-toggle" th:classappend="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'CS03')} ? 'selected'" onclick="toggleSelection(this, 'course_premium')">プレミアム</div>
+                            <input type="checkbox" name="courses" value="CS03" id="course_premium" class="hidden-checkbox" th:checked="${lastSearchParams['courses'] != null and #lists.contains(lastSearchParams['courses'], 'CS03')}">
                         </div>
                     </div>
 

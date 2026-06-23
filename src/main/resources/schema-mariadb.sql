@@ -2979,3 +2979,19 @@ WHERE
             store_id = 'NB'
             AND seat_id = '15'
     );
+
+-- 古いUIで誤って設定されたコースIDの整合性補正
+-- フード商品（category_id = 'CT02'）はすべてコース対象外にする
+UPDATE 商品マスタテーブル SET course_id = NULL WHERE category_id = 'CT02';
+
+-- ドリンク商品（category_id = 'CT01'）の補正
+-- 旧UIのプレミアム（CS01） -> プレミアム（CS03）
+UPDATE 商品マスタテーブル SET course_id = 'CS03' WHERE category_id = 'CT01' AND (TRIM(course_id) = 'CS01');
+-- 旧UIのスタンダード（none）または空文字 -> スタンダード（CS02）
+UPDATE 商品マスタテーブル SET course_id = 'CS02' WHERE category_id = 'CT01' AND (TRIM(course_id) = 'none' OR TRIM(course_id) = '');
+
+-- コースマスタテーブルに parent_course_id 列を追加し、初期設定する
+ALTER TABLE コースマスタテーブル ADD COLUMN IF NOT EXISTS parent_course_id CHAR(4);
+UPDATE コースマスタテーブル SET parent_course_id = 'CS01' WHERE course_id = 'CS01';
+UPDATE コースマスタテーブル SET parent_course_id = 'CS02' WHERE course_id IN ('CS02', 'CS20');
+UPDATE コースマスタテーブル SET parent_course_id = 'CS03' WHERE course_id IN ('CS03', 'CS30');
