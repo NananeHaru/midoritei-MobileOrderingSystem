@@ -57,6 +57,7 @@
             }
         }
     </style>
+    <div th:replace="~{fragments :: nav-styles}"></div>
 </head>
 
 <body>
@@ -100,11 +101,8 @@
         </form>
     </div>
 
-    <nav class="bottom-nav">
-        <a th:href="@{/menu}" class="nav-item"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>
-        <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
-        <a th:href="@{/orders/billing}" class="nav-item active"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>
-    </nav>
+    <div th:replace="~{fragments :: bottom-nav('menu')}"></div>
+
 </body>
 <script>
     // 1. ページが読み込まれた瞬間に、現在のURLを履歴の「最前列」にセットする

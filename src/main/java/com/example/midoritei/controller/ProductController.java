@@ -375,7 +375,7 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
         String trimmedCourseId = (courseId != null) ? courseId.trim() : "";
         String prodCourseId = (product.getCourseId() != null) ? product.getCourseId().trim() : "";
         
-        // 親コースID（parent_course_id）を引き当て
+        // 親コースIDを取得（既存のロジック）
         String parentCourseId = trimmedCourseId;
         if (!trimmedCourseId.isEmpty()) {
             try {
@@ -384,22 +384,30 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
                     String.class,
                     trimmedCourseId
                 );
-                if (parentCourseId != null) {
-                    parentCourseId = parentCourseId.trim();
-                }
+                if (parentCourseId != null) parentCourseId = parentCourseId.trim();
             } catch (Exception e) {
                 parentCourseId = trimmedCourseId;
             }
         }
 
-        if ("CS03".equals(parentCourseId)) { // premium
+        // ★ここから修正：判定とフラグセットを追加
+        boolean isIncluded = false;
+        if ("CS03".equals(parentCourseId)) { // Premiumなら
             if ("CS02".equals(prodCourseId) || "CS03".equals(prodCourseId)) {
-                product.setPrice(0);
+                isIncluded = true;
             }
-        } else if ("CS02".equals(parentCourseId)) { // standard
+        } else if ("CS02".equals(parentCourseId)) { // Standardなら
             if ("CS02".equals(prodCourseId)) {
-                product.setPrice(0);
+                isIncluded = true;
             }
+        }
+
+        // フラグをセット！
+        product.setIncludedInCourse(isIncluded);
+        
+        // 含まれる場合は価格を0にする
+        if (isIncluded) {
+            product.setPrice(0);
         }
     }
 
