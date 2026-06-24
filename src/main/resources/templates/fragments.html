@@ -71,24 +71,58 @@
                     return;
                 }
 
+                // 💡 【追加】残り時間が60秒以上ある＝新しい注文（コース）が始まったとみなす
+                // その場合は、過去の「アラート出したよフラグ」をきれいに消去（クリア）する
+                if (totalSeconds > 60) {
+                    sessionStorage.removeItem("timeUpAlertShown");
+                }
+
                 function updateTimer() {
                     if (totalSeconds === -1 || totalSeconds === null) {
                         return;
                     }
 
                     if (totalSeconds <= 0) {
-                        if (timerElement) timerElement.textContent = "00:00:00";
-                        clearInterval(timerInterval);
-                        alert("制限時間になりました。");
-
-                        const cartBtn = document.querySelector(".view-cart-btn");
-                        if (cartBtn) {
-                            cartBtn.style.backgroundColor = "#ccc"; 
-                            cartBtn.style.pointerEvents = "none";  
-                            cartBtn.textContent = "時間切れ";       
-                        }
-                        return;
+                    if (timerElement) timerElement.textContent = "00:00:00";
+                    clearInterval(timerInterval);
+                    
+                    // 💡 すでにアラートを表示済みかチェックする
+                    if (!sessionStorage.getItem("timeUpAlertShown")) {
+                        alert("制限時間になりました。ご注文ありがとうございました。");
+                        // アラートを出したら「表示済みフラグ」をブラウザに保存する
+                        sessionStorage.setItem("timeUpAlertShown", "true");
                     }
+
+                    // ①【メニュー画面】「カゴを見る」ボタンのグレーアウト処理
+                    const cartBtn = document.querySelector(".view-cart-btn");
+                    if (cartBtn) {
+                        cartBtn.style.backgroundColor = "#ccc"; 
+                        cartBtn.style.pointerEvents = "none";  
+                        cartBtn.textContent = "時間切れ";       
+                    }
+
+                    // ②【詳細画面】「カゴに入れる」ボタンをロックする
+                    const detailSubmitBtns = document.querySelectorAll("form[action*='/cart/add'] button, form[action*='/cart/add'] input[type='submit'], .add-to-cart-btn");
+                    detailSubmitBtns.forEach(btn => {
+                        btn.style.backgroundColor = "#ccc";
+                        btn.style.pointerEvents = "none";
+                        if (btn.tagName === "INPUT") {
+                            btn.value = "時間切れ";
+                        } else {
+                            btn.textContent = "時間切れ";
+                        }
+                    });
+
+                    // ③【カート画面】「注文を確定する」ボタンをロックする
+                    const cartSubmitBtns = document.querySelectorAll("form[action*='/cart/submit'] button, form[action*='/cart/submit'] input[type='submit']");
+                    cartSubmitBtns.forEach(btn => {
+                        btn.style.backgroundColor = "#ccc";
+                        btn.style.pointerEvents = "none";
+                        btn.textContent = "時間切れ";
+                    });
+
+                    return;
+                }
                     
                     let hours = Math.floor(totalSeconds / 3600);
                     let minutes = Math.floor((totalSeconds % 3600) / 60);
