@@ -505,32 +505,37 @@ public class StaffController {
         // 親の顧客ID -> グループ情報 (ラベル, カラー)
         Map<String, String> groupLabels = new java.util.HashMap<>();
         Map<String, String> groupColors = new java.util.HashMap<>();
-        String[] labels = {"A", "B", "C", "D", "E", "F"};
+        String[] labels = new String[26];
+        for (int j = 0; j < 26; j++) labels[j] = String.valueOf((char) ('A' + j));
         String[] colors = {"#1a73e8", "#a142f4", "#e8710a", "#12b5cb", "#e52592", "#137333"};
 
-        for (Map<String, Object> seat : activeSeats) {
-            String parentCustId = (String) seat.get("parent_customer_id");
-            if (parentCustId != null && !groupLabels.containsKey(parentCustId)) {
-                // 親の顧客IDを持つ席を探索し、その席番号（数値）を元にユニークかつ固定のアルファベットを割り当てます
-                String parentSeatId = activeSeats.stream()
-                    .filter(s -> parentCustId.equals(s.get("customer_id")))
-                    .map(s -> String.valueOf(s.get("seat_id")))
-                    .findFirst()
-                    .orElse("1");
-                
-                int seatNum = 1;
-                try {
-                    seatNum = Integer.parseInt(parentSeatId.trim());
-                } catch (Exception e) {
-                    // 解析失敗時のフォールバック
-                }
-                
-                int labelIndex = (seatNum - 1) % labels.length;
-                if (labelIndex < 0) labelIndex = 0;
+        // 統合グループの親顧客IDを、子席の merged_at 最小値昇順（統合操作を行った順）で収集してラベルを割り当て
+        List<String> sortedParentIds = activeSeats.stream()
+            .filter(s -> s.get("parent_customer_id") != null)
+            .map(s -> (String) s.get("parent_customer_id"))
+            .distinct()
+            .sorted((id1, id2) -> {
+                java.sql.Timestamp t1 = activeSeats.stream()
+                    .filter(s -> id1.equals(s.get("parent_customer_id")))
+                    .map(s -> (java.sql.Timestamp) s.get("merged_at"))
+                    .filter(t -> t != null)
+                    .min(java.util.Comparator.naturalOrder()).orElse(null);
+                java.sql.Timestamp t2 = activeSeats.stream()
+                    .filter(s -> id2.equals(s.get("parent_customer_id")))
+                    .map(s -> (java.sql.Timestamp) s.get("merged_at"))
+                    .filter(t -> t != null)
+                    .min(java.util.Comparator.naturalOrder()).orElse(null);
+                if (t1 == null && t2 == null) return 0;
+                if (t1 == null) return 1;
+                if (t2 == null) return -1;
+                return t1.compareTo(t2);
+            })
+            .collect(java.util.stream.Collectors.toList());
 
-                groupLabels.put(parentCustId, labels[labelIndex]);
-                groupColors.put(parentCustId, colors[labelIndex]);
-            }
+        for (int i = 0; i < sortedParentIds.size(); i++) {
+            int labelIdx = i % 26;
+            groupLabels.put(sortedParentIds.get(i), labels[labelIdx]);
+            groupColors.put(sortedParentIds.get(i), colors[labelIdx % colors.length]);
         }
         
         // データベースから店舗の全座席を取得

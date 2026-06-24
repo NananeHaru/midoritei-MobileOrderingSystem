@@ -392,6 +392,7 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
 
     private void adjustProductPriceByCourse(Product product, String courseId) {
         if (product == null) return;
+        product.setIncludedInCourse(false); // 初期値としてfalseを設定
         String trimmedCourseId = (courseId != null) ? courseId.trim() : "";
         String prodCourseId = (product.getCourseId() != null) ? product.getCourseId().trim() : "";
         
@@ -414,7 +415,9 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
         boolean isIncluded = false;
         if ("CS03".equals(parentCourseId)) { // Premiumなら
             if ("CS02".equals(prodCourseId) || "CS03".equals(prodCourseId)) {
+
                 isIncluded = true;
+       
             }
         } else if ("CS02".equals(parentCourseId)) { // Standardなら
             if ("CS02".equals(prodCourseId)) {

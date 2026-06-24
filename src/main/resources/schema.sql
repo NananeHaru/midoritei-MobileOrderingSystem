@@ -16,8 +16,10 @@ CREATE TABLE IF NOT EXISTS 顧客テーブル (
     checkout_status INT,
     total_amount INT,
     number_of_members INT DEFAULT 0,
-    parent_customer_id CHAR(7)
+    parent_customer_id CHAR(7),
+    merged_at TIMESTAMP
 );
+ALTER TABLE 顧客テーブル ADD COLUMN IF NOT EXISTS merged_at TIMESTAMP;
 
 -- 3. 商品マスタテーブル
 CREATE TABLE IF NOT EXISTS 商品マスタテーブル (

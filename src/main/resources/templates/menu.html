@@ -228,9 +228,10 @@
                         style="color: #28a745; font-weight: bold; background-color: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 16px;">
                         0円 (コース込)
                     </span>
-                    <span th:unless="${p.includedInCourse}" 
-                        th:text="${p.price} + '円(税込)'">
-                        0円(税込)
+
+                    <span th:unless="${p.includedInCourse}" th:text="${p.price} + '円(税込)'">
+                             0円(税込)
+                    </span>
                     </span>
                 </div>
             </div>
