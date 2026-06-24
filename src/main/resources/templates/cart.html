@@ -47,10 +47,45 @@
         .receipt-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px dashed #ccc; padding-bottom: 10px; }
         .receipt-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 18px; }
         .receipt-total { border-top: 2px dashed #333; margin-top: 15px; padding-top: 10px; font-size: 20px; font-weight: bold; }
+
+        /* ボタンを横並びにするコンテナ */
+        .cart-modal-btn-area {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 0 5px;
+        }
+
+        /* カートポップアップ内のボタン共通スタイル */
+        .cart-modal-btn {
+            flex: 1;
+            border: none;
+            padding: 12px 0;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s ease;
+        }
+
+        .cart-modal-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* いいえボタン（落ち着いたグレー） */
+        .btn-cancel {
+            background-color: #888888;
+        }
+
+        /* 確定して送信ボタン（画像にある綺麗な赤オレンジ色） */
+        .btn-submit {
+            background-color: #e95445;
+        }
     </style>
-
     <div th:replace="~{fragments :: nav-styles}"></div>
-
 </head>
 <body>
     <header>
@@ -98,34 +133,32 @@
         </div>
     </div>
 
-    <div class="cart-footer">
-        <div class="total-price">小計: <span th:text="${totalAmount}">0</span> 円(税込)</div>
+    <form id="orderForm" th:action="@{/cart/submit}" method="post" th:if="${!#lists.isEmpty(cart)}">
         
-        <form id="orderForm" th:action="@{/cart/submit}" method="post" th:if="${!#lists.isEmpty(cart)}">
+        <div class="cart-footer">
+            <div class="total-price">小計: <span th:text="${totalAmount}">0</span> 円(税込)</div>
             <button type="button" class="submit-order-btn" onclick="showReceipt()">注文を確定する</button>
-        </form>
-    </div>
-
-    <div id="receiptOverlay">
-        <div class="receipt-container">
-            <div class="receipt-title">注文内容確認</div>
-            <div id="receiptContent">
-                </div>
-            <div class="receipt-total" style="display: flex; justify-content: space-between;">
-                <span>合計</span><span th:text="${totalAmount} + '円'">0円</span>
-            </div>
-            <button type="button" onclick="document.getElementById('orderForm').submit()" 
-                    style="width: 100%; margin-top: 20px; padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 5px; font-size: 18px;">
-                確定して送信
-            </button>
         </div>
-    </div>
 
-    <div th:replace="~{fragments :: bottom-nav('menu')}"></div>
-
-    <div th:replace="~{fragments :: timer-script}"></div>
+        <div id="receiptOverlay">
+            <div class="receipt-container">
+                <div class="receipt-title">注文内容確認</div>
+                <div id="receiptContent">
+                    </div>
+                <div class="receipt-total" style="display: flex; justify-content: space-between;">
+                    <span>合計</span><span th:text="${totalAmount} + '円'">0円</span>
+                </div>
+                <div class="cart-modal-btn-area">
+                    <button type="button" class="cart-modal-btn btn-cancel" onclick="closeCartModal()">いいえ</button>
+                    <button type="submit" class="cart-modal-btn btn-submit">確定して送信</button>
+                </div>
+            </div>
+        </div>
+        
+    </form>
 
     <script>
+        // 💡 1. 数量変更のスクリプト（こちらは現在の正常なコードのままです）
         document.querySelectorAll('.btn-quantity').forEach(button => {
             button.addEventListener('click', function() {
                 const index = this.getAttribute('data-index');
@@ -168,8 +201,8 @@
     </script>
 
     <script>
+        // 💡 2. 注文確認ポップアップを表示する関数
         function showReceipt() {
-            // カートの内容をループして取得
             let cartItems = [];
             document.querySelectorAll('.cart-card').forEach(card => {
                 let name = card.querySelector('.item-name').innerText;
@@ -177,11 +210,19 @@
                 cartItems.push(`<div class="receipt-row"><span>${name}</span><span>× ${qty}</span></div>`);
             });
 
-            // HTMLを埋め込んでレシートエリアを表示するだけにする
             document.getElementById('receiptContent').innerHTML = cartItems.join('');
-            document.getElementById('receiptOverlay').style.display = 'flex';
             
-            // アラートはここから削除しました！
+            // 💡 実際のID名「receiptOverlay」をきっちり指定して表示
+            document.getElementById('receiptOverlay').style.display = 'flex';
+        }
+
+        // 💡 3. 【修正】「いいえ」を押したときにポップアップを非表示にする関数
+        // showReceiptの外側に独立させたので、ボタンから正しく呼び出せるようになります！
+        function closeCartModal() {
+            const modal = document.getElementById('receiptOverlay'); // 👈 ID名を本物に変更
+            if (modal) {
+                modal.style.display = 'none';
+            }
         }
     </script>
 </body>
