@@ -3,6 +3,61 @@
 <head></head>
 <body>
 
+    <div th:fragment="nav-styles">
+        <style>
+            /* ボタンが画面下のコンテンツに被らないようにする全画面共通の余白 */
+            body {
+                padding-bottom: 140px !important; 
+            }
+            .bottom-nav {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 60px;
+                background-color: #fff;
+                border-top: 2px solid #f3b123;
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                z-index: 100;
+                box-sizing: border-box;
+            }
+            .nav-item {
+                text-align: center;
+                color: #666;
+                text-decoration: none;
+                width: 33.3%;
+            }
+            .nav-item.active {
+                color: #f3b123;
+            }
+            .nav-icon {
+                font-size: 24px;
+            }
+            .nav-text {
+                font-size: 12px;
+                margin-top: 3px;
+                font-weight: bold;
+            }
+        </style>
+    </div>
+
+    <nav th:fragment="bottom-nav(activePage)" class="bottom-nav">
+        <a th:href="@{/menu}" class="nav-item" th:classappend="${activePage == 'menu'} ? 'active' : ''">
+            <i class="fas fa-utensils nav-icon"></i>
+            <div class="nav-text">注文</div>
+        </a>
+        <a th:href="@{/orders/history}" class="nav-item" th:classappend="${activePage == 'history'} ? 'active' : ''">
+            <i class="fas fa-list-alt nav-icon"></i>
+            <div class="nav-text">注文履歴</div>
+        </a>
+        <a th:href="@{/orders/billing}" class="nav-item" th:classappend="${activePage == 'billing'} ? 'active' : ''">
+            <i class="fas fa-cash-register nav-icon"></i>
+            <div class="nav-text">会計</div>
+        </a>
+    </nav>
+
     <div th:fragment="timer-script">
         <script th:inline="javascript">
             document.addEventListener("DOMContentLoaded", function() {
@@ -57,18 +112,10 @@
 
 </body>
 <script>
-    // 1. ページが読み込まれた瞬間に、現在のURLを履歴の「最前列」にセットする
-    // これにより、「戻る」ボタンを押したときの遷移先が「現在のページ」自身になります
+    // 既存の履歴制御スクリプト（そのまま残しています）
     history.pushState(null, null, location.href);
-
-    // 2. ブラウザの戻る操作(popstate)を検知して割り込む
     window.addEventListener('popstate', function(event) {
-        // 再度履歴を現在のURLで上書きする（戻るのを防ぐ）
         history.pushState(null, null, location.href);
-        
-        // 3. 強制リロードを実行
-        // リロードすることで、サーバー側のインターセプター（門番）が再起動し、
-        // 「注文中ならメニュー画面に戻す」というサーバー側のルールを確実に実行させる
         window.location.reload(); 
     });
 </script>

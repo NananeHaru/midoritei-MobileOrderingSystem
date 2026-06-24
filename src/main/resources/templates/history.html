@@ -31,6 +31,9 @@
         .nav-item { text-align: center; color: #666; text-decoration: none; width: 33.3%; font-size: 12px; font-weight: bold; }
         .nav-item.active { color: #f3b123; }
     </style>
+    
+    <div th:replace="~{fragments :: nav-styles}"></div>
+
 </head>
 <body>
     <header>
@@ -59,11 +62,7 @@
         </div>
     </div>
 
-    <nav class="bottom-nav">
-        <a th:href="@{/menu}" class="nav-item"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>
-        <a th:href="@{/orders/history}" class="nav-item active"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
-        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>
-    </nav>
+    <div th:replace="~{fragments :: bottom-nav('menu')}"></div>
 
     <div th:replace="~{fragments :: timer-script}"></div>
 </body>

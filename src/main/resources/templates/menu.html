@@ -196,6 +196,9 @@
             font-weight: bold;
         }
     </style>
+
+    <div th:replace="~{fragments :: nav-styles}"></div>
+
 </head>
 
 <body>
@@ -215,22 +218,23 @@
         </a>
     </div>
 
-    <div class="product-list">
+    <div class="menu-list">
         <a th:href="@{/menu/detail/{id}(id=${p.productId})}" class="product-card" th:each="p : ${products}">
             <div class="product-info">
                 <h3 class="product-name" th:text="${p.productName}">商品名</h3>
                 
                 <div class="product-price">
-                    <span th:if="${p.isIncluded}" 
+                    <span th:if="${p.includedInCourse}" 
                         style="color: #28a745; font-weight: bold; background-color: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 16px;">
                         0円 (コース込)
                     </span>
-
-                    <span th:unless="${p.isIncluded}" th:text="${p.price} + '円(税込)'">
+                    <span th:unless="${p.includedInCourse}" 
+                        th:text="${p.price} + '円(税込)'">
                         0円(税込)
                     </span>
                 </div>
             </div>
+            <img th:src="${p.imagePath}" class="product-img" alt="商品画像">
         </a>
     </div>
 
@@ -239,17 +243,8 @@
         <a th:href="@{/cart}" class="view-cart-btn">カゴを見る（<span th:text="${cartCount}">0</span>）</a>
     </div>
 
-    <nav class="bottom-nav">
-        <a th:href="@{/menu}" class="nav-item active"><i class="fas fa-utensils nav-icon"></i>
-            <div class="nav-text">注文</div>
-        </a>
-        <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i>
-            <div>注文履歴</div>
-        </a>
-        <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i>
-            <div>会計</div>
-        </a>
-    </nav>
+    <div th:replace="~{fragments :: bottom-nav('menu')}"></div>
+
 </body>
 <script>
     // 1. ページが読み込まれた瞬間に、現在のURLを履歴の「最前列」にセットする
