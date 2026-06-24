@@ -2996,4 +2996,4 @@ UPDATE 商品マスタテーブル SET course_id = 'CS02' WHERE category_id = 'C
 ALTER TABLE コースマスタテーブル ADD COLUMN IF NOT EXISTS parent_course_id CHAR(4);
 UPDATE コースマスタテーブル SET parent_course_id = 'CS01' WHERE course_id = 'CS01';
 UPDATE コースマスタテーブル SET parent_course_id = 'CS02' WHERE course_id IN ('CS02', 'CS20');
-UPDATE コースマスタテーブル SET parent_course_id = 'CS03' WHERE course_id IN ('CS03', 'CS30');
+UPDATE コースマスタテーブル SET parent_course_id = 'CS03' WHERE course_id IN ('CS03', 'CS30');

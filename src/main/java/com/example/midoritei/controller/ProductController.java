@@ -139,7 +139,7 @@ public class ProductController {
         return "detail";
     }
 
-    // カゴに追加
+    // カゴに追加（エラー修正版）
     @PostMapping("/cart/add")
     public String addToCart(@RequestParam("productId") String productId,
                             @RequestParam("quantity") int quantity,
@@ -147,6 +147,28 @@ public class ProductController {
                             @RequestParam(value = "optionAddPrice", defaultValue = "0") int optionAddPrice,
                             HttpSession session) {
 
+        // 1. カゴに入れる直前に、本当にまだ制限時間内かチェックする
+        long currentTime = System.currentTimeMillis();
+        com.example.midoritei.entity.CustomerSession customerSession = 
+            (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
+        
+        if (customerSession != null) {
+            String courseId = customerSession.getCourse();
+            // コースあり(CS01以外)の場合だけ時間をチェック
+            if (courseId != null && !"CS01".equals(courseId.trim())) {
+                long endTime = customerSession.getSessionEndTime();
+                if (currentTime > endTime) {
+                    System.out.println("⚠️ 警告: 時間切れ後の【カゴへの追加】をブロックしました。");
+                    
+                    // 💡 【追加】時間切れを検知したら、セッションにあるカゴの中身（cart）を完全にクリアする
+                    session.removeAttribute("cart");
+                    
+                    return "redirect:/menu"; 
+                }
+            }
+        }
+
+        // 2. 既存の商品追加処理
         List<Product> allProducts = productService.getActiveProducts();
         Product product = allProducts.stream()
                 .filter(p -> p.getProductId().equals(productId))
@@ -154,8 +176,6 @@ public class ProductController {
                 .orElse(null);
 
         if (product != null) {
-            com.example.midoritei.entity.CustomerSession customerSession = 
-                (com.example.midoritei.entity.CustomerSession) session.getAttribute("customerSession");
             String userCourseId = (customerSession != null) ? customerSession.getCourse() : "CS01";
             adjustProductPriceByCourse(product, userCourseId);
 
@@ -376,7 +396,7 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
         String trimmedCourseId = (courseId != null) ? courseId.trim() : "";
         String prodCourseId = (product.getCourseId() != null) ? product.getCourseId().trim() : "";
         
-        // 親コースID（parent_course_id）を引き当て
+        // 親コースIDを取得（既存のロジック）
         String parentCourseId = trimmedCourseId;
         if (!trimmedCourseId.isEmpty()) {
             try {
@@ -385,24 +405,32 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
                     String.class,
                     trimmedCourseId
                 );
-                if (parentCourseId != null) {
-                    parentCourseId = parentCourseId.trim();
-                }
+                if (parentCourseId != null) parentCourseId = parentCourseId.trim();
             } catch (Exception e) {
                 parentCourseId = trimmedCourseId;
             }
         }
 
-        if ("CS03".equals(parentCourseId)) { // premium
+        // ★ここから修正：判定とフラグセットを追加
+        boolean isIncluded = false;
+        if ("CS03".equals(parentCourseId)) { // Premiumなら
             if ("CS02".equals(prodCourseId) || "CS03".equals(prodCourseId)) {
-                product.setPrice(0);
-                product.setIncludedInCourse(true);
+
+                isIncluded = true;
+       
             }
-        } else if ("CS02".equals(parentCourseId)) { // standard
+        } else if ("CS02".equals(parentCourseId)) { // Standardなら
             if ("CS02".equals(prodCourseId)) {
-                product.setPrice(0);
-                product.setIncludedInCourse(true);
+                isIncluded = true;
             }
+        }
+
+        // フラグをセット！
+        product.setIncludedInCourse(isIncluded);
+        
+        // 含まれる場合は価格を0にする
+        if (isIncluded) {
+            product.setPrice(0);
         }
     }
 
