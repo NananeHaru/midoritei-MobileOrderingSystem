@@ -76,7 +76,7 @@ public class SeatingService {
     }
 
     public java.util.List<java.util.Map<String, Object>> getActiveSeatsDetail(String storeId) {
-        String sql = "SELECT c.seat_id, c.customer_id, c.number_of_members, c.course_id, cm.course_name, c.entry_time, c.parent_customer_id " +
+        String sql = "SELECT c.seat_id, c.customer_id, c.number_of_members, c.course_id, cm.course_name, c.entry_time, c.parent_customer_id, c.merged_at " +
                      "FROM 顧客テーブル c " +
                      "LEFT JOIN コースマスタテーブル cm ON TRIM(c.course_id) = TRIM(cm.course_id) " +
                      "WHERE c.checkout_status = 0 ";
@@ -117,8 +117,8 @@ public class SeatingService {
                 String updateOrdersSql = "UPDATE 注文テーブル SET customer_id = ? WHERE customer_id = ?";
                 jdbcTemplate.update(updateOrdersSql, parentCustomerId, childCustomerId);
 
-                // 子の顧客レコードに親の顧客IDをセット（統合関係の保持）
-                String updateParentIdSql = "UPDATE 顧客テーブル SET parent_customer_id = ? WHERE customer_id = ?";
+                // 子の顧客レコードに親の顧客IDと統合日時をセット
+                String updateParentIdSql = "UPDATE 顧客テーブル SET parent_customer_id = ?, merged_at = NOW() WHERE customer_id = ?";
                 jdbcTemplate.update(updateParentIdSql, parentCustomerId, childCustomerId);
             }
         }
