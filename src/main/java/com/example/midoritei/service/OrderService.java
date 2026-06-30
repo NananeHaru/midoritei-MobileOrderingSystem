@@ -77,9 +77,29 @@ public class OrderService {
             }
         }
 
-        // 1. 注文ID（15桁）を生成 (例: OR + yyMMddHHmmss + ランダム1桁)
-        String orderId = "OR" + java.time.format.DateTimeFormatter.ofPattern("yyMMddHHmmss").format(java.time.LocalDateTime.now()) + (int)(Math.random() * 10);
+        // 1. 🛠️ 【本番仕様・毎日リセット型】注文IDの自動生成
+        // 基準となる日付プレフィックスを作成 (例: OR260630)
+        String datePrefix = "OR" + java.time.format.DateTimeFormatter.ofPattern("yyMMdd").format(java.time.LocalDateTime.now());
 
+        // 今日のこのプレフィックスから始まる注文が何件あるか（最大連番）を高速に取得
+        // ※末尾4桁を数値化して最大値を取ります。データがなければ 0 が返ります。
+        int currentMaxSeq = 0;
+        try {
+            String maxSeqSql = "SELECT COALESCE(MAX(CAST(RIGHT(order_id, 4) AS UNSIGNED)), 0) " +
+                               "FROM 注文テーブル WHERE order_id LIKE ?";
+            currentMaxSeq = jdbcTemplate.queryForObject(maxSeqSql, Integer.class, datePrefix + "%");
+        } catch (Exception e) {
+            // 万が一の例外時は0スタートとする安全ガード
+            currentMaxSeq = 0;
+        }
+
+        // 次の連番を4桁のゼロ埋め文字列にする (例: 1 -> "0001", 15 -> "0015")
+        String seqPart = String.format("%04d", currentMaxSeq + 1);
+
+        // ガッチャンコして新しい12桁の注文IDを確定 (例: "OR2606300001")
+        String orderId = datePrefix + seqPart;
+
+        
         // 2. 注文テーブルに親レコードを1件インサート
         String orderSql = "INSERT INTO 注文テーブル (order_id, customer_id, order_time, status) VALUES (?, ?, ?, 0)";
         jdbcTemplate.update(orderSql, orderId, customerId, java.time.LocalDateTime.now());
