@@ -17,7 +17,7 @@ WHERE
 
 -- 2. 顧客テーブル
 CREATE TABLE IF NOT EXISTS 顧客テーブル (
-    customer_id CHAR(7) PRIMARY KEY,
+    customer_id VARCHAR(14) PRIMARY KEY, -- 💡 CHAR(7) から VARCHAR(14) に拡張
     store_id CHAR(2),
     seat_id VARCHAR(20),
     course_id CHAR(4),
@@ -26,10 +26,13 @@ CREATE TABLE IF NOT EXISTS 顧客テーブル (
     checkout_status INT,
     total_amount INT,
     number_of_members INT DEFAULT 0,
-    parent_customer_id CHAR(7),
+    parent_customer_id VARCHAR(14),    -- 💡 ここも紐づくため VARCHAR(14) に拡張
     merged_at TIMESTAMP NULL
 );
 ALTER TABLE 顧客テーブル ADD COLUMN IF NOT EXISTS merged_at TIMESTAMP NULL;
+
+-- 💡 毎日リセットのLIKE検索を爆速にするインデックスを追加
+ALTER TABLE 顧客テーブル ADD INDEX IF NOT EXISTS idx_customer_id (customer_id);
 
 -- 3. 商品マスタテーブル
 CREATE TABLE IF NOT EXISTS 商品マスタテーブル (
@@ -44,12 +47,16 @@ CREATE TABLE IF NOT EXISTS 商品マスタテーブル (
     image_path VARCHAR(255)
 );
 
--- 5. オプションマスタテーブル
-CREATE TABLE IF NOT EXISTS オプションマスタテーブル (
-    option_id INT AUTO_INCREMENT PRIMARY KEY,
-    option_name VARCHAR(50) NOT NULL,
-    option_add_price INT NOT NULL DEFAULT 0
+-- 5. 注文テーブル
+CREATE TABLE IF NOT EXISTS 注文テーブル (
+    order_id VARCHAR(14) PRIMARY KEY,    -- 💡 14桁に拡張
+    customer_id VARCHAR(14),            -- 💡 顧客ID側と合わせるため 14桁に拡張
+    order_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status INT NOT NULL DEFAULT 0       -- 💡 初期データのINSERTで使われているため復活！
 );
+
+-- 💡 注文IDの毎日リセット検索を爆速にするインデックスを追加
+ALTER TABLE 注文テーブル ADD INDEX IF NOT EXISTS idx_order_id (order_id);
 
 -- 梅酒用などのサンプルデータ（ロック、ソーダ割りなど）
 INSERT INTO
@@ -144,8 +151,8 @@ WHERE
 
 -- 6. 注文テーブル
 CREATE TABLE IF NOT EXISTS 注文テーブル (
-    order_id CHAR(15) PRIMARY KEY,
-    customer_id CHAR(7) NOT NULL,
+    order_id VARCHAR(14) PRIMARY KEY,
+    customer_id VARCHAR(14),
     order_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status INT NOT NULL DEFAULT 0 -- 0:受付中, 1:提供済, 9:キャンセル
 );
@@ -153,7 +160,7 @@ CREATE TABLE IF NOT EXISTS 注文テーブル (
 -- 7. 注文明細テーブル
 CREATE TABLE IF NOT EXISTS 注文明細テーブル (
     order_item_id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id CHAR(15) NOT NULL,
+    order_id VARCHAR(14) NOT NULL,
     product_id CHAR(6) NOT NULL,
     quantity INT NOT NULL,
     unit_price INT NOT NULL,
