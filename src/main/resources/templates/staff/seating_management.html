@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -450,7 +450,7 @@
             background-color: #FFFFFF;
             border-radius: 12px;
             width: 90%;
-            max-width: 480px;
+            max-width: 600px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             overflow: hidden;
             animation: slideUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -521,8 +521,9 @@
 
         .btn-full {
             width: 100%;
+            height: 50px;
             justify-content: center;
-            padding: 12px;
+            padding: 0 12px;
             font-size: 15px;
             font-weight: 700;
         }
@@ -786,16 +787,28 @@
             </div>
             <div class="modal-footer">
                 <!-- 空席時のボタン -->
-                <form id="formOpen" th:action="@{/staff/seating/open}" method="POST" style="display: none;">
+                <form id="formOpen" th:action="@{/staff/seating/open}" method="POST" style="display: none; width: 100%;">
                     <input type="hidden" name="seatId" id="inputOpenSeatId">
                     <button type="submit" class="btn btn-primary btn-full">使用中に変更</button>
+                    <button type="button" class="btn btn-secondary btn-full" style="margin-top: 12px;" onclick="printEntryQr(document.getElementById('inputOpenSeatId').value)">
+                        <span style="display:inline-flex; align-items:center; gap:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            入店QR印刷
+                        </span>
+                    </button>
                 </form>
 
                 <!-- 使用中時のボタン -->
                 <div class="button-grid" id="occupiedActions" style="display: none;">
-                    <form id="formClose" th:action="@{/staff/seating/close}" method="POST" onsubmit="return confirmStateChange('使用中', '空席')">
+                    <button type="button" class="btn btn-secondary btn-full" onclick="printEntryQr(selectedSeat.seatId)">
+                        <span style="display:inline-flex; align-items:center; gap:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            入店QR印刷
+                        </span>
+                    </button>
+                    <form id="formClose" th:action="@{/staff/seating/close}" method="POST" onsubmit="return confirmStateChange('使用中', '空席')" style="width: 100%;">
                         <input type="hidden" name="seatId" id="inputCloseSeatId">
-                        <button type="submit" class="btn btn-secondary btn-full">空席に変更</button>
+                        <button type="submit" class="btn btn-danger btn-full">空席に変更</button>
                     </form>
                     <button class="btn btn-primary btn-full" onclick="openChangeSeatModal()">座席変更</button>
                     <button class="btn btn-primary btn-full" onclick="startMergeSelection()">座席統合</button>
@@ -1019,6 +1032,110 @@
             document.getElementById('qrCustomerInfo').innerText = labelText;
             
             showModal('qrModal');
+        }
+
+        // 入店用QRコードの印刷用ウィンドウを開く
+        function printEntryQr(seatId) {
+            closeModal('detailModal');
+            
+            const storeId = /*[[${session.loggedInStoreId}]]*/ 'MH';
+            const storeName = /*[[${session.loggedInStoreName}]]*/ 'みどり亭';
+            const qrUrl = `/seating/qr-image?store_id=${storeId}&seat_id=${seatId}`;
+            
+            const printWindow = window.open('', '_blank', 'width=600,height=700');
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>入店用QRコード - ${seatId}番テーブル</title>
+                    <style>
+                        body {
+                            font-family: 'Noto Sans JP', sans-serif;
+                            text-align: center;
+                            padding: 40px 20px;
+                            margin: 0;
+                            color: #333333;
+                        }
+                        .container {
+                            border: 2px dashed #cccccc;
+                            padding: 30px;
+                            border-radius: 12px;
+                            max-width: 400px;
+                            margin: 0 auto;
+                        }
+                        .title {
+                            font-size: 20px;
+                            font-weight: 700;
+                            margin-bottom: 5px;
+                            letter-spacing: 1px;
+                        }
+                        .store-name {
+                            font-size: 16px;
+                            color: #666666;
+                            margin-bottom: 25px;
+                        }
+                        .seat-info {
+                            font-size: 28px;
+                            font-weight: 700;
+                            margin-bottom: 25px;
+                            border-bottom: 3px double #333333;
+                            padding-bottom: 8px;
+                            display: inline-block;
+                            min-width: 150px;
+                        }
+                        .qr-image-wrapper {
+                            margin-bottom: 25px;
+                        }
+                        .qr-image {
+                            width: 220px;
+                            height: 220px;
+                        }
+                        .instructions {
+                            font-size: 13px;
+                            color: #555555;
+                            line-height: 1.6;
+                            text-align: left;
+                            display: inline-block;
+                        }
+                        .footer-note {
+                            margin-top: 30px;
+                            font-size: 11px;
+                            color: #999999;
+                        }
+                        @media print {
+                            body {
+                                padding: 0;
+                            }
+                            .container {
+                                border: none;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="title">ご注文用QRコード</div>
+                        <div class="store-name">${storeName}</div>
+                        <div class="seat-info">${seatId}番テーブル</div>
+                        <div class="qr-image-wrapper">
+                            <img src="${qrUrl}" class="qr-image" onload="window.print();">
+                        </div>
+                        <div class="instructions">
+                            【注文手順】<br>
+                            1. スマートフォンのカメラで上記QRコードを読み取ります。<br>
+                            2. 表示された画面から人数とコースを選択してください。<br>
+                            3. 注文画面に進み、そのままご注文いただけます。
+                        </div>
+                        <div class="footer-note">
+                            ※この用紙は会計時まで大切に保管してください。
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
 
         // =============== 座席統合フロー ===============
