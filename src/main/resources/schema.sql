@@ -1,9 +1,10 @@
 -- 1. 顧客採番テーブル
 CREATE TABLE IF NOT EXISTS 顧客採番テーブル (
-    current_number INT NOT NULL
+    store_id CHAR(2) NOT NULL,
+    current_number INT NOT NULL,
+    PRIMARY KEY (store_id)
 );
-INSERT INTO 顧客採番テーブル (current_number)
-SELECT 2 WHERE NOT EXISTS (SELECT 1 FROM 顧客採番テーブル);
+INSERT IGNORE INTO 顧客採番テーブル (store_id, current_number) VALUES ('MH', 2);
 
 -- 2. 顧客テーブル（★end_timeを追加します）
 CREATE TABLE IF NOT EXISTS 顧客テーブル (

@@ -512,16 +512,16 @@ public class StaffController {
         // 統合グループの親顧客IDを、子席の merged_at 最小値昇順（統合操作を行った順）で収集してラベルを割り当て
         List<String> sortedParentIds = activeSeats.stream()
             .filter(s -> s.get("parent_customer_id") != null)
-            .map(s -> (String) s.get("parent_customer_id"))
+            .map(s -> ((String) s.get("parent_customer_id")).trim())
             .distinct()
             .sorted((id1, id2) -> {
                 java.sql.Timestamp t1 = activeSeats.stream()
-                    .filter(s -> id1.equals(s.get("parent_customer_id")))
+                    .filter(s -> s.get("parent_customer_id") != null && id1.equals(((String) s.get("parent_customer_id")).trim()))
                     .map(s -> (java.sql.Timestamp) s.get("merged_at"))
                     .filter(t -> t != null)
                     .min(java.util.Comparator.naturalOrder()).orElse(null);
                 java.sql.Timestamp t2 = activeSeats.stream()
-                    .filter(s -> id2.equals(s.get("parent_customer_id")))
+                    .filter(s -> s.get("parent_customer_id") != null && id2.equals(((String) s.get("parent_customer_id")).trim()))
                     .map(s -> (java.sql.Timestamp) s.get("merged_at"))
                     .filter(t -> t != null)
                     .min(java.util.Comparator.naturalOrder()).orElse(null);
@@ -561,7 +561,7 @@ public class StaffController {
             
             if (activeSeat != null) {
                 seatMap.put("status", "使用中");
-                String myCustomerId = (String) activeSeat.get("customer_id");
+                String myCustomerId = activeSeat.get("customer_id") != null ? ((String) activeSeat.get("customer_id")).trim() : "";
                 seatMap.put("customerId", myCustomerId);
                 seatMap.put("numberOfMembers", activeSeat.get("number_of_members"));
                 seatMap.put("courseId", activeSeat.get("course_id") != null ? ((String) activeSeat.get("course_id")).trim() : null);
@@ -569,14 +569,14 @@ public class StaffController {
                 seatMap.put("entryTime", activeSeat.get("entry_time"));
                 
                 // 親の顧客ID
-                String parentCustomerId = (String) activeSeat.get("parent_customer_id");
+                String parentCustomerId = activeSeat.get("parent_customer_id") != null ? ((String) activeSeat.get("parent_customer_id")).trim() : null;
                 
                 if (parentCustomerId != null) {
                     // 自分は子席
                     seatMap.put("parentCustomerId", parentCustomerId);
                     // 親座席の番号を取得
                     String parentSeatId = activeSeats.stream()
-                        .filter(as -> parentCustomerId.equals(as.get("customer_id")))
+                        .filter(as -> parentCustomerId.equals(as.get("customer_id") != null ? ((String) as.get("customer_id")).trim() : null))
                         .map(as -> String.valueOf(as.get("seat_id")))
                         .findFirst()
                         .orElse(null);
@@ -592,7 +592,7 @@ public class StaffController {
                     // 自分は親席、あるいは単独席
                     // 自分が親（＝自分を親顧客IDとしている子がいる）か確認
                     List<String> childSeatIds = activeSeats.stream()
-                        .filter(as -> myCustomerId.equals(as.get("parent_customer_id")))
+                        .filter(as -> as.get("parent_customer_id") != null && myCustomerId.equals(((String) as.get("parent_customer_id")).trim()))
                         .map(as -> String.valueOf(as.get("seat_id")))
                         .collect(java.util.stream.Collectors.toList());
                     
@@ -641,7 +641,8 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         
-        seatingService.closeTable(seatId);
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+        seatingService.closeTable(storeId, seatId);
         return "redirect:/staff/seating";
     }
 
@@ -652,13 +653,14 @@ public class StaffController {
     public String changeSeat(@RequestParam("currentSeatId") String currentSeatId,
                              @RequestParam("newSeatId") String newSeatId,
                              HttpSession session) {
-        if (session == null || session.getAttribute("loggedInStaff") == null) {
-            return "redirect:/staff/login";
-        }
-        
-        seatingService.changeSeat(currentSeatId, newSeatId);
-        return "redirect:/staff/seating";
-    }
+         if (session == null || session.getAttribute("loggedInStaff") == null) {
+             return "redirect:/staff/login";
+         }
+         
+         String storeId = (String) session.getAttribute("loggedInStoreId");
+         seatingService.changeSeat(storeId, currentSeatId, newSeatId);
+         return "redirect:/staff/seating";
+     }
 
     /**
      * 座席統合を処理します。
@@ -667,13 +669,14 @@ public class StaffController {
     public String mergeSeats(@RequestParam("parentSeatId") String parentSeatId,
                              @RequestParam("childSeatIds") List<String> childSeatIds,
                              HttpSession session) {
-        if (session == null || session.getAttribute("loggedInStaff") == null) {
-            return "redirect:/staff/login";
-        }
-        
-        seatingService.mergeSeats(parentSeatId, childSeatIds);
-        return "redirect:/staff/seating";
-    }
+         if (session == null || session.getAttribute("loggedInStaff") == null) {
+             return "redirect:/staff/login";
+         }
+         
+         String storeId = (String) session.getAttribute("loggedInStoreId");
+         seatingService.mergeSeats(storeId, parentSeatId, childSeatIds);
+         return "redirect:/staff/seating";
+     }
 
     /**
      * テーブル結合（統合）解除を処理します。
@@ -681,13 +684,14 @@ public class StaffController {
     @PostMapping("/seating/unmerge")
     public String unmergeSeat(@RequestParam("seatId") String seatId,
                               HttpSession session) {
-        if (session == null || session.getAttribute("loggedInStaff") == null) {
-            return "redirect:/staff/login";
-        }
-        
-        seatingService.unmergeSeat(seatId);
-        return "redirect:/staff/seating";
-    }
+         if (session == null || session.getAttribute("loggedInStaff") == null) {
+             return "redirect:/staff/login";
+         }
+         
+         String storeId = (String) session.getAttribute("loggedInStoreId");
+         seatingService.unmergeSeat(storeId, seatId);
+         return "redirect:/staff/seating";
+     }
 
     private void adjustProductPriceByCourse(Product product, String courseId) {
         if (product == null) return;
