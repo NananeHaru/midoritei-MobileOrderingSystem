@@ -83,14 +83,14 @@
                             <span th:text="' × ' + ${item.quantity}">× 1</span>
                             <div class="bill-item-sub" th:if="${item.option_info != 'なし'}" th:text="'(' + ${item.option_info} + ')'">(ロック)</div>
                         </div>
-                        <div th:text="${(item.price + item.option_add_price) * item.quantity} + '円'">0円</div>
+                        <div th:text="${#numbers.formatInteger((item.price + item.option_add_price) * item.quantity, 3, 'COMMA')} + '円'">0円</div>
                     </div>
                 </div>
             </div>
 
             <div class="total-row">
                 <div class="total-label">総合計金額</div>
-                <div class="total-value"><span th:text="${finalAmount}">0</span><span style="font-size:18px; color:#333;"> 円</span></div>
+                <div class="total-value"><span th:text="${#numbers.formatInteger(finalAmount, 3, 'COMMA')}">0</span><span style="font-size:18px; color:#333;"> 円</span></div>
             </div>
         </div>
     </div>

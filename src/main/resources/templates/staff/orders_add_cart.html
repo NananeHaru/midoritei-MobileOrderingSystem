@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -522,7 +522,7 @@
             <div class="info-pill">
                 <div>座席ID <span th:text="${seatId}">-</span></div>
                 <div>選択コース <span th:text="${courseName}">-</span></div>
-                <div>小計 <span th:text="${totalAmount} + ' 円'">0 円</span></div>
+                <div>小計 <span th:text="${#numbers.formatInteger(totalAmount, 3, 'COMMA')} + ' 円'">0 円</span></div>
             </div>
             <button class="btn-submit-order" id="orderSubmitBtn" th:disabled="${#lists.isEmpty(cart)}">注文する</button>
         </div>
