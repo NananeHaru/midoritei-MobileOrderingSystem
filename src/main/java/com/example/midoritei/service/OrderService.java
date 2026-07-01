@@ -156,7 +156,7 @@ public class OrderService {
                      "FROM 注文テーブル o " +
                      "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
                      "JOIN 商品マスタテーブル p ON d.product_id = p.product_id " +
-                     "WHERE o.customer_id = ? " +
+                     "WHERE o.customer_id = ? AND d.serve_status != 9 " +
                      "ORDER BY o.order_time DESC";
 
         return jdbcTemplate.queryForList(sql, resolvedCustomerId);
