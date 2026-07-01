@@ -167,9 +167,9 @@ public class OrderService {
     // -------------------------------------------------------------
     public int getTotalBillingAmount(String customerId) {
         String resolvedCustomerId = getRepresentativeCustomerId(customerId);
-        String sql = "SELECT total_amount FROM 顧客テーブル WHERE customer_id = ?";
+        String sql = "SELECT SUM(total_amount) FROM 顧客テーブル WHERE customer_id = ? OR parent_customer_id = ?";
         try {
-            return jdbcTemplate.queryForObject(sql, Integer.class, resolvedCustomerId);
+            return jdbcTemplate.queryForObject(sql, Integer.class, resolvedCustomerId, resolvedCustomerId);
         } catch (Exception e) {
             System.out.println("⚠️ 顧客テーブルからの合計金額取得に失敗しました: " + e.getMessage());
             return 0;
@@ -363,7 +363,7 @@ public class OrderService {
         }
     }
 
-    private String getRepresentativeCustomerId(String customerId) {
+    public String getRepresentativeCustomerId(String customerId) {
         if (customerId == null) return null;
         try {
             String sql = "SELECT COALESCE(parent_customer_id, customer_id) FROM 顧客テーブル WHERE customer_id = ?";

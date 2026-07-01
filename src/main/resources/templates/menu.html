@@ -240,7 +240,7 @@
     </div>
 
     <div class="cart-footer">
-        <div class="total-price">小計 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span th:text="${totalAmount}">0</span> 円(税込)</div>
+        <div class="total-price">小計 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span th:text="${#numbers.formatInteger(totalAmount, 3, 'COMMA')}">0</span> 円(税込)</div>
         <a th:href="@{/cart}" class="view-cart-btn">カゴを見る（<span th:text="${cartCount}">0</span>）</a>
     </div>
 

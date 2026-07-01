@@ -205,9 +205,10 @@ public class SeatingController {
 
         // 💡 【ここが重要！】新しく作られた顧客テーブルの total_amount に、コース料金を初期値としてセットする
         try {
+            int initialAmount = coursePrice * members;
             String updateAmountSql = "UPDATE 顧客テーブル SET total_amount = ? WHERE customer_id = ?";
-            jdbcTemplate.update(updateAmountSql, coursePrice, customerId);
-            System.out.println("★顧客テーブルの初期合計金額にコース料金（" + coursePrice + "円）を設定しました。");
+            jdbcTemplate.update(updateAmountSql, initialAmount, customerId);
+            System.out.println("★顧客テーブルの初期合計金額にコース料金（" + initialAmount + "円）を設定しました。");
         } catch (Exception e) {
             System.out.println("⚠️ 顧客テーブルの金額更新に失敗しました: " + e.getMessage());
         }

@@ -121,7 +121,7 @@
                     </div>
 
                     <div>
-                        <strong th:text="'小計: ' + ${item.subtotal} + '円'">0円</strong>
+                        <strong th:text="'小計: ' + ${#numbers.formatInteger(item.subtotal, 3, 'COMMA')} + '円'">0円</strong>
                     </div>
                 </div>
             </div>
@@ -136,7 +136,7 @@
     <form id="orderForm" th:action="@{/cart/submit}" method="post" th:if="${!#lists.isEmpty(cart)}">
         
         <div class="cart-footer">
-            <div class="total-price">小計: <span th:text="${totalAmount}">0</span> 円(税込)</div>
+            <div class="total-price">小計: <span th:text="${#numbers.formatInteger(totalAmount, 3, 'COMMA')}">0</span> 円(税込)</div>
             <button type="button" class="submit-order-btn" onclick="showReceipt()">注文を確定する</button>
         </div>
 
@@ -146,7 +146,7 @@
                 <div id="receiptContent">
                     </div>
                 <div class="receipt-total" style="display: flex; justify-content: space-between;">
-                    <span>合計</span><span th:text="${totalAmount} + '円'">0円</span>
+                    <span>合計</span><span th:text="${#numbers.formatInteger(totalAmount, 3, 'COMMA')} + '円'">0円</span>
                 </div>
                 <div class="cart-modal-btn-area">
                     <button type="button" class="cart-modal-btn btn-cancel" onclick="closeCartModal()">いいえ</button>

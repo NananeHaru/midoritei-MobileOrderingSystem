@@ -271,21 +271,35 @@ public class ProductController {
         // 2. 料理やドリンクの注文内訳をサービスから取得
         List<Map<String, Object>> billDetails = new java.util.ArrayList<>(orderService.getOrderHistory(customerId));
 
-        // 3. 本物の顧客テーブルとコースマスタテーブルから情報を安全に取得
-        String customerSql = "SELECT course_id, number_of_members FROM 顧客テーブル WHERE customer_id = ?";
+        // 3. 本物の顧客テーブルとコースマスタテーブルから情報を安全に取得（統合グループ全員分）
+        String repCustomerId = orderService.getRepresentativeCustomerId(customerId);
+        String groupSql = "SELECT course_id, number_of_members FROM 顧客テーブル WHERE (customer_id = ? OR parent_customer_id = ?) AND checkout_status = 0";
         String courseSql = "SELECT course_name, price FROM コースマスタテーブル WHERE course_id = ?";
 
         try {
-            Map<String, Object> customerData = jdbcTemplate.queryForMap(customerSql, customerId);
-            String courseId = (String) customerData.get("course_id");
-            if (courseId == null) courseId = (String) customerData.get("COURSE_ID");
-            
-            Number membersNum = (Number) customerData.get("number_of_members");
-            if (membersNum == null) membersNum = (Number) customerData.get("NUMBER_OF_MEMBERS");
-            int members = (membersNum != null) ? membersNum.intValue() : 1;
+            List<Map<String, Object>> groupCustomers = jdbcTemplate.queryForList(groupSql, repCustomerId, repCustomerId);
+            // コースIDごとに人数を合算するためのマップ
+            Map<String, Integer> courseMembersMap = new java.util.LinkedHashMap<>();
+            for (Map<String, Object> customerData : groupCustomers) {
+                String courseId = (String) customerData.get("course_id");
+                if (courseId == null) courseId = (String) customerData.get("COURSE_ID");
+                if (courseId == null) continue;
+                courseId = courseId.trim();
 
-            // コースなし(CS01)以外の場合、マスタから料金と名前を引っ張って明細に差し込む
-            if (courseId != null && !"CS01".equals(courseId.trim())) {
+                Number membersNum = (Number) customerData.get("number_of_members");
+                if (membersNum == null) membersNum = (Number) customerData.get("NUMBER_OF_MEMBERS");
+                int members = (membersNum != null) ? membersNum.intValue() : 1;
+
+                if (!"CS01".equals(courseId)) {
+                    courseMembersMap.put(courseId, courseMembersMap.getOrDefault(courseId, 0) + members);
+                }
+            }
+
+            // 合算されたコースごとに明細行を作成して追加
+            for (Map.Entry<String, Integer> entry : courseMembersMap.entrySet()) {
+                String courseId = entry.getKey();
+                int totalMembers = entry.getValue();
+
                 Map<String, Object> courseMaster = jdbcTemplate.queryForMap(courseSql, courseId);
                 
                 String courseName = (String) courseMaster.get("course_name");
@@ -295,45 +309,30 @@ public class ProductController {
                 if (priceNum == null) priceNum = (Number) courseMaster.get("PRICE");
                 int unitPrice = (priceNum != null) ? priceNum.intValue() : 0;
 
-                // =============================================================
-                // 🎯 【最終解決・絶対に壊れない版】'なし'をセットして安全に消し去る
-                // =============================================================
                 Map<String, Object> courseLine = new java.util.HashMap<>();
-
-                // 基本情報のセット
                 courseLine.put("product_name", courseName);
                 courseLine.put("PRODUCT_NAME", courseName);
-
-                courseLine.put("quantity", Long.valueOf(members));
-                courseLine.put("QUANTITY", Long.valueOf(members));
-
+                courseLine.put("quantity", Long.valueOf(totalMembers));
+                courseLine.put("QUANTITY", Long.valueOf(totalMembers));
                 courseLine.put("price", Long.valueOf(unitPrice));
                 courseLine.put("PRICE", Long.valueOf(unitPrice));
-
-                // 💡 ここが最大のポイント！
-                // HTML側の条件「item.option_info != 'なし'」を逆手に取り、
-                // 最初から 'なし' という文字列を渡すことで、HTMLに「描画をスキップ」させます。
                 courseLine.put("option_info", "なし");
                 courseLine.put("OPTION_INFO", "なし");
-
-                // 追加料金も0にして完全にガードします
                 courseLine.put("option_add_price", Integer.valueOf(0));
                 courseLine.put("OPTION_ADD_PRICE", Integer.valueOf(0));
 
-                // 明細リストの先頭に追加
                 billDetails.add(0, courseLine);
-                System.out.println("🎯 【成功】(null)を永久追放したコース明細を先頭に追加しました: " + courseName);
             }
         } catch (Exception e) {
             System.out.println("⚠️ コース明細のDB取得中にエラーが発生（安全スキップ）: " + e.getMessage());
         }
 
         // 4. 最終合計金額をサービスから取得
-        int finalAmount = orderService.getTotalBillingAmount(customerId);
+        int finalAmount = orderService.getTotalBillingAmount(repCustomerId);
 
         model.addAttribute("billDetails", billDetails);
         model.addAttribute("finalAmount", finalAmount);
-        model.addAttribute("orderId", customerId);
+        model.addAttribute("orderId", repCustomerId);
 
         return "billing";
     }
@@ -351,11 +350,13 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
         }
     }
     
+    String repCustomerId = orderService.getRepresentativeCustomerId(customerId);
+    
     try {
         // 1. 仕様書に合わせるデータ（オブジェクト）を作成
         PaymentUpdateRequest requestData = new PaymentUpdateRequest();
         requestData.setMethod("updateStatus");   // 仕様書の method 値
-        requestData.setCustomerId(customerId);   // 顧客ID
+        requestData.setCustomerId(repCustomerId);   // 顧客ID
         requestData.setHash(null);               // ハッシュ値（今回は同一性判定しないのでnull）
         requestData.setBillStatus(8);            // 会計中ステータス（値: 8）
 
@@ -375,7 +376,7 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
     }
 
     // 完了画面に顧客IDを引き渡す処理（既存）
-    model.addAttribute("orderId", customerId);
+    model.addAttribute("orderId", repCustomerId);
     return "billing_complete"; 
 }
 

@@ -522,7 +522,7 @@
             <div class="info-pill">
                 <div>座席ID <span th:text="${seatId}">-</span></div>
                 <div>選択コース <span th:text="${courseName}">-</span></div>
-                <div>小計 <span th:text="${totalAmount} + ' 円'">0 円</span></div>
+                <div>小計 <span th:text="${#numbers.formatInteger(totalAmount, 3, 'COMMA')} + ' 円'">0 円</span></div>
             </div>
             <a th:href="@{/staff/orders/add/cart}" class="btn-cart">カゴを見る</a>
         </div>

@@ -254,6 +254,29 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         
+        // コースなし(CS01)から有料コースに変更された場合、料金×人数を顧客テーブルの合計金額に加算する
+        try {
+            String selectOldSql = "SELECT course_id, number_of_members FROM 顧客テーブル WHERE customer_id = ?";
+            java.util.Map<String, Object> oldCust = jdbcTemplate.queryForMap(selectOldSql, customerId);
+            String oldCourseId = oldCust.get("course_id") != null ? ((String) oldCust.get("course_id")).trim() : "CS01";
+            int members = oldCust.get("number_of_members") != null ? ((Number) oldCust.get("number_of_members")).intValue() : 1;
+
+            if ("CS01".equals(oldCourseId) && !"CS01".equals(courseId.trim())) {
+                int coursePrice = jdbcTemplate.queryForObject(
+                    "SELECT price FROM コースマスタテーブル WHERE course_id = ?",
+                    Integer.class,
+                    courseId.trim()
+                );
+                jdbcTemplate.update(
+                    "UPDATE 顧客テーブル SET total_amount = total_amount + ? WHERE customer_id = ?",
+                    coursePrice * members,
+                    customerId
+                );
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ スタッフ代理注文時のコース変更に伴う合計金額加算に失敗しました: " + e.getMessage());
+        }
+
         // 顧客テーブルのコースを更新（現在のコースがコースなし「CS01」の場合のみ変更を許可）
         jdbcTemplate.update(
             "UPDATE 顧客テーブル SET course_id = ? WHERE customer_id = ? AND (TRIM(course_id) = 'CS01' OR TRIM(course_id) = ?)",

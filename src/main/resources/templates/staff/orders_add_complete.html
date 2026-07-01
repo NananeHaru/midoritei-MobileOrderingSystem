@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -332,7 +332,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="label">注文合計金額</span>
-                    <span class="val" th:text="${totalAmount} + ' 円'">0 円</span>
+                    <span class="val" th:text="${#numbers.formatInteger(totalAmount, 3, 'COMMA')} + ' 円'">0 円</span>
                 </div>
             </div>
             
