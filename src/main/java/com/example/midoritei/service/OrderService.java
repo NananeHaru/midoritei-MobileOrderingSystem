@@ -232,6 +232,11 @@ public class OrderService {
             params.add(storeId);
         }
 
+        if (seatId != null && !seatId.trim().isEmpty()) {
+            sql += "AND c.seat_id = ? ";
+            params.add(seatId);
+        }
+
         if ("undelivered".equals(statusFilter)) {
             sql += "AND d.serve_status = 0 ";
         } else if ("delivered".equals(statusFilter)) {
@@ -240,11 +245,7 @@ public class OrderService {
 
         sql += "ORDER BY o.order_time DESC, d.order_item_id ASC";
 
-        if (storeId != null && !storeId.trim().isEmpty()) {
-            return jdbcTemplate.queryForList(sql, start, end, storeId);
-        } else {
-            return jdbcTemplate.queryForList(sql, start, end);
-        }
+        return jdbcTemplate.queryForList(sql, params.toArray());
     }
 
     /**

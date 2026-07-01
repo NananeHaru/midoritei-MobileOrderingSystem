@@ -458,7 +458,7 @@
                 <!-- 日付・提供状況フィルター -->
                 <form th:action="@{/staff/orders}" method="GET" class="filter-bar">
                     <div class="date-input-wrapper">
-                        <input type="date" name="date" class="date-input" th:value="${selectedDate}">
+                        <input type="date" name="date" class="date-input" th:value="${selectedDate}" max="9999-12-31">
                     </div>
                     <div class="date-input-wrapper">
                         <select name="seatId" class="date-input" onchange="this.form.submit()">
