@@ -383,21 +383,6 @@
 
                 <!-- 検索条件カード -->
                 <div class="search-card">
-                    <!-- 結合条件選択 (同一項目内のみ適用) -->
-                    <div class="form-group">
-                        <label class="form-label">同一項目内の結合条件</label>
-                        <div style="display: flex; gap: 20px; align-items: center; font-size: 1.05rem;">
-                            <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                <input type="radio" name="searchOperator" value="AND" th:checked="${lastSearchParams['searchOperator'] == 'AND' || lastSearchParams['searchOperator'] == null}">
-                                すべての条件に一致 (AND)
-                            </label>
-                            <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                <input type="radio" name="searchOperator" value="OR" th:checked="${lastSearchParams['searchOperator'] == 'OR'}">
-                                いずれかの条件に一致 (OR)
-                            </label>
-                        </div>
-                    </div>
-
                     <!-- 商品名 -->
                     <div class="form-group">
                         <label class="form-label" for="productName">商品名</label>
@@ -414,15 +399,20 @@
                     <div class="form-group">
                         <label class="form-label">カテゴリー</label>
                         <div class="toggle-grid">
-                            <!-- 季節限定 -->
-                            <div class="btn-toggle" th:classappend="${lastSearchParams['categories'] != null and #lists.contains(lastSearchParams['categories'], 'seasonal')} ? 'selected'" onclick="toggleSelection(this, 'check_seasonal')">季節限定</div>
-                            <input type="checkbox" name="categories" value="seasonal" id="check_seasonal" class="hidden-checkbox" th:checked="${lastSearchParams['categories'] != null and #lists.contains(lastSearchParams['categories'], 'seasonal')}">
-
                             <!-- 各種カテゴリー (DBから動的ロード) -->
                             <th:block th:each="cat : ${categories}">
                                 <div class="btn-toggle" th:classappend="${lastSearchParams['categories'] != null and #lists.contains(lastSearchParams['categories'], cat.category_id)} ? 'selected'" th:text="${cat.category_name}" th:data-category-id="${cat.category_id}" onclick="toggleSelection(this, 'check_cat_' + this.getAttribute('data-category-id'))">串物</div>
                                 <input type="checkbox" name="categories" th:value="${cat.category_id}" th:id="'check_cat_' + ${cat.category_id}" class="hidden-checkbox" th:checked="${lastSearchParams['categories'] != null and #lists.contains(lastSearchParams['categories'], cat.category_id)}">
                             </th:block>
+                        </div>
+                    </div>
+
+                    <!-- 季節限定 -->
+                    <div class="form-group">
+                        <label class="form-label">季節限定</label>
+                        <div class="toggle-grid">
+                            <div class="btn-toggle" th:classappend="${lastSearchParams['seasonalOnly'] == true} ? 'selected'" onclick="toggleSelection(this, 'check_seasonal_only')">季節限定の商品のみ</div>
+                            <input type="checkbox" name="seasonalOnly" value="true" id="check_seasonal_only" class="hidden-checkbox" th:checked="${lastSearchParams['seasonalOnly'] == true}">
                         </div>
                     </div>
 

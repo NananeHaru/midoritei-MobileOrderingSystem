@@ -178,59 +178,35 @@ public class ProductService {
         StringBuilder sql = new StringBuilder("SELECT product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path FROM 商品マスタテーブル WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
-        boolean isOr = "OR".equalsIgnoreCase(searchOperator);
-
-        // 1. 商品名部分一致 (常に AND)
+        // 1. 商品名部分一致 (AND)
         if (productName != null && !productName.trim().isEmpty()) {
             sql.append(" AND product_name LIKE ?");
             params.add("%" + productName.trim() + "%");
         }
 
-        // 2. キーワード部分一致 (常に AND)
+        // 2. キーワード部分一致 (AND)
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (product_name LIKE ? OR description LIKE ?)");
             params.add("%" + keyword.trim() + "%");
             params.add("%" + keyword.trim() + "%");
         }
 
-        // 3. カテゴリーID + 季節限定 の結合
-        boolean hasCategory = categoryIds != null && !categoryIds.isEmpty();
-        boolean hasSeasonal = seasonalOnly;
-
-        if (hasCategory || hasSeasonal) {
-            if (isOr) {
-                // OR の場合: (category_id IN (A, B) OR is_seasonal = 1)
-                sql.append(" AND (");
-                boolean needsOr = false;
-                if (hasCategory) {
-                    sql.append("category_id IN (");
-                    for (int i = 0; i < categoryIds.size(); i++) {
-                        sql.append(i == 0 ? "?" : ", ?");
-                        params.add(categoryIds.get(i));
-                    }
-                    sql.append(")");
-                    needsOr = true;
-                }
-                if (hasSeasonal) {
-                    if (needsOr) sql.append(" OR ");
-                    sql.append("is_seasonal = 1");
-                }
-                sql.append(")");
-            } else {
-                // AND の場合: category_id = A AND category_id = B AND is_seasonal = 1
-                if (hasCategory) {
-                    for (String catId : categoryIds) {
-                        sql.append(" AND category_id = ?");
-                        params.add(catId);
-                    }
-                }
-                if (hasSeasonal) {
-                    sql.append(" AND is_seasonal = 1");
-                }
+        // 3. カテゴリーID (選択されたカテゴリー同士はOR、全体としてはAND)
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            sql.append(" AND category_id IN (");
+            for (int i = 0; i < categoryIds.size(); i++) {
+                sql.append(i == 0 ? "?" : ", ?");
+                params.add(categoryIds.get(i));
             }
+            sql.append(")");
         }
 
-        // 4. 価格帯の結合（価格帯同士は常にOR、全体としてはAND条件に追加）
+        // 4. 季節限定 (カテゴリーとAND条件)
+        if (seasonalOnly) {
+            sql.append(" AND is_seasonal = 1");
+        }
+
+        // 5. 価格帯の結合（価格帯同士は常にOR、全体としてはAND条件）
         if (priceRanges != null && !priceRanges.isEmpty()) {
             List<String> priceConds = new ArrayList<>();
             for (String range : priceRanges) {
@@ -252,7 +228,6 @@ public class ProductService {
             }
 
             if (!priceConds.isEmpty()) {
-                // 価格帯は複数選択時に常にOR連結
                 sql.append(" AND (");
                 for (int i = 0; i < priceConds.size(); i++) {
                     sql.append(i == 0 ? "" : " OR ");
@@ -262,8 +237,7 @@ public class ProductService {
             }
         }
 
-
-        // 5. 対象コースの結合
+        // 6. 対象コースの結合（コース同士はOR、全体としてはAND）
         if (courseIds != null && !courseIds.isEmpty()) {
             List<String> courseConds = new ArrayList<>();
             List<String> courseParams = new ArrayList<>();
@@ -277,45 +251,28 @@ public class ProductService {
             }
 
             if (!courseConds.isEmpty()) {
-                if (isOr) {
-                    sql.append(" AND (");
-                    int paramIndex = 0;
-                    for (int i = 0; i < courseConds.size(); i++) {
-                        sql.append(i == 0 ? "" : " OR ");
-                        String cond = courseConds.get(i);
-                        sql.append(cond);
-                        if (cond.contains("?")) {
-                            params.add(courseParams.get(paramIndex++));
-                        }
-                    }
-                    sql.append(")");
-                } else {
-                    int paramIndex = 0;
-                    for (String cond : courseConds) {
-                        sql.append(" AND ").append(cond);
-                        if (cond.contains("?")) {
-                            params.add(courseParams.get(paramIndex++));
-                        }
+                sql.append(" AND (");
+                int paramIndex = 0;
+                for (int i = 0; i < courseConds.size(); i++) {
+                    sql.append(i == 0 ? "" : " OR ");
+                    String cond = courseConds.get(i);
+                    sql.append(cond);
+                    if (cond.contains("?")) {
+                        params.add(courseParams.get(paramIndex++));
                     }
                 }
+                sql.append(")");
             }
         }
 
-        // 6. 状態（販売ステータス）の結合
+        // 7. 状態（販売ステータス）の結合（状態同士はOR、全体としてはAND）
         if (salesStatuses != null && !salesStatuses.isEmpty()) {
-            if (isOr) {
-                sql.append(" AND sales_status IN (");
-                for (int i = 0; i < salesStatuses.size(); i++) {
-                    sql.append(i == 0 ? "?" : ", ?");
-                    params.add(salesStatuses.get(i));
-                }
-                sql.append(")");
-            } else {
-                for (Integer status : salesStatuses) {
-                    sql.append(" AND sales_status = ?");
-                    params.add(status);
-                }
+            sql.append(" AND sales_status IN (");
+            for (int i = 0; i < salesStatuses.size(); i++) {
+                sql.append(i == 0 ? "?" : ", ?");
+                params.add(salesStatuses.get(i));
             }
+            sql.append(")");
         }
 
         sql.append(" ORDER BY product_id ASC");
