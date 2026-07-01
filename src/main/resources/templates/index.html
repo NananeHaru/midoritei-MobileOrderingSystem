@@ -4,13 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>みどり亭 - 注文開始</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Hiragino Kaku Gothic ProN', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #fff; }
-        .logo-area { text-align: center; margin-bottom: 100px; }
+        .logo-area { text-align: center; margin-bottom: 50px; }
         .logo-text-top { font-size: 32px; color: #333; }
         .logo-main { font-size: 64px; color: #333; font-weight: bold; font-family: 'Hiragino Mincho ProN', serif; }
         .store-name { font-size: 20px; color: #666; margin-top: 10px; }
-        .start-btn { background-color: #f3b123; color: white; border: none; padding: 20px 60px; font-size: 28px; font-weight: bold; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        .number-selector {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 10px 15px;
+            background-color: #fff;
+            width: 280px;
+            box-sizing: border-box;
+            margin-bottom: 30px;
+        }
+        .count-btn {
+            background-color: #f3b123;
+            color: white;
+            border: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .count-btn.minus {
+            background-color: #6c757d;
+        }
+        .count-btn.minus:disabled {
+            background-color: #d6d8db;
+            cursor: not-allowed;
+        }
+        .count-num {
+            font-size: 32px;
+            color: #333;
+            font-weight: 700;
+            flex: 1;
+            text-align: center;
+            user-select: none;
+        }
+        .start-btn {
+            background-color: #f3b123;
+            color: white;
+            border: none;
+            padding: 16px 50px;
+            font-size: 26px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+        }
+        .start-btn:hover {
+            background-color: #e29a13;
+        }
     </style>
 </head>
 <body>
@@ -20,6 +78,7 @@
         
         <div class="store-name" th:text="${storeName}">緑橋一号店</div>
     </div>
+    
     <div th:if="${isBlocked}" style="text-align: center; max-width: 450px; padding: 25px; border: 2px dashed #f04134; border-radius: 12px; background-color: #fff1f0; color: #f04134; font-weight: bold; font-size: 1.1rem; line-height: 1.6; box-shadow: 0 4px 12px rgba(240, 65, 52, 0.1);">
         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; color: #f04134; display: inline-block;">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
@@ -30,6 +89,40 @@
         <span style="display: block; font-size: 0.95rem; font-weight: 500; margin-top: 8px; color: #666;">お手数ですが、スタッフがご案内し席を開設するまでしばらくお待ちください。</span>
     </div>
     
-    <a th:if="${!isBlocked}" th:href="@{/seating/members(store_id=${storeId}, seat_id=${seatId})}" class="start-btn">注文開始</a>
+    <form th:if="${!isBlocked}" th:action="@{/seating/course}" method="get" style="display: flex; flex-direction: column; align-items: center;">
+        <input type="hidden" name="store_id" th:value="${storeId}">
+        <input type="hidden" name="seat_id" th:value="${seatId}">
+        <input type="hidden" name="members" id="membersInput" value="1">
+        
+        <div class="number-selector">
+            <button type="button" class="count-btn minus" id="minusBtn" onclick="changeCount(-1)" disabled>
+                <i class="fas fa-minus"></i>
+            </button>
+            <div class="count-num" id="memberCount">1</div>
+            <button type="button" class="count-btn plus" id="plusBtn" onclick="changeCount(1)">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+        
+        <button type="submit" class="start-btn">注文開始</button>
+    </form>
+
+    <script>
+        function changeCount(delta) {
+            const countNum = document.getElementById('memberCount');
+            const membersInput = document.getElementById('membersInput');
+            const minusBtn = document.getElementById('minusBtn');
+            const plusBtn = document.getElementById('plusBtn');
+            
+            let count = parseInt(countNum.innerText);
+            count = Math.max(1, Math.min(150, count + delta));
+            
+            countNum.innerText = count;
+            membersInput.value = count;
+            
+            minusBtn.disabled = (count <= 1);
+            plusBtn.disabled = (count >= 150);
+        }
+    </script>
 </body>
 </html>

@@ -107,24 +107,12 @@ public class SeatingController {
         return "redirect:/menu";
     }
 
-    // 2. 人数選択画面へ案内
+    // 2. 人数選択画面へ案内（人数選択はトップに統合されたため、トップにリダイレクト）
     @GetMapping("/members")
     public String membersPage(@RequestParam("store_id") String storeId,
                               @RequestParam("seat_id") String seatId,
                               Model model) {
-        java.util.Map<String, Object> cust = getActiveCustomerData(storeId, seatId);
-        if (cust == null) {
-            return "redirect:/seating/start?store_id=" + storeId + "&seat_id=" + seatId;
-        }
-        int members = ((Number) cust.get("number_of_members")).intValue();
-        if (members > 0) {
-            // 既に設定済みの場合はstartにリダイレクトして自動ログインさせる
-            return "redirect:/seating/start?store_id=" + storeId + "&seat_id=" + seatId;
-        }
-
-        model.addAttribute("storeId", storeId);
-        model.addAttribute("seatId", seatId);
-        return "seating/members";
+        return "redirect:/seating/start?store_id=" + storeId + "&seat_id=" + seatId;
     }
 
     // 3. コース選択画面へ案内
