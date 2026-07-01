@@ -27,13 +27,15 @@ public class OrderService {
     public void submitOrder(String customerId, List<CartItem> cartItems) {
         if (cartItems == null || cartItems.isEmpty()) return;
 
+        String resolvedCustomerId = getRepresentativeCustomerId(customerId);
+
         // 顧客のコースIDを取得（CS01: コースなし, CS02: スタンダード, CS03: プレミアム）
         String courseId = "CS01";
         try {
             courseId = jdbcTemplate.queryForObject(
                 "SELECT course_id FROM 顧客テーブル WHERE customer_id = ?",
                 String.class,
-                customerId
+                resolvedCustomerId
             );
         } catch (Exception e) {
             // 例外時はデフォルト値とする
@@ -102,7 +104,7 @@ public class OrderService {
         
         // 2. 注文テーブルに親レコードを1件インサート
         String orderSql = "INSERT INTO 注文テーブル (order_id, customer_id, order_time, status) VALUES (?, ?, ?, 0)";
-        jdbcTemplate.update(orderSql, orderId, customerId, java.time.LocalDateTime.now());
+        jdbcTemplate.update(orderSql, orderId, resolvedCustomerId, java.time.LocalDateTime.now());
 
         // 3. 注文明細テーブルにカゴの中身をすべてインサート
         String detailSql = "INSERT INTO 注文明細テーブル (order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status) VALUES (?, ?, ?, ?, ?, ?, ?, 0)";
@@ -135,13 +137,14 @@ public class OrderService {
         // 4. 顧客テーブルの「現在の合計金額」も更新
         int subtotal = cartItems.stream().mapToInt(CartItem::getSubtotal).sum();
         String updateCustomerSql = "UPDATE 顧客テーブル SET total_amount = total_amount + ? WHERE customer_id = ?";
-        jdbcTemplate.update(updateCustomerSql, subtotal, customerId);
+        jdbcTemplate.update(updateCustomerSql, subtotal, resolvedCustomerId);
     }
 
     /**
      * 指定された顧客IDの過去 of 注文履歴を、注文テーブル、詳細テーブル、商品マスタを結合して取得します。
      */
     public List<Map<String, Object>> getOrderHistory(String customerId) {
+        String resolvedCustomerId = getRepresentativeCustomerId(customerId);
         String sql = "SELECT " +
                      "  o.order_time, " +
                      "  d.serve_status AS order_status, " + // 既存Thymeleafテンプレートの互換性のためのエイリアス
@@ -156,16 +159,17 @@ public class OrderService {
                      "WHERE o.customer_id = ? " +
                      "ORDER BY o.order_time DESC";
 
-        return jdbcTemplate.queryForList(sql, customerId);
+        return jdbcTemplate.queryForList(sql, resolvedCustomerId);
     }
 
     // -------------------------------------------------------------
     // 💰 【修正版】DB（顧客テーブル）に保存されている合計金額をそのまま返す
     // -------------------------------------------------------------
     public int getTotalBillingAmount(String customerId) {
+        String resolvedCustomerId = getRepresentativeCustomerId(customerId);
         String sql = "SELECT total_amount FROM 顧客テーブル WHERE customer_id = ?";
         try {
-            return jdbcTemplate.queryForObject(sql, Integer.class, customerId);
+            return jdbcTemplate.queryForObject(sql, Integer.class, resolvedCustomerId);
         } catch (Exception e) {
             System.out.println("⚠️ 顧客テーブルからの合計金額取得に失敗しました: " + e.getMessage());
             return 0;
@@ -356,6 +360,16 @@ public class OrderService {
             return jdbcTemplate.queryForMap(sql, start, end, storeId);
         } else {
             return jdbcTemplate.queryForMap(sql, start, end);
+        }
+    }
+
+    private String getRepresentativeCustomerId(String customerId) {
+        if (customerId == null) return null;
+        try {
+            String sql = "SELECT COALESCE(parent_customer_id, customer_id) FROM 顧客テーブル WHERE customer_id = ?";
+            return jdbcTemplate.queryForObject(sql, String.class, customerId);
+        } catch (Exception e) {
+            return customerId;
         }
     }
 }
