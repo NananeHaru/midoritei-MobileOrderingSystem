@@ -4,16 +4,16 @@
 -- =============================================
 
 -- 1. 顧客採番テーブル
-CREATE TABLE IF NOT EXISTS 顧客採番テーブル (current_number INT NOT NULL);
+-- CREATE TABLE IF NOT EXISTS 顧客採番テーブル (current_number INT NOT NULL);
 
-INSERT INTO
-    顧客採番テーブル (current_number)
-SELECT 2
-WHERE
-    NOT EXISTS (
-        SELECT 1
-        FROM 顧客採番テーブル
-    );
+-- INSERT INTO
+    -- 顧客採番テーブル (current_number)
+-- SELECT 2
+-- WHERE
+    -- NOT EXISTS (
+    --     SELECT 1
+        -- FROM 顧客採番テーブル
+    -- );
 
 -- 2. 顧客テーブル
 CREATE TABLE IF NOT EXISTS 顧客テーブル (
