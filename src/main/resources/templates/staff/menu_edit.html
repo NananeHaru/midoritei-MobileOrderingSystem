@@ -771,6 +771,11 @@
 
         // 確認モーダル開閉
         function openConfirmModal() {
+            const form = document.getElementById('editForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
             document.getElementById('confirmModal').style.display = 'flex';
         }
 
