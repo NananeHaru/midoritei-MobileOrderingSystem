@@ -641,7 +641,8 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         
-        seatingService.closeTable(seatId);
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+        seatingService.closeTable(storeId, seatId);
         return "redirect:/staff/seating";
     }
 
@@ -656,7 +657,8 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         
-        seatingService.changeSeat(currentSeatId, newSeatId);
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+        seatingService.changeSeat(storeId, currentSeatId, newSeatId);
         return "redirect:/staff/seating";
     }
 
@@ -671,7 +673,8 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         
-        seatingService.mergeSeats(parentSeatId, childSeatIds);
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+        seatingService.mergeSeats(storeId, parentSeatId, childSeatIds);
         return "redirect:/staff/seating";
     }
 
@@ -685,7 +688,8 @@ public class StaffController {
             return "redirect:/staff/login";
         }
         
-        seatingService.unmergeSeat(seatId);
+        String storeId = (String) session.getAttribute("loggedInStoreId");
+        seatingService.unmergeSeat(storeId, seatId);
         return "redirect:/staff/seating";
     }
 
