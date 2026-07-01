@@ -43,6 +43,7 @@ public class MenuManagementController {
                                      @RequestParam(value = "courses", required = false) List<String> courses,
                                      @RequestParam(value = "salesStatuses", required = false) List<Integer> salesStatuses,
                                      @RequestParam(value = "searchOperator", defaultValue = "AND") String searchOperator,
+                                     @RequestParam(value = "seasonalOnly", required = false) Boolean seasonalOnly,
                                      HttpSession session,
                                      Model model) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
@@ -58,6 +59,7 @@ public class MenuManagementController {
         model.addAttribute("selectedCourses", courses != null ? courses : new ArrayList<String>());
         model.addAttribute("selectedSalesStatuses", salesStatuses != null ? salesStatuses : new ArrayList<Integer>());
         model.addAttribute("searchOperator", searchOperator);
+        model.addAttribute("seasonalOnly", seasonalOnly != null ? seasonalOnly : false);
 
         // セッションから前回の検索条件を取得
         System.out.println("★Search form session ID: " + session.getId());
@@ -95,6 +97,7 @@ public class MenuManagementController {
                                         @RequestParam(value = "courses", required = false) List<String> courses,
                                         @RequestParam(value = "salesStatuses", required = false) List<Integer> salesStatuses,
                                         @RequestParam(value = "searchOperator", defaultValue = "AND") String searchOperator,
+                                        @RequestParam(value = "seasonalOnly", required = false) Boolean seasonalOnly,
                                         HttpServletRequest request,
                                         HttpSession session,
                                         Model model) {
@@ -115,32 +118,22 @@ public class MenuManagementController {
         lastSearchParams.put("priceRanges", priceRanges);
         lastSearchParams.put("courses", courses);
         lastSearchParams.put("salesStatuses", salesStatuses);
+        lastSearchParams.put("seasonalOnly", seasonalOnly != null && seasonalOnly);
         System.out.println("★Search results session ID: " + session.getId());
         System.out.println("★Search results saving lastSearchParams: " + lastSearchParams);
         session.setAttribute("lastSearchParams", lastSearchParams);
 
-        System.out.println("★検索パラメータ - productName: " + productName + ", keyword: " + keyword + ", categories: " + categories + ", priceRanges: " + priceRanges + ", courses: " + courses + ", salesStatuses: " + salesStatuses + ", searchOperator: " + searchOperator);
+        System.out.println("★検索パラメータ - productName: " + productName + ", keyword: " + keyword + ", categories: " + categories + ", priceRanges: " + priceRanges + ", courses: " + courses + ", salesStatuses: " + salesStatuses + ", searchOperator: " + searchOperator + ", seasonalOnly: " + seasonalOnly);
 
-        // 季節限定の絞り込み判定
-        boolean seasonalOnly = false;
-        List<String> filteredCategories = new ArrayList<>();
-        if (categories != null) {
-            for (String cat : categories) {
-                if ("seasonal".equals(cat)) {
-                    seasonalOnly = true;
-                } else {
-                    filteredCategories.add(cat);
-                }
-            }
-        }
+        boolean isSeasonal = seasonalOnly != null && seasonalOnly;
 
         List<Product> searchResults = productService.searchProducts(
             productName,
             keyword,
-            filteredCategories.isEmpty() ? null : filteredCategories,
+            categories,
             priceRanges,
             courses,
-            seasonalOnly,
+            isSeasonal,
             salesStatuses,
             searchOperator
         );
