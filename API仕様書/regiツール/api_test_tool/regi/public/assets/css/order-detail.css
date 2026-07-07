@@ -1,0 +1,161 @@
+.screen.order-detail {
+  min-height: 100vh;
+  padding-bottom: 130px;
+}
+
+.screen.order-detail .od-header {
+  height: 64px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 16px;
+}
+
+.screen.order-detail .od-title {
+  flex: 1;
+  font-weight: 1000;
+}
+
+.screen.order-detail .od-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.screen.order-detail .od-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.screen.order-detail .od-card {
+  width: min(980px, 100%);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.screen.order-detail .od-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.screen.order-detail .od-table thead th {
+  background: var(--primary2);
+  color: #fff;
+  text-align: left;
+  padding: 14px 16px;
+  font-size: 13px;
+}
+
+.screen.order-detail .od-table tbody td {
+  padding: 14px 16px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+  font-size: 14px;
+}
+
+.screen.order-detail .od-right {
+  text-align: right;
+}
+
+.screen.order-detail .od-summary {
+  border-top: 1px solid var(--line);
+  background: #f7fbff;
+  padding: 16px;
+}
+
+.screen.order-detail .od-sumrow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.screen.order-detail .od-sumrow.muted {
+  color: var(--muted);
+}
+
+.screen.order-detail .od-total {
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-weight: 1100;
+}
+
+.screen.order-detail .od-total .big {
+  font-size: 30px;
+  color: var(--primary2);
+}
+
+.screen.order-detail .od-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+
+  background: #fff;
+  border-top: 1px solid var(--line);
+
+  padding-top: 16px;
+  padding-bottom: 16px;
+  padding-left: max(16px, calc((100vw - 1200px) / 2));
+  padding-right: max(16px, calc((100vw - 1200px) / 2));
+
+  display: grid;
+
+  /*
+   * ボタンが2つなら2列、
+   * 3つなら3列に自動調整する
+   */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+.screen.order-detail .od-footer button,
+.screen.order-detail .od-footer a {
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+/*
+ * ボタン内にspanなどがある場合も中央揃えにする
+ */
+.screen.order-detail .od-footer button > *,
+.screen.order-detail .od-footer a > * {
+  text-align: center;
+}
+
+/*
+ * タブレット以下では1列にする
+ */
+@media (max-width: 700px) {
+  .screen.order-detail {
+    padding-bottom: 240px;
+  }
+
+  .screen.order-detail .od-footer {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "getOrders_ok_all",
+    "request": { "api": "getOrders" },
+    "expect": { "is_error": false, "status_code": 200 }
+  },
+
+  {
+    "id": "invalid_json_format",
+    "request": { "api": "raw", "raw": "{", "contentType": "application/json" },
+    "expect": { "is_error": true, "status_code": 400, "errorCode": "INVALID_JSON_FORMAT" }
+  },
+
+  {
+    "id": "invalid_request_unknown_method",
+    "request": { "api": "raw", "raw": "{\"method\":\"xxx\"}" },
+    "expect": { "is_error": true, "status_code": 400, "errorCode": "INVALID_REQUEST" }
+  },
+
+  {
+    "id": "invalid_parameter_customerId_format",
+    "request": { "api": "getOrders", "customerId": "ABC" },
+    "expect": { "is_error": true, "status_code": 400, "errorCode": "INVALID_PARAMETER" }
+  },
+
+  {
+    "id": "order_not_found_by_tampered_hash",
+    "request": { "api": "updateStatus_tamper_hash", "billStatus": 2 },
+    "expect": { "is_error": true, "status_code": 400, "errorCode": "ORDER_NOT_FOUND" }
+  },
+
+  {
+    "id": "invalid_bill_status",
+    "request": { "api": "updateStatus", "customerId": "0000001", "billStatus": 999, "hash": null },
+    "expect": { "is_error": true, "status_code": 400, "errorCode": "INVALID_BILL_STATUS" }
+  }
+]
