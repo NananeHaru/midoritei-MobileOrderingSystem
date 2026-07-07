@@ -1,0 +1,281 @@
+/* =========================================================
+   0) Tokens
+========================================================= */
+:root{
+  --bg1:#0f5c86;
+  --bg2:#0c3f62;
+  --card:#ffffff;
+  --text:#0b1b2a;
+  --muted:#6b7a8a;
+
+  --primary:#0f4e73;
+  --primary2:#0b3f5c;
+  --accent:#18a34a;
+  --warn:#ea580c;
+  --danger:#ef4444;
+
+  --line:#e6eef5;
+  --shadow:0 10px 30px rgba(0,0,0,.15);
+  --r:18px;
+}
+
+/* =========================================================
+   1) Base
+========================================================= */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif;
+  color:var(--text);
+  background: linear-gradient(180deg, #eef6ff);
+}
+a{color:inherit;text-decoration:none}
+
+/* =========================================================
+   2) Layout helpers
+========================================================= */
+.container{
+  min-height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+
+.row{display:flex; gap:18px; flex-wrap:wrap}
+.col{flex:1 1 360px}
+.hr{height:1px;background:var(--line);margin:18px 0}
+
+/* =========================================================
+   3) Components
+========================================================= */
+.card{
+  width:min(980px, 100%);
+  background:var(--card);
+  border-radius:var(--r);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+.card-header h1{margin:0;font-size:22px;letter-spacing:.08em}
+.card-body{padding:26px}
+
+/* topbar（古い画面用：残してOK） */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px; background:#fff; border-bottom:1px solid var(--line);
+}
+.topbar .title{font-size:20px; font-weight:700}
+.topbar .meta{display:flex; gap:18px; color:var(--muted); font-size:12px}
+
+.badge{
+  padding:6px 10px; border-radius:999px; background:#eef6ff; color:var(--primary);
+  font-weight:700; font-size:12px;
+}
+
+/* Buttons */
+.btn{
+  appearance:none; border:0; cursor:pointer;
+  padding:14px 18px;
+  border-radius:14px;
+  font-weight:800;
+  letter-spacing:.03em;
+  transition:.15s transform,.15s opacity;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--primary); color:#fff}
+.btn-primary:hover{opacity:.93}
+.btn-outline{background:#fff; border:1px solid #cfe0ee; color:var(--text)}
+.btn-warn{background:var(--warn); color:#fff}
+.btn-green{background:var(--accent); color:#fff}
+.btn-ghost{background:#f4f7fa; color:var(--text)}
+
+.btn-block{width:100%}
+.btn-lg{padding:16px 22px; border-radius:16px; font-size:16px}
+.btn-disabled{
+  background:#cfd6dd !important;
+  color:#fff !important;
+  cursor:not-allowed !important;
+  opacity:.85;
+}
+
+/* Forms */
+.field{margin:12px 0}
+.label{font-size:12px; color:var(--muted); margin-bottom:6px}
+.input{
+  width:100%;
+  padding:14px 14px;
+  border:1px solid #cfe0ee;
+  border-radius:14px;
+  outline:none;
+  font-size:16px;
+  background:#fff;
+}
+.input:focus{border-color:#9cc4e0; box-shadow:0 0 0 4px rgba(156,196,224,.25)}
+
+/* Keypad */
+.keypad{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:12px;
+}
+.key{
+  width:100%;
+  padding:18px 0;
+  border-radius:14px;
+  border:1px solid #cfe0ee;
+  background:#f4f9ff;
+  font-weight:900;
+  font-size:18px;
+  cursor:pointer;
+}
+.key.danger{background:#ffe7e7; border-color:#ffc9c9; color:#b91c1c}
+.key.orange{background:#ffedd5; border-color:#fed7aa; color:#9a3412}
+
+/* =========================
+   共通ヘッダー（app header）
+   ========================= */
+
+.app-header{
+  height:64px;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 18px;
+
+  /* “白枠の見え方”統一（画面ごとのズレ防止） */
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+}
+
+.app-header__left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+
+.app-title{
+  margin:0;
+  font-size:18px;
+  font-weight:1100;
+  letter-spacing:.02em;
+  color:var(--primary2);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.app-header__right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.app-badge{
+  padding:6px 10px;
+  border-radius:999px;
+  background:#eef6ff;
+  color:var(--primary2);
+  font-weight:900;
+}
+
+.app-back{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  text-decoration:none;
+  background:#f3f6f9;
+  color:var(--primary2);
+  font-weight:1000;
+}
+
+.app-back:hover{ background:#e9eff6; }
+
+/* Table（汎用） */
+.table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border-radius:14px;
+  border:1px solid var(--line);
+}
+.table th{
+  background:var(--primary2);
+  color:#fff;
+  text-align:left;
+  padding:12px 14px;
+  font-size:13px;
+}
+.table td{
+  padding:12px 14px;
+  border-top:1px solid var(--line);
+  background:#fff;
+}
+.table td.r{text-align:right}
+
+.tabs{
+  display:flex;
+  background:#f3f6f9;
+  border-radius:14px;
+  overflow:hidden;
+  margin:12px 0;
+}
+.tab{
+  flex:1;
+  padding:12px 10px;
+  border:0;
+  cursor:pointer;
+  background:transparent;
+  font-weight:900;
+}
+.tab.active{
+  background:var(--primary);
+  color:#fff;
+}
+.back-arrow {
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  border:0;
+  background:#f3f6f9;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:18px;
+  font-weight:900;
+
+  cursor:pointer;
+  text-decoration:none;
+}
+
+.back-arrow:hover{
+  background:#e2e8f0;
+}
+
+@media (max-width:720px){
+  .summary .big{font-size:26px}
+}
+
+:root{
+  --card:#fff;
+  --text:#0b1b2a;
+  --muted:#6b7a8a;
+  --primary2:#0b3f5c;
+  --danger:#ef4444;
+  --line:#e6eef5;
+  --shadow:0 10px 30px rgba(0,0,0,.15);
+  --r:18px;
+}
+
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans JP",sans-serif;color:var(--text);}

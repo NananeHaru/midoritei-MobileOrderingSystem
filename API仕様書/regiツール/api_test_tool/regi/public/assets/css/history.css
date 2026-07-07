@@ -1,0 +1,771 @@
+/* ========================================
+   会計履歴画面
+======================================== */
+
+.history-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eef6ff, #e6f0fb);
+  color: #16324a;
+}
+
+/* ========================================
+   検索フォーム
+======================================== */
+
+.history-filters {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border-bottom: 1px solid var(--line, #d8e2eb);
+  box-sizing: border-box;
+}
+
+.history-search,
+.history-date {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #cfe0ee;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.history-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-date {
+  width: 240px;
+  flex: 0 0 240px;
+}
+
+.history-filters .input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  font-size: 14px;
+}
+
+.history-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+/* ========================================
+   検索結果件数
+======================================== */
+
+.history-result-summary {
+  width: min(1100px, calc(100% - 32px));
+  margin: 12px auto 0;
+  color: var(--muted, #637386);
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* ========================================
+   会計履歴一覧
+======================================== */
+
+.history-list {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 18px 0 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+.history-card {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line, #d8e2eb);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.history-card:hover {
+  transform: translateY(-1px);
+  border-color: #aac9df;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.09);
+}
+
+.history-card:active {
+  transform: translateY(1px);
+}
+
+.history-card:focus-visible {
+  outline: 3px solid rgba(15, 92, 134, 0.25);
+  outline-offset: 2px;
+}
+
+.history-card-left {
+  min-width: 0;
+}
+
+.history-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.history-id {
+  flex: 0 0 auto;
+  color: var(--primary2, #0f4e73);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.history-chips {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.history-chip {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: var(--primary2, #0f4e73);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.history-chip.cash {
+  background: #eafff2;
+  color: #0b6b36;
+}
+
+.history-chip.card {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  background: #efe9ff;
+  color: #5b21b6;
+}
+
+.history-chip.emoney {
+  background: #e6f0ff;
+  color: #1d4ed8;
+}
+
+.history-chip.qr {
+  background: #fff4dc;
+  color: #9a5700;
+}
+
+.history-chip.multiple {
+  background: #e9f3ff;
+  color: #124d75;
+}
+
+.history-card-sub {
+  margin-top: 8px;
+  color: var(--muted, #637386);
+  font-size: 12px;
+}
+
+.history-card-right {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.history-amount {
+  color: var(--primary2, #0f4e73);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.history-discount {
+  color: var(--danger, #ef4444);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.history-empty {
+  padding: 48px 20px;
+  border: 1px solid var(--line, #d8e2eb);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--muted, #637386);
+  text-align: center;
+}
+
+/* ========================================
+   ページネーション
+======================================== */
+
+.history-pagination {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 0 0 32px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.history-pagination-side {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.history-pagination-side--right {
+  justify-content: flex-end;
+}
+
+.history-page-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border: 1px solid #d7dee8;
+  border-radius: 10px;
+  background: #fff;
+  color: #234b70;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.history-page-btn:hover {
+  background: #f5f9ff;
+}
+
+.history-page-current {
+  color: #234b70;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ========================================
+   右側スライドモーダル
+======================================== */
+
+.history-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: stretch;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.history-backdrop.show,
+.history-backdrop.is-open {
+  display: flex;
+}
+
+.history-modal {
+  width: min(560px, 94vw);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 18px 0 0 18px;
+  box-shadow: -12px 0 30px rgba(0, 0, 0, 0.16);
+  animation: historyModalSlideIn 0.2s ease-out;
+}
+
+@keyframes historyModalSlideIn {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.history-modal-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line, #d8e2eb);
+}
+
+.history-modal-title {
+  color: var(--primary2, #0f4e73);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.history-x {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #34495e;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.history-x:hover {
+  background: #eef4f8;
+}
+
+.history-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px 18px 28px;
+  overflow-y: auto;
+}
+
+.history-modal-loading,
+.history-modal-error {
+  padding: 32px 12px;
+  color: var(--muted, #637386);
+  text-align: center;
+}
+
+.history-modal-error {
+  color: var(--danger, #ef4444);
+}
+
+/* ========================================
+   動的に読み込まれる会計詳細
+======================================== */
+
+.history-detail {
+  width: 100%;
+}
+
+.history-detail .kv {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line, #d8e2eb);
+}
+
+.history-detail .kv .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+}
+
+.history-detail .kv .k {
+  flex: 0 0 auto;
+  color: var(--muted, #637386);
+  font-size: 12px;
+}
+
+.history-detail .kv .v {
+  min-width: 0;
+  font-weight: 700;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.history-hr {
+  height: 1px;
+  margin: 16px 0;
+  background: var(--line, #d8e2eb);
+}
+
+.sec-title {
+  margin-bottom: 10px;
+  color: var(--primary2, #0f4e73);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/*
+ * 重要:
+ * .history-itemを会計履歴カードと共通化しない。
+ * モーダル内の商品明細は通常の行として表示する。
+ */
+.detail-list .line,
+.history-detail .sum .line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.detail-list .line.empty {
+  color: var(--muted, #637386);
+}
+
+.detail-list .r,
+.history-detail .sum .r {
+  flex: 0 0 auto;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.history-detail .sum {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-detail .sum .discount {
+  color: var(--danger, #ef4444);
+}
+
+.history-detail .sum .total {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line, #d8e2eb);
+  color: var(--primary2, #0f4e73);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.history-detail .sum .big {
+  font-size: 22px;
+}
+
+/* ========================================
+   支払い履歴
+======================================== */
+
+.history-payment-help {
+  margin-bottom: 10px;
+  color: var(--muted, #637386);
+  font-size: 13px;
+}
+
+.history-payment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-payment-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line, #d8e2eb);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.history-payment-row:hover {
+  border-color: #9fc2da;
+  background: #f8fbff;
+}
+
+.history-payment-row.is-selected,
+.history-payment-row:has(
+  input[name="history_bill_payment_id"]:checked
+) {
+  border-color: #0f5c86;
+  background: #eef7fd;
+  box-shadow: 0 0 0 2px rgba(15, 92, 134, 0.12);
+}
+
+.history-payment-radio {
+  flex: 0 0 auto;
+}
+
+.history-payment-radio input {
+  width: 18px;
+  height: 18px;
+  accent-color: #0f5c86;
+}
+
+.history-payment-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.history-payment-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.history-payment-method {
+  font-weight: 700;
+}
+
+.history-payment-amount {
+  color: var(--primary2, #0f4e73);
+  font-size: 18px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.history-payment-sub {
+  margin-top: 5px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--muted, #637386);
+  font-size: 12px;
+}
+
+.history-payment-empty {
+  padding: 18px;
+  border: 1px dashed #c8d5df;
+  border-radius: 12px;
+  color: var(--muted, #637386);
+  text-align: center;
+}
+
+/* ========================================
+   再印刷ボタン
+======================================== */
+
+.history-actions {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* モーダル表示中は背景スクロールを止める */
+body.history-modal-open {
+  overflow: hidden;
+}
+
+/* ========================================
+   レスポンシブ
+======================================== */
+
+@media (max-width: 720px) {
+  .history-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .history-search,
+  .history-date {
+    width: 100%;
+    max-width: none;
+    flex: none;
+  }
+
+  .history-filter-actions {
+    width: 100%;
+  }
+
+  .history-filter-actions .btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .history-card {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .history-card-top {
+    align-items: flex-start;
+  }
+
+  .history-card-right {
+    padding-top: 2px;
+  }
+
+  .history-amount {
+    font-size: 20px;
+  }
+
+  .history-pagination {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .history-pagination-side,
+  .history-pagination-side--right {
+    justify-content: center;
+  }
+
+  .history-modal {
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .history-card {
+    flex-direction: column;
+  }
+
+  .history-card-right {
+    width: 100%;
+    align-items: flex-end;
+  }
+
+  .history-payment-main {
+    align-items: flex-start;
+  }
+}
+
+/* ========================================
+   会計日入力の見た目調整
+======================================== */
+
+.history-date {
+  position: relative;
+  width: 240px;
+  flex: 0 0 240px;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid #cfe0ee;
+  border-radius: 14px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.history-date .input[type="date"] {
+  width: 100%;
+  height: 44px;
+  padding: 0 34px 0 4px !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #16324a;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 44px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* 年/月/日の文字位置 */
+.history-date .input[type="date"]::-webkit-datetime-edit {
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.history-date .input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.history-date .input[type="date"]::-webkit-datetime-edit-year-field,
+.history-date .input[type="date"]::-webkit-datetime-edit-month-field,
+.history-date .input[type="date"]::-webkit-datetime-edit-day-field {
+  padding: 0 2px;
+  color: #16324a;
+}
+
+.history-date .input[type="date"]::-webkit-datetime-edit-text {
+  padding: 0 2px;
+  color: #637386;
+}
+
+/* カレンダーアイコン */
+.history-date .input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 12px;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.history-date .input[type="date"]:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+/* フォーカス時 */
+.history-date:focus-within {
+  border-color: #0f5c86;
+  box-shadow: 0 0 0 3px rgba(15, 92, 134, 0.12);
+}
+
+/* 値が未入力のとき */
+.history-date .input[type="date"]:invalid {
+  color: #637386;
+}
+
+/* 検索欄と日付欄の高さを統一 */
+.history-search,
+.history-date {
+  min-height: 46px;
+  height: 46px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+/* 左側の検索入力 */
+.history-search .input[type="text"] {
+  width: 100%;
+  height: 44px;
+  padding: 0 2px !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #16324a;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 44px;
+  box-sizing: border-box;
+}
+
+/* 日付入力も同じ高さ */
+.history-date .input[type="date"] {
+  height: 44px;
+  line-height: 44px;
+}
+
+@media (max-width: 720px) {
+  .history-date {
+    width: 100%;
+    flex: none;
+  }
+}

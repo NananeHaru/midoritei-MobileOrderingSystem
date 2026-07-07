@@ -1,0 +1,456 @@
+/* 背景＆余白（ヘッダー以外） */
+.close-page{
+  background: linear-gradient(180deg, #eef6ff, #e6f0fb) !important;
+  color:#0b1b2a;
+}
+
+/* mainの下に固定バー分の余白 */
+.close-page .page.page-closing{
+  padding: 14px 16px 86px; /* bottom-actions分 */
+}
+
+/* 共通カードの見た目（close画面内のカードだけ） */
+.close-page .page.page-closing .card{
+  background:#fff;
+  border-radius:18px;
+  border:1px solid #e6eef5;
+  box-shadow:0 12px 28px rgba(0,0,0,.10);
+  overflow:hidden;
+}
+
+/* ---------- 上部 情報バー（日時・担当入力など） ---------- */
+.close-page .close-top{
+  max-width: 1400px;
+  margin: 14px auto 14px;
+  padding: 14px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+}
+
+.close-page .close-top__date{
+  font-weight:1100;
+  color:#0b3f5c;
+}
+
+.close-page .close-top__hours{
+  font-size:12px;
+  color:#6b7a8a;
+  font-weight:900;
+}
+
+.close-page .close-top__right{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:flex-end;
+}
+
+.close-page .close-top__label{
+  font-size:12px;
+  color:#6b7a8a;
+  font-weight:900;
+}
+
+.close-page .close-top__operator{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.close-page .close-top__input{
+  width: 280px;
+  max-width: 48vw;
+  padding: 12px 14px;
+  border-radius:14px;
+  border:1px solid #cfe0ee;
+  outline:none;
+  background:#fff;
+  font-size:14px;
+}
+.close-page .close-top__input:focus{
+  border-color:#9cc4e0;
+  box-shadow:0 0 0 4px rgba(156,196,224,.25);
+}
+
+@media (max-width: 900px){
+  .close-page .close-top{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .close-page .close-top__right{ align-items:stretch; }
+  .close-page .close-top__input{ width:100%; max-width:none; }
+}
+
+/* ---------- 2カラム ---------- */
+.close-page .closing-grid{
+  max-width: 1400px;
+  margin: 0 auto;
+  display:grid;
+  grid-template-columns: 1.25fr 0.75fr; /* 右を細く */
+  gap: 16px;
+  align-items:start;
+}
+@media (max-width: 1100px){
+  .close-page .closing-grid{ grid-template-columns: 1fr; }
+}
+
+/* 左：売上集計 */
+.close-page .closing-left{
+  padding:18px;
+  min-height: 300px;
+}
+.close-page .closing-left .card-title{
+  margin:0 0 10px;
+  font-size:16px;
+  font-weight:1100;
+  color:#0b3f5c;
+}
+
+.close-page .closing-total__amount{
+  font-size:28px;
+  font-weight:1200;
+  color:#0b3f5c;
+}
+.close-page .closing-total__meta{
+  margin-top:6px;
+  color:#6b7a8a;
+  font-size:13px;
+  font-weight:900;
+}
+
+/* 売上の表 */
+.close-page .table-like{
+  margin-top:14px;
+  border:1px solid #e6eef5;
+  border-radius:14px;
+  overflow:hidden;
+}
+.close-page .table-like__head{
+  display:grid;
+  grid-template-columns: 1fr 140px 80px;
+  background:#f3f6f9;
+  padding:12px 14px;
+  font-size:12px;
+  font-weight:1100;
+  color:#0b3f5c;
+}
+.close-page .table-like__row{
+  display:grid;
+  grid-template-columns: 1fr 140px 80px;
+  padding:12px 14px;
+  border-top:1px solid #e6eef5;
+  font-size:14px;
+}
+.close-page .t-right{ text-align:right; }
+
+@media (max-width: 720px){
+  .close-page .table-like__head,
+  .close-page .table-like__row{
+    grid-template-columns: 1fr 120px 70px;
+  }
+}
+
+/* 右：レジ金管理（スリム＋中スクロール） */
+.close-page .closing-right{
+  padding:14px;
+  max-width: 520px;
+  justify-self:end;
+
+  /* 右だけスクロールさせて全体スクロールを減らす */
+  max-height: calc(100vh - 64px - 170px); /* header + top + bottom */
+  overflow:auto;
+}
+@media (max-width: 1100px){
+  .close-page .closing-right{
+    max-width:none;
+    justify-self:stretch;
+    max-height:none;
+    overflow:visible;
+  }
+}
+/* 右カード：中だけスクロールを強制 */
+.close-page .closing-right{
+  display:flex;
+  flex-direction:column;
+  min-height: 520px; /* 左と高さ感を揃えたい場合 */
+  max-height: calc(100vh - 64px - 24px - 86px - 120px);
+  /* ↑ header(64) + 余白 + bottom-actions(86) + 上部カード(だいたい120) */
+  overflow: hidden;  /* 外側は隠す */
+}
+
+.close-page .closing-right__scroll{
+  overflow:auto;
+  flex:1 1 auto;
+  padding-right: 6px; /* スクロールバーで窮屈にならない */
+  -webkit-overflow-scrolling: touch;
+}
+
+.close-page .closing-right .card-title{
+  margin:0 0 10px;
+  font-size:16px;
+  font-weight:1100;
+  color:#0b3f5c;
+}
+
+/* フォーム */
+.close-page .form-row{ margin: 12px 0; }
+
+.close-page .label{
+  display:block;
+  margin-bottom:6px;
+  font-size:12px;
+  color:#6b7a8a;
+  font-weight:900;
+}
+
+.close-page .input{
+  width:100%;
+  padding:12px 14px;
+  border:1px solid #cfe0ee;
+  border-radius:14px;
+  outline:none;
+  background:#fff;
+  font-size:14px;
+}
+.close-page .input:focus{
+  border-color:#9cc4e0;
+  box-shadow:0 0 0 4px rgba(156,196,224,.25);
+}
+
+.close-page .input-with-btn{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.close-page .page.page-closing .edit-btn:hover{ background:#f7fbff; }
+
+
+/* 区切り */
+.close-page .divider{
+  height:1px;
+  background:#e6eef5;
+  margin:14px 0;
+}
+.close-page .sub-title{
+  font-size:13px;
+  color:#0b3f5c;
+  font-weight:1100;
+  margin-bottom:10px;
+}
+
+/* 金種行（コンパクト） */
+.close-page .denom-row{
+  display:grid;
+  grid-template-columns: 110px 1fr;
+  gap:10px;
+  align-items:center;
+  margin: 8px 0;
+}
+.close-page .denom-label{
+  font-size:13px;
+  font-weight:900;
+}
+.close-page .yen-mini{
+  min-width:68px;
+  text-align:right;
+  font-size:11px;
+  color:#6b7a8a;
+  font-weight:900;
+}
+
+/* 合計 */
+.close-page .big-amount{
+  font-size:22px;
+  font-weight:1200;
+  color:#0b3f5c;
+  background:#f7fbff;
+  border:1px solid #cfe0ee;
+  border-radius:14px;
+  padding:12px 14px;
+}
+
+/* 差額 */
+.close-page .diff-box{
+  margin-top:12px;
+  border:2px solid #e6eef5;
+  border-radius:14px;
+  padding:12px 14px;
+  background:#fff;
+}
+.close-page .diff-box__label{
+  font-size:12px;
+  color:#6b7a8a;
+  font-weight:900;
+}
+.close-page .diff-box__value{
+  margin-top:6px;
+  font-size:20px;
+  font-weight:1200;
+  color:#0b3f5c;
+}
+.close-page .diff-box.is-warn{
+  border-color:#ef4444;
+  background:#fff5f5;
+}
+.close-page .diff-box.is-ok{
+  border-color:#18a34a;
+  background:#ecfdf5;
+}
+.close-page .diff-box__note{
+  margin-top:6px;
+  font-size:12px;
+  font-weight:900;
+  color:#6b7a8a;
+}
+
+/* 期待額 */
+.close-page .expect-box{
+  margin-top:12px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:#f7fbff;
+  border:1px solid #e6eef5;
+  font-size:13px;
+}
+
+/* ---------- 下の固定アクションバー ---------- */
+.close-page .bottom-actions{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  background:#fff;
+  border-top:1px solid #e6eef5;
+  padding:10px 12px;
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  z-index:2000;
+}
+
+.close-page .bottom-actions .btn{
+  height:46px;
+  padding: 10px 16px;
+  border-radius:12px;
+  border:0;
+  cursor:pointer;
+  font-weight:1100;
+}
+
+.close-page .btn-orange{ background:#ea580c; color:#fff; }
+.close-page .btn-green{ background:#18a34a; color:#fff; }
+.close-page .btn-gray{ background:#cfd6dd; color:#fff; cursor:not-allowed; }
+.close-page .btn-dark{ background:#64748b; color:#fff; }
+
+/* ---------- テンキー（モーダル） ---------- */
+.close-page #keypad.keypad{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+  padding:16px;
+  z-index:9999;
+}
+.close-page #keypad.keypad.is-open{ display:flex; }
+
+.close-page .keypad__panel{
+  width:min(520px, 100%);
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
+  overflow:hidden;
+}
+
+.close-page .keypad__title{
+  padding:12px 14px;
+  font-weight:1100;
+  color:#0b3f5c;
+  border-bottom:1px solid #e6eef5;
+}
+.close-page .keypad__display{
+  padding:12px 14px;
+  font-size:22px;
+  font-weight:1200;
+  text-align:right;
+  color:#0b3f5c;
+  border-bottom:1px solid #e6eef5;
+}
+.close-page .keypad__grid{
+  padding:12px;
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:10px;
+}
+.close-page .kp{
+  height:54px;
+  border-radius:14px;
+  border:1px solid #cfe0ee;
+  background:#f7fbff;
+  font-size:18px;
+  font-weight:1100;
+  cursor:pointer;
+}
+.close-page .kp-sub{ background:#fff; }
+.close-page .kp-enter{
+  background:#18a34a;
+  border-color:#18a34a;
+  color:#fff;
+}
+.close-page .kp-zero{ grid-column: span 2; }
+
+.close-page .bottom-actions__right{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.close-page .bottom-actions__right{
+  margin-left:auto; /* 右寄せ */
+}
+
+/* 左カラム：カード縦積み */
+.close-page .closing-col-left{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  min-width:0;
+}
+
+/* 未収金カードの見た目 */
+.close-page .closing-ar{ padding:18px; }
+.close-page .card-title{
+  margin:0 0 10px;
+  font-size:16px;
+  font-weight:1100;
+  color:#0b3f5c;
+}
+.close-page .ar-summary__amount{
+  font-size:28px;
+  font-weight:1200;
+  color:#0b3f5c;
+}
+.close-page .ar-summary__meta{
+  margin-top:6px;
+  color:#6b7a8a;
+  font-size:13px;
+  font-weight:900;
+}
+.close-page .ar-note{
+  margin-top:10px;
+  font-size:12px;
+  color:#6b7a8a;
+  font-weight:900;
+}
+
+/* スマホは1カラム */
+@media (max-width: 980px){
+  .close-page .closing-grid{
+    grid-template-columns: 1fr;
+  }
+  .close-page .closing-right{
+    max-height: none; /* スマホはページスクロールでOK */
+  }
+}

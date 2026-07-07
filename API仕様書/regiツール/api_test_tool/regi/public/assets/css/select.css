@@ -1,0 +1,97 @@
+.page.checkout-input{
+  min-height:100vh;
+  background: linear-gradient(180deg, #eef6ff, #e6f0fb) !important;
+}
+.page.checkout-input .container{
+  display:block !important;
+  align-items:unset !important;
+  justify-content:unset !important;
+  padding:0 !important;
+}
+
+.page.checkout-input .header-lite{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  height:56px;
+  padding:0 16px;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+}
+.page.checkout-input .back-btn{
+  width:40px;height:40px;border-radius:12px;
+  border:0;background:#f3f6f9;cursor:pointer;
+  font-size:18px;font-weight:900;
+}
+.page.checkout-input .header-title{font-size:18px;font-weight:1000}
+
+.page.checkout-input .tabbar{
+  display:flex;
+  background:#fff;
+  border-bottom:1px solid var(--line);
+}
+.page.checkout-input .tabbar button{
+  flex:1;
+  padding:16px 14px;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  font-weight:1000;
+  color:var(--muted);
+  position:relative;
+}
+.page.checkout-input .tabbar button.active{color:var(--primary2)}
+.page.checkout-input .tabbar button.active::after{
+  content:"";
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height:4px;
+  background:var(--primary2);
+}
+
+.page.checkout-input .center-wrap{
+  max-width:980px;
+  margin:0 auto;
+  padding:28px 16px 40px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+}
+.page.checkout-input .panel{
+  width:min(720px, 100%);
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 12px 30px rgba(0,0,0,.12);
+  padding:22px;
+}
+.page.checkout-input .help-text{
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+  margin:10px 0 18px;
+}
+
+/* もし□を消したいなら、この2つは display:none にするだけ */
+.page.checkout-input .digit-boxes{display:none;}
+.page.checkout-input .digit-count{display:none;}
+
+.page.checkout-input .keypad.big{
+  grid-template-columns:repeat(3, 1fr);
+  gap:16px;
+  width:min(420px, 100%);
+  margin:16px auto 0;
+}
+.page.checkout-input .keypad.big .key{
+  padding:24px 0;
+  font-size:22px;
+  border-radius:16px;
+  border:2px solid #cfe0ee;
+  background:#f2f8ff;
+}
+.page.checkout-input .bottom-actions{
+  display:flex;
+  gap:14px;
+  margin-top:18px;
+  justify-content:center;
+}
+.page.checkout-input .bottom-actions .btn{width:240px}
