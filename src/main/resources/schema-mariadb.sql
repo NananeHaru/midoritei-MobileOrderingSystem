@@ -1043,6 +1043,9 @@ WHERE
             product_id = 'CS03'
     );
 
+-- すでに登録済みのコース商品のsales_statusを強制的に2(非表示)に更新
+UPDATE 商品マスタテーブル SET sales_status = 2 WHERE product_id IN ('CS02', 'CS03');
+
 -- 商品オプション紐づけ初期データ（★ダブルクォートをバッククォートに変更）
 -- 生ビール(PR0001)、レモンサワー(PR0002)にロック(1)・ソーダ割り(2)・ストレート(3)・水割り(4)を紐づけ
 INSERT INTO

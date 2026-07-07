@@ -263,6 +263,9 @@ INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, 
 SELECT 'CS03', 'CT01', 'プレミアムコース', 4000, 'CS01', 2, 'プレミアムコース料金', 0, NULL
 WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'CS03');
 
+-- すでに登録済みのコース商品のsales_statusを強制的に2(非表示)に更新
+UPDATE 商品マスタテーブル SET sales_status = 2 WHERE product_id IN ('CS02', 'CS03');
+
 -- 商品オプション紐づけ初期データ
 -- 生ビール(PR0001)、レモンサワー(PR0002)にロック(1)・ソーダ割り(2)・ストレート(3)・水割り(4)を紐づけ
 INSERT INTO "商品オプション紐づけテーブル" (product_id, option_id)
