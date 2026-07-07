@@ -284,6 +284,29 @@ public class StaffController {
             customerId,
             courseId
         );
+
+        // ★【追加】スタッフ側の代理注文時のコース選択でも、選択されたコースを商品として注文明細に登録する
+        try {
+            if (courseId != null && !"CS01".equals(courseId.trim())) {
+                // 重複登録を防ぐため、既にその顧客IDで同じコース商品の明細が存在しない場合のみ登録
+                int existingCount = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM 注文テーブル o JOIN 注文明細テーブル d ON o.order_id = d.order_id WHERE o.customer_id = ? AND d.product_id = ?",
+                    Integer.class,
+                    customerId,
+                    courseId.trim()
+                );
+                if (existingCount == 0) {
+                    int members = jdbcTemplate.queryForObject(
+                        "SELECT number_of_members FROM 顧客テーブル WHERE customer_id = ?",
+                        Integer.class,
+                        customerId
+                    );
+                    orderService.createCourseOrder(customerId, courseId.trim(), members);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("⚠️ スタッフ代理注文時のコース商品インサートに失敗しました: " + e.getMessage());
+        }
         
         session.setAttribute("staffSeatId", seatId);
         session.setAttribute("staffCustomerId", customerId);

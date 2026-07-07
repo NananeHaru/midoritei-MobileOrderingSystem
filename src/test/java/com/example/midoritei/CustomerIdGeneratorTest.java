@@ -7,6 +7,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import com.example.midoritei.service.OrderService;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
@@ -17,11 +21,16 @@ public class CustomerIdGeneratorTest {
     private CustomerIdGenerator customerIdGenerator;
 
     @Autowired
+    private OrderService orderService;
+
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     public void setUp() {
-        // テスト前に顧客テーブルをクリアしてテストの影響を隔離する
+        // テスト前に顧客テーブル、注文テーブル、注文明細テーブルをクリアしてテストの影響を隔離する
+        jdbcTemplate.execute("DELETE FROM 注文明細テーブル");
+        jdbcTemplate.execute("DELETE FROM 注文テーブル");
         jdbcTemplate.execute("DELETE FROM 顧客テーブル");
     }
 
@@ -57,5 +66,38 @@ public class CustomerIdGeneratorTest {
         
         String nextId = customerIdGenerator.generateNextId("MH");
         assertEquals("0000001", nextId);
+    }
+
+    @Test
+    public void testCreateCourseOrder() {
+        String customerId = "0000001";
+        
+        // 顧客を仮登録
+        jdbcTemplate.update("INSERT INTO 顧客テーブル (customer_id, store_id, course_id, number_of_members, checkout_status) VALUES (?, ?, ?, ?, ?)", customerId, "MH", "CS02", 3, 0);
+
+        // コース注文の作成
+        orderService.createCourseOrder(customerId, "CS02", 3);
+
+        // 注文レコードが追加されたことを確認
+        int orderCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM 注文テーブル WHERE customer_id = ?", Integer.class, customerId);
+        assertEquals(1, orderCount);
+
+        // 注文詳細を確認
+        Map<String, Object> detail = jdbcTemplate.queryForMap(
+            "SELECT d.product_id, d.quantity, d.unit_price, d.serve_status " +
+            "FROM 注文テーブル o JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
+            "WHERE o.customer_id = ?", customerId
+        );
+        assertEquals("CS02", detail.get("product_id"));
+        assertEquals(3, ((Number) detail.get("quantity")).intValue());
+        assertEquals(2000, ((Number) detail.get("unit_price")).intValue());
+        assertEquals(1, ((Number) detail.get("serve_status")).intValue()); // 提供済
+
+        // 注文履歴APIの確認 (商品マスタとの結合テスト)
+        List<Map<String, Object>> history = orderService.getOrderHistory(customerId);
+        assertEquals(1, history.size());
+        assertEquals("スタンダードコース", history.get(0).get("product_name"));
+        assertEquals(2000, ((Number) history.get(0).get("price")).intValue());
+        assertEquals(3, ((Number) history.get(0).get("quantity")).intValue());
     }
 }

@@ -20,6 +20,9 @@ public class SeatingController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private com.example.midoritei.service.OrderService orderService;
+
     // QRコードシミュレーター画面を表示
     @GetMapping("/qr-simulator")
     public String qrSimulator(Model model) {
@@ -176,6 +179,9 @@ public class SeatingController {
 
         // 💡 サービス側の処理に「members」を渡す（ここで顧客テーブルにレコードが作られます）
         String customerId = seatingService.openTable(storeId, seatId, courseId, members);
+        
+        // ★【追加】コースが選択されている場合、注文明細にコース商品を自動登録する
+        orderService.createCourseOrder(customerId, courseId, members);
         
         // 💡 DBのコースマスタテーブルから、制限時間（分）と【コース料金(price)】を取得する
         int timeLimitMinutes = 0;

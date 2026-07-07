@@ -141,6 +141,47 @@ public class OrderService {
     }
 
     /**
+     * 席開設時に、選択されたコースを商品として注文明細に登録します。
+     */
+    @Transactional
+    public void createCourseOrder(String customerId, String courseId, int members) {
+        if (courseId == null || "CS01".equals(courseId.trim())) return; // コースなしは登録不要
+
+        String resolvedCustomerId = getRepresentativeCustomerId(customerId);
+        String trimmedCourseId = courseId.trim();
+
+        // 1. コースマスタから価格とコース名を取得
+        int coursePrice = 0;
+        try {
+            String sql = "SELECT price FROM コースマスタテーブル WHERE course_id = ?";
+            coursePrice = jdbcTemplate.queryForObject(sql, Integer.class, trimmedCourseId);
+        } catch (Exception e) {
+            return; // 取得できない場合は処理中断
+        }
+
+        // 2. 注文ID（ORyyMMddXXXX）を自動生成
+        String datePrefix = "OR" + java.time.format.DateTimeFormatter.ofPattern("yyMMdd").format(java.time.LocalDateTime.now());
+        int currentMaxSeq = 0;
+        try {
+            String maxSeqSql = "SELECT COALESCE(MAX(CAST(RIGHT(order_id, 4) AS UNSIGNED)), 0) " +
+                               "FROM 注文テーブル WHERE order_id LIKE ?";
+            currentMaxSeq = jdbcTemplate.queryForObject(maxSeqSql, Integer.class, datePrefix + "%");
+        } catch (Exception e) {
+            currentMaxSeq = 0;
+        }
+        String orderId = datePrefix + String.format("%04d", currentMaxSeq + 1);
+
+        // 3. 注文テーブルに親レコードを1件インサート
+        String orderSql = "INSERT INTO 注文テーブル (order_id, customer_id, order_time, status) VALUES (?, ?, ?, 0)";
+        jdbcTemplate.update(orderSql, orderId, resolvedCustomerId, java.time.LocalDateTime.now());
+
+        // 4. 注文明細テーブルにコース商品をインサート (数量 = 人数, 提供ステータス = 1:提供済)
+        String detailSql = "INSERT INTO 注文明細テーブル (order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status) " +
+                            "VALUES (?, ?, ?, ?, NULL, 'なし', 0, 1)";
+        jdbcTemplate.update(detailSql, orderId, trimmedCourseId, members, coursePrice);
+    }
+
+    /**
      * 指定された顧客IDの過去 of 注文履歴を、注文テーブル、詳細テーブル、商品マスタを結合して取得します。
      */
     public List<Map<String, Object>> getOrderHistory(String customerId) {

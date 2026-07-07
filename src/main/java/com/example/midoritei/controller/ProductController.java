@@ -271,61 +271,8 @@ public class ProductController {
         // 2. 料理やドリンクの注文内訳をサービスから取得
         List<Map<String, Object>> billDetails = new java.util.ArrayList<>(orderService.getOrderHistory(customerId));
 
-        // 3. 本物の顧客テーブルとコースマスタテーブルから情報を安全に取得（統合グループ全員分）
+        // 3. 顧客の代表IDを取得
         String repCustomerId = orderService.getRepresentativeCustomerId(customerId);
-        String groupSql = "SELECT course_id, number_of_members FROM 顧客テーブル WHERE (customer_id = ? OR parent_customer_id = ?) AND checkout_status = 0";
-        String courseSql = "SELECT course_name, price FROM コースマスタテーブル WHERE course_id = ?";
-
-        try {
-            List<Map<String, Object>> groupCustomers = jdbcTemplate.queryForList(groupSql, repCustomerId, repCustomerId);
-            // コースIDごとに人数を合算するためのマップ
-            Map<String, Integer> courseMembersMap = new java.util.LinkedHashMap<>();
-            for (Map<String, Object> customerData : groupCustomers) {
-                String courseId = (String) customerData.get("course_id");
-                if (courseId == null) courseId = (String) customerData.get("COURSE_ID");
-                if (courseId == null) continue;
-                courseId = courseId.trim();
-
-                Number membersNum = (Number) customerData.get("number_of_members");
-                if (membersNum == null) membersNum = (Number) customerData.get("NUMBER_OF_MEMBERS");
-                int members = (membersNum != null) ? membersNum.intValue() : 1;
-
-                if (!"CS01".equals(courseId)) {
-                    courseMembersMap.put(courseId, courseMembersMap.getOrDefault(courseId, 0) + members);
-                }
-            }
-
-            // 合算されたコースごとに明細行を作成して追加
-            for (Map.Entry<String, Integer> entry : courseMembersMap.entrySet()) {
-                String courseId = entry.getKey();
-                int totalMembers = entry.getValue();
-
-                Map<String, Object> courseMaster = jdbcTemplate.queryForMap(courseSql, courseId);
-                
-                String courseName = (String) courseMaster.get("course_name");
-                if (courseName == null) courseName = (String) courseMaster.get("COURSE_NAME");
-                
-                Number priceNum = (Number) courseMaster.get("price");
-                if (priceNum == null) priceNum = (Number) courseMaster.get("PRICE");
-                int unitPrice = (priceNum != null) ? priceNum.intValue() : 0;
-
-                Map<String, Object> courseLine = new java.util.HashMap<>();
-                courseLine.put("product_name", courseName);
-                courseLine.put("PRODUCT_NAME", courseName);
-                courseLine.put("quantity", Long.valueOf(totalMembers));
-                courseLine.put("QUANTITY", Long.valueOf(totalMembers));
-                courseLine.put("price", Long.valueOf(unitPrice));
-                courseLine.put("PRICE", Long.valueOf(unitPrice));
-                courseLine.put("option_info", "なし");
-                courseLine.put("OPTION_INFO", "なし");
-                courseLine.put("option_add_price", Integer.valueOf(0));
-                courseLine.put("OPTION_ADD_PRICE", Integer.valueOf(0));
-
-                billDetails.add(0, courseLine);
-            }
-        } catch (Exception e) {
-            System.out.println("⚠️ コース明細のDB取得中にエラーが発生（安全スキップ）: " + e.getMessage());
-        }
 
         // 4. 最終合計金額をサービスから取得
         int finalAmount = orderService.getTotalBillingAmount(repCustomerId);
