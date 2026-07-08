@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS 顧客テーブル (
     course_id CHAR(4),
     entry_time TIMESTAMP,
     end_time TIMESTAMP, -- 👈 ★ここに新しく終了時刻の項目を追加！
-    checkout_status INT,
+    checkout_status INT DEFAULT 1,
     total_amount INT,
     number_of_members INT DEFAULT 0,
     parent_customer_id CHAR(7),
@@ -79,9 +79,9 @@ CREATE TABLE IF NOT EXISTS 注文明細テーブル (
 
 -- 8. テスト用の顧客データおよび注文データ（検証用）
 INSERT INTO 顧客テーブル (customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount, number_of_members)
-SELECT '9900001', '99', '1', 'CS01', CURRENT_TIMESTAMP, 0, 1630, 2 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900001');
+SELECT '9900001', '99', '1', 'CS01', CURRENT_TIMESTAMP, 1, 1630, 2 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900001');
 INSERT INTO 顧客テーブル (customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount, number_of_members)
-SELECT '9900002', '99', '2', 'CS01', CURRENT_TIMESTAMP, 0, 780, 3 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900002');
+SELECT '9900002', '99', '2', 'CS01', CURRENT_TIMESTAMP, 1, 780, 3 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900002');
 
 
 INSERT INTO 注文テーブル (order_id, customer_id, order_time, status)

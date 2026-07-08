@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS 顧客テーブル (
     course_id CHAR(4),
     entry_time TIMESTAMP NULL,
     end_time TIMESTAMP NULL,
-    checkout_status INT,
+    checkout_status INT DEFAULT 1,
     total_amount INT,
     number_of_members INT DEFAULT 0,
     parent_customer_id VARCHAR(14),    -- 💡 ここも紐づくため VARCHAR(14) に拡張
@@ -182,7 +182,7 @@ INSERT INTO
         total_amount,
         number_of_members
     )
-SELECT '9900001', '99', '1', 'CS01', CURRENT_TIMESTAMP, 0, 1630, 2
+SELECT '9900001', '99', '1', 'CS01', CURRENT_TIMESTAMP, 1, 1630, 2
 WHERE
     NOT EXISTS (
         SELECT 1
@@ -202,7 +202,7 @@ INSERT INTO
         total_amount,
         number_of_members
     )
-SELECT '9900002', '99', '2', 'CS01', CURRENT_TIMESTAMP, 0, 780, 3
+SELECT '9900002', '99', '2', 'CS01', CURRENT_TIMESTAMP, 1, 780, 3
 WHERE
     NOT EXISTS (
         SELECT 1

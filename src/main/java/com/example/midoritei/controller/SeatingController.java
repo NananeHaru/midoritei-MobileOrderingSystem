@@ -226,7 +226,7 @@ public class SeatingController {
      */
     private java.util.Map<String, Object> getActiveCustomerData(String storeId, String seatId) {
         String sql = "SELECT customer_id, number_of_members, course_id, entry_time FROM 顧客テーブル " +
-                     "WHERE store_id = ? AND seat_id = ? AND checkout_status = 0";
+                     "WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
         try {
             java.util.List<java.util.Map<String, Object>> activeCustomers = jdbcTemplate.queryForList(sql, storeId, seatId);
             if (!activeCustomers.isEmpty()) {

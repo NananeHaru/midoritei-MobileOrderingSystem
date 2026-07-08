@@ -37,7 +37,7 @@ public class CustomerInterceptor implements HandlerInterceptor {
         String seatId = customerSession.getSeatId();
 
         // 顧客テーブルに該当する customerId が存在し、checkout_status = 0 であるかチェック
-        String sql = "SELECT COUNT(*) FROM 顧客テーブル WHERE customer_id = ? AND checkout_status = 0";
+        String sql = "SELECT COUNT(*) FROM 顧客テーブル WHERE customer_id = ? AND checkout_status = 1";
         Integer count = 0;
         try {
             count = jdbcTemplate.queryForObject(sql, Integer.class, customerId);
