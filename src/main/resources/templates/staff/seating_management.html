@@ -847,9 +847,9 @@
                         </span>
                     </button>
                     <!-- 5. 空席に変更 -->
-                    <form id="formClose" th:action="@{/staff/seating/close}" method="POST" onsubmit="return confirmStateChange('使用中', '空席')" style="width: 100%;">
+                    <form id="formClose" th:action="@{/staff/seating/close}" method="POST" style="width: 100%;">
                         <input type="hidden" name="seatId" id="inputCloseSeatId">
-                        <button type="submit" class="btn btn-danger btn-full">
+                        <button type="button" class="btn btn-danger btn-full" onclick="confirmCloseTable()">
                             <span style="display:inline-flex; align-items:center; gap:4px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                                 空席に変更
@@ -857,9 +857,9 @@
                         </button>
                     </form>
                     <!-- 6. 統合解除 -->
-                    <form id="formUnmerge" th:action="@{/staff/seating/unmerge}" method="POST" style="display: none; width: 100%;" onsubmit="return confirmUnmerge()">
+                    <form id="formUnmerge" th:action="@{/staff/seating/unmerge}" method="POST" style="display: none; width: 100%;">
                         <input type="hidden" name="seatId" id="inputUnmergeSeatId">
-                        <button type="submit" class="btn btn-danger btn-full">
+                        <button type="button" class="btn btn-danger btn-full" onclick="confirmUnmergeTable()">
                             <span style="display:inline-flex; align-items:center; gap:4px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                 統合解除
@@ -878,7 +878,7 @@
                 <h3 class="modal-title" id="changeSeatTitle">座席を変更</h3>
                 <button class="modal-close" onclick="closeModal('changeSeatModal')">&times;</button>
             </div>
-            <form th:action="@{/staff/seating/change}" method="POST" onsubmit="return confirmSeatChange()">
+            <form th:action="@{/staff/seating/change}" method="POST" id="formChangeSeat">
                 <div class="modal-body">
                     <input type="hidden" name="currentSeatId" id="inputCurrentSeatId">
                     <p style="margin-bottom: 10px; font-weight: 500;">変更先の座席（空席のみ）を選択してください：</p>
@@ -891,7 +891,7 @@
                 <div class="modal-footer">
                     <div class="button-grid">
                         <button type="button" class="btn btn-secondary" onclick="closeModal('changeSeatModal')">戻る</button>
-                        <button type="submit" class="btn btn-primary">変更</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmChangeSeat()">変更</button>
                     </div>
                 </div>
             </form>
@@ -918,6 +918,25 @@
         </div>
     </div>
 
+    <!-- 汎用確認ダイアログ（window.confirm() の代替） -->
+    <div class="modal-overlay" id="confirmDialog">
+        <div class="modal-container" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 class="modal-title">確認</h3>
+                <button class="modal-close" onclick="closeConfirmDialog()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmDialogMessage" style="font-size: 16px; white-space: pre-line; line-height: 1.7; font-weight: 500;"></p>
+            </div>
+            <div class="modal-footer">
+                <div class="button-grid">
+                    <button type="button" class="btn btn-secondary btn-full" onclick="closeConfirmDialog()">キャンセル</button>
+                    <button type="button" class="btn btn-primary btn-full" id="confirmDialogOkBtn">実行</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript部 -->
     <script th:inline="javascript">
         // サーバーから渡された座席データを保持
@@ -932,6 +951,26 @@
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
         }
+
+        // 汎用確認ダイアログ（window.confirm() の代替）
+        var _confirmCallback = null;
+
+        function showConfirmDialog(message, callback) {
+            _confirmCallback = callback;
+            document.getElementById('confirmDialogMessage').innerText = message;
+            document.getElementById('confirmDialog').style.display = 'flex';
+        }
+
+        function closeConfirmDialog() {
+            document.getElementById('confirmDialog').style.display = 'none';
+            _confirmCallback = null;
+        }
+
+        document.getElementById('confirmDialogOkBtn').addEventListener('click', function() {
+            var cb = _confirmCallback;
+            closeConfirmDialog();
+            if (cb) cb();
+        });
 
         // 座席カードクリック時の挙動
         function handleSeatClick(cardElement) {
@@ -1009,14 +1048,18 @@
             showModal('detailModal');
         }
 
-        // 確認ポップアップ用
-        function confirmStateChange(from, to) {
-            return confirm(`状態を変更しますか？\n${from} ➔ ${to}`);
+        // 空席に変更の確認
+        function confirmCloseTable() {
+            showConfirmDialog('状態を変更しますか？\n使用中 ➔ 空席', function() {
+                document.getElementById('formClose').submit();
+            });
         }
-        
-        // 統合解除確認
-        function confirmUnmerge() {
-            return confirm("この座席のテーブル結合（統合）を解除しますか？\n※解除後は単独の伝票に戻ります。");
+
+        // 統合解除の確認
+        function confirmUnmergeTable() {
+            showConfirmDialog('この座席のテーブル結合（統合）を解除しますか？\n※解除後は単独の伝票に戻ります。', function() {
+                document.getElementById('formUnmerge').submit();
+            });
         }
 
         // 座席変更モーダルオープン
@@ -1057,10 +1100,12 @@
             showModal('changeSeatModal');
         }
 
-        function confirmSeatChange() {
-            const selectElement = document.getElementById('selectNewSeatId');
-            const selectedText = selectElement.options[selectElement.selectedIndex].text;
-            return confirm(`座席を変更しますか？\n変更前：座席ID ${selectedSeat.seatId}\n変更後：${selectedText}`);
+        function confirmChangeSeat() {
+            var selectElement = document.getElementById('selectNewSeatId');
+            var selectedText = selectElement.options[selectElement.selectedIndex].text;
+            showConfirmDialog('座席を変更しますか？\n変更前：座席ID ' + selectedSeat.seatId + '\n変更後：' + selectedText, function() {
+                document.getElementById('formChangeSeat').submit();
+            });
         }
 
         // QRコード表示モーダル
@@ -1299,27 +1344,27 @@
         function submitMerge() {
             if (mergeSelectedSeatIds.length === 0) return;
 
-            const confirmMsg = `これらの座席を統合しますか？\n\n` +
-                               `親座席：座席ID ${selectedSeat.seatId}\n` +
-                               `統合する座席：座席ID ${mergeSelectedSeatIds.join(', ')}\n\n` +
-                               `※統合された座席の注文情報はすべて親座席に紐づけ直されます。（統合された座席は使用中のまま残ります）`;
-            
-            if (confirm(confirmMsg)) {
+            var confirmMsg = 'これらの座席を統合しますか？\n\n' +
+                               '親座席：座席ID ' + selectedSeat.seatId + '\n' +
+                               '統合する座席：座席ID ' + mergeSelectedSeatIds.join(', ') + '\n\n' +
+                               '※統合された座席の注文情報はすべて親座席に紐づけ直されます。（統合された座席は使用中のまま残ります）';
+
+            showConfirmDialog(confirmMsg, function() {
                 // 動的にフォームを生成してPOST送信
-                const form = document.createElement('form');
+                var form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/staff/seating/merge';
 
                 // 親席ID
-                const parentInput = document.createElement('input');
+                var parentInput = document.createElement('input');
                 parentInput.type = 'hidden';
                 parentInput.name = 'parentSeatId';
                 parentInput.value = selectedSeat.seatId;
                 form.appendChild(parentInput);
 
                 // 子席ID群
-                mergeSelectedSeatIds.forEach(id => {
-                    const childInput = document.createElement('input');
+                mergeSelectedSeatIds.forEach(function(id) {
+                    var childInput = document.createElement('input');
                     childInput.type = 'hidden';
                     childInput.name = 'childSeatIds';
                     childInput.value = id;
@@ -1328,7 +1373,7 @@
 
                 document.body.appendChild(form);
                 form.submit();
-            }
+            });
         }
     </script>
 </body>

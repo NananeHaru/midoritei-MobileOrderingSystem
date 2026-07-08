@@ -20,7 +20,7 @@ public class SeatingService {
     @Transactional
     public String openTable(String storeId, String seatId, String courseId, int numberOfMembers) {
         // 同一の座席で既に利用中のレコードがあれば削除してリセットする
-        String deleteSql = "DELETE FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 0";
+        String deleteSql = "DELETE FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
         jdbcTemplate.update(deleteSql, storeId, seatId);
 
         String customerId = idGenerator.generateNextId(storeId);
@@ -40,7 +40,7 @@ public class SeatingService {
             seatId,
             targetCourseId, // 💡 三項演算子を消して、画面から来たコード（CS01, CS02, CS03）をそのまま保存！
             LocalDateTime.now(),
-            0, // 0:利用中
+            1, // 1:受付中（食事中）
             0, // 初期合計金額は0円
             numberOfMembers
         );
@@ -61,7 +61,7 @@ public class SeatingService {
     }
 
     public java.util.List<java.util.Map<String, Object>> getActiveSeats(String storeId) {
-        String sql = "SELECT seat_id, customer_id FROM 顧客テーブル WHERE checkout_status = 0 ";
+        String sql = "SELECT seat_id, customer_id FROM 顧客テーブル WHERE checkout_status = 1 ";
         if (storeId != null && !storeId.trim().isEmpty()) {
             sql += "AND store_id = ? ";
             sql += "ORDER BY LENGTH(seat_id) ASC, seat_id ASC";
@@ -79,7 +79,7 @@ public class SeatingService {
         String sql = "SELECT c.seat_id, c.customer_id, c.number_of_members, c.course_id, cm.course_name, c.entry_time, c.parent_customer_id, c.merged_at " +
                      "FROM 顧客テーブル c " +
                      "LEFT JOIN コースマスタテーブル cm ON TRIM(c.course_id) = TRIM(cm.course_id) " +
-                     "WHERE c.checkout_status = 0 ";
+                     "WHERE c.checkout_status = 1 ";
         if (storeId != null && !storeId.trim().isEmpty()) {
             sql += "AND c.store_id = ? ";
             sql += "ORDER BY LENGTH(c.seat_id) ASC, c.seat_id ASC";
@@ -94,7 +94,7 @@ public class SeatingService {
      */
     @Transactional
     public void changeSeat(String storeId, String currentSeatId, String newSeatId) {
-        String sql = "UPDATE 顧客テーブル SET seat_id = ? WHERE store_id = ? AND seat_id = ? AND checkout_status = 0";
+        String sql = "UPDATE 顧客テーブル SET seat_id = ? WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
         jdbcTemplate.update(sql, newSeatId, storeId, currentSeatId);
     }
 
@@ -103,11 +103,13 @@ public class SeatingService {
      */
     @Transactional
     public void mergeSeats(String storeId, String parentSeatId, java.util.List<String> childSeatIds) {
-        String parentSql = "SELECT customer_id FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 0";
-        String parentCustomerId = jdbcTemplate.queryForObject(parentSql, String.class, storeId, parentSeatId);
+        String parentSql = "SELECT customer_id FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
+        java.util.List<String> parentIds = jdbcTemplate.queryForList(parentSql, String.class, storeId, parentSeatId);
+        if (parentIds.isEmpty()) return;
+        String parentCustomerId = parentIds.get(0);
 
         for (String childSeatId : childSeatIds) {
-            String childSql = "SELECT customer_id FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 0";
+            String childSql = "SELECT customer_id FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
             java.util.List<String> childCustomerIds = jdbcTemplate.queryForList(childSql, String.class, storeId, childSeatId);
             
             if (!childCustomerIds.isEmpty()) {
@@ -129,7 +131,7 @@ public class SeatingService {
      */
     @Transactional
     public void closeTable(String storeId, String seatId) {
-        String sql = "DELETE FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 0";
+        String sql = "DELETE FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
         jdbcTemplate.update(sql, storeId, seatId);
     }
 
@@ -138,7 +140,7 @@ public class SeatingService {
      */
     @Transactional
     public void unmergeSeat(String storeId, String seatId) {
-        String selectSql = "SELECT customer_id, parent_customer_id FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 0";
+        String selectSql = "SELECT customer_id, parent_customer_id FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
         java.util.List<java.util.Map<String, Object>> seats = jdbcTemplate.queryForList(selectSql, storeId, seatId);
         if (seats.isEmpty()) return;
         
@@ -147,11 +149,11 @@ public class SeatingService {
         
         if (parentCustomerId != null && !parentCustomerId.trim().isEmpty()) {
             // 子席の場合: 自身の親ID連携をクリア
-            String sql = "UPDATE 顧客テーブル SET parent_customer_id = NULL WHERE store_id = ? AND seat_id = ? AND checkout_status = 0";
+            String sql = "UPDATE 顧客テーブル SET parent_customer_id = NULL WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
             jdbcTemplate.update(sql, storeId, seatId);
         } else {
             // 親席の場合: 自身を親としている子席 of this store の連携をすべてクリア
-            String sql = "UPDATE 顧客テーブル SET parent_customer_id = NULL WHERE store_id = ? AND parent_customer_id = ? AND checkout_status = 0";
+            String sql = "UPDATE 顧客テーブル SET parent_customer_id = NULL WHERE store_id = ? AND parent_customer_id = ? AND checkout_status = 1";
             jdbcTemplate.update(sql, storeId, customerId);
         }
     }

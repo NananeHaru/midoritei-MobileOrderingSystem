@@ -44,7 +44,7 @@ public class CustomerIdGeneratorTest {
     @Test
     public void testGenerateSequentialId() {
         // 既存の7桁のIDがある場合、その最大値+1が採番されること
-        jdbcTemplate.update("INSERT INTO 顧客テーブル (customer_id, store_id, checkout_status) VALUES (?, ?, ?)", "0000123", "MH", 0);
+        jdbcTemplate.update("INSERT INTO 顧客テーブル (customer_id, store_id, checkout_status) VALUES (?, ?, ?)", "0000123", "MH", 1);
         
         String nextId = customerIdGenerator.generateNextId("MH");
         assertEquals("0000124", nextId);
@@ -53,7 +53,7 @@ public class CustomerIdGeneratorTest {
     @Test
     public void testIgnoreStore99() {
         // store_id = '99' のテストデータは無視して 0000001 から採番されること
-        jdbcTemplate.update("INSERT INTO 顧客テーブル (customer_id, store_id, checkout_status) VALUES (?, ?, ?)", "9900001", "99", 0);
+        jdbcTemplate.update("INSERT INTO 顧客テーブル (customer_id, store_id, checkout_status) VALUES (?, ?, ?)", "9900001", "99", 1);
         
         String nextId = customerIdGenerator.generateNextId("MH");
         assertEquals("0000001", nextId);
@@ -62,7 +62,7 @@ public class CustomerIdGeneratorTest {
     @Test
     public void testIgnoreOld12DigitId() {
         // 過去の12桁のIDは無視して 0000001 から採番されること
-        jdbcTemplate.update("INSERT INTO 顧客テーブル (customer_id, store_id, checkout_status) VALUES (?, ?, ?)", "012607070001", "MH", 0);
+        jdbcTemplate.update("INSERT INTO 顧客テーブル (customer_id, store_id, checkout_status) VALUES (?, ?, ?)", "012607070001", "MH", 1);
         
         String nextId = customerIdGenerator.generateNextId("MH");
         assertEquals("0000001", nextId);
@@ -73,7 +73,7 @@ public class CustomerIdGeneratorTest {
         String customerId = "0000001";
         
         // 顧客を仮登録
-        jdbcTemplate.update("INSERT INTO 顧客テーブル (customer_id, store_id, course_id, number_of_members, checkout_status) VALUES (?, ?, ?, ?, ?)", customerId, "MH", "CS02", 3, 0);
+        jdbcTemplate.update("INSERT INTO 顧客テーブル (customer_id, store_id, course_id, number_of_members, checkout_status) VALUES (?, ?, ?, ?, ?)", customerId, "MH", "CS02", 3, 1);
 
         // コース注文の作成
         orderService.createCourseOrder(customerId, "CS02", 3);
