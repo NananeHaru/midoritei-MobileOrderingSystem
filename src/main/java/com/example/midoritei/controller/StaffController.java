@@ -606,7 +606,8 @@ public class StaffController {
                 .orElse(null);
             
             if (activeSeat != null) {
-                seatMap.put("status", "使用中");
+                int checkoutStatus = ((Number) activeSeat.get("checkout_status")).intValue();
+                seatMap.put("status", checkoutStatus == 2 ? "会計済み" : "使用中");
                 String myCustomerId = (String) activeSeat.get("customer_id");
                 seatMap.put("customerId", myCustomerId);
                 seatMap.put("numberOfMembers", activeSeat.get("number_of_members"));

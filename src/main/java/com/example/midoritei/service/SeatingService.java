@@ -76,10 +76,10 @@ public class SeatingService {
     }
 
     public java.util.List<java.util.Map<String, Object>> getActiveSeatsDetail(String storeId) {
-        String sql = "SELECT c.seat_id, c.customer_id, c.number_of_members, c.course_id, cm.course_name, c.entry_time, c.parent_customer_id, c.merged_at " +
+        String sql = "SELECT c.seat_id, c.customer_id, c.number_of_members, c.course_id, cm.course_name, c.entry_time, c.parent_customer_id, c.merged_at, c.checkout_status " +
                      "FROM 顧客テーブル c " +
                      "LEFT JOIN コースマスタテーブル cm ON TRIM(c.course_id) = TRIM(cm.course_id) " +
-                     "WHERE c.checkout_status = 1 ";
+                     "WHERE c.checkout_status IN (1, 2, 8) ";
         if (storeId != null && !storeId.trim().isEmpty()) {
             sql += "AND c.store_id = ? ";
             sql += "ORDER BY LENGTH(c.seat_id) ASC, c.seat_id ASC";
@@ -131,7 +131,7 @@ public class SeatingService {
      */
     @Transactional
     public void closeTable(String storeId, String seatId) {
-        String sql = "DELETE FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
+        String sql = "DELETE FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status IN (1, 2, 8)";
         jdbcTemplate.update(sql, storeId, seatId);
     }
 

@@ -15,8 +15,12 @@
             --primary-hover: #C5830E;
             --bg-color: #F4F5F7;
             --sidebar-bg: #EFEFEF;
-            --card-green: #00A854;
-            --card-green-hover: #008f47;
+            --card-green: #82F29F;
+            --card-green-hover: #5cbf7a;
+            --card-occupied: #FD8F87;
+            --card-occupied-hover: #f77067;
+            --card-checkout: #FCF164;
+            --card-checkout-hover: #f0e050;
             --card-gray: #8c8c8c;
             --text-color: #333333;
             --border-color: #DDDDDD;
@@ -269,11 +273,17 @@
 
         .legend-badge.empty {
             background-color: var(--card-green);
+            border: 1px solid #5cbf7a;
         }
 
         .legend-badge.occupied {
-            background-color: #FFFFFF;
-            border: 1px solid var(--border-color);
+            background-color: var(--card-occupied);
+            border: none;
+        }
+
+        .legend-badge.checkout {
+            background-color: var(--card-checkout);
+            border: 1px solid #d4c100;
         }
 
         /* 座席グリッド */
@@ -309,7 +319,7 @@
         /* 空席状態 */
         .seat-card.status-empty {
             background-color: var(--card-green);
-            color: #FFFFFF;
+            color: #333333;
             border: none;
         }
 
@@ -319,8 +329,24 @@
 
         /* 使用中状態 */
         .seat-card.status-occupied {
-            background-color: #FFFFFF;
-            color: var(--text-color);
+            background-color: var(--card-occupied);
+            color: #333333;
+            border: none;
+        }
+
+        .seat-card.status-occupied:hover {
+            background-color: var(--card-occupied-hover);
+        }
+
+        /* 会計済み状態 */
+        .seat-card.status-checkout {
+            background-color: var(--card-checkout);
+            color: #333333;
+            border: none;
+        }
+
+        .seat-card.status-checkout:hover {
+            background-color: var(--card-checkout-hover);
         }
 
         /* 統合グループのバッジ */
@@ -395,15 +421,15 @@
 
         /* 統合モードで選択された座席 */
         .integration-mode .seat-card.status-occupied.selected-for-merge {
-            background-color: var(--card-green);
+            background-color: #4CAF50;
             color: white;
             border: none;
-            box-shadow: 0 0 10px rgba(0, 168, 84, 0.5) !important;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5) !important;
         }
 
-        /* 統合元の親座席（固定で濃い緑色・選択不可能） */
+        /* 統合元の親座席（固定で緑色・選択不可能） */
         .integration-mode .seat-card.parent-seat {
-            background-color: var(--card-green);
+            background-color: #4CAF50;
             color: white;
             border: none;
             opacity: 1;
@@ -704,6 +730,10 @@
                         <span class="legend-badge occupied"></span>
                         <span>使用中</span>
                     </div>
+                    <div class="legend-item">
+                        <span class="legend-badge checkout"></span>
+                        <span>会計済み</span>
+                    </div>
                 </div>
             </div>
 
@@ -711,7 +741,7 @@
             <div class="seating-grid" id="seatingGrid">
                 <div th:each="seat : ${seats}" 
                      class="seat-card"
-                     th:classappend="${seat['status'] == '空席' ? 'status-empty' : 'status-occupied'}"
+                     th:classappend="${seat['status'] == '空席' ? 'status-empty' : (seat['status'] == '会計済み' ? 'status-checkout' : 'status-occupied')}"
                      th:data-seat-id="${seat['seatId']}"
                      th:data-type="${seat['type']}"
                      th:data-status="${seat['status']}"
@@ -753,16 +783,20 @@
                     <div class="seat-info-brief" th:if="${seat['status'] == '使用中'}">
                         <div th:text="${seat['numberOfMembers'] + '名'}">2名</div>
                         <div class="seat-brief-id" th:text="'ID: ' + ${seat['customerId']}">ID: 9900001</div>
-                        
+
                         <!-- 親席の表示 (子座席の場合) -->
                         <div th:if="${seat['parentSeatId'] != null}" class="seat-brief-relation parent-rel">
                             親席: <span th:text="${seat['parentSeatId']}">2</span>番
                         </div>
-                        
+
                         <!-- 子席の表示 (親座席の場合) -->
                         <div th:if="${seat['childSeatIds'] != null}" class="seat-brief-relation child-rel">
                             子席: <span th:text="${#strings.listJoin(seat['childSeatIds'], ', ')}">1</span>番
                         </div>
+                    </div>
+                    <div class="seat-info-brief" th:if="${seat['status'] == '会計済み'}">
+                        <div style="font-size: 11px; font-weight: 700; color: #7a6500;">会計済み</div>
+                        <div class="seat-brief-id" th:text="'ID: ' + ${seat['customerId']}">ID: 9900001</div>
                     </div>
                 </div>
             </div>
@@ -814,6 +848,19 @@
                         </span>
                     </button>
                 </form>
+
+                <!-- 会計済み時のボタン -->
+                <div id="checkedOutActions" style="display: none; width: 100%;">
+                    <p style="text-align:center; color:#7a6500; background:#fffbe6; border-radius:8px; padding:12px; margin-bottom:16px; font-size:14px; font-weight:500;">
+                        この座席は現在会計中です。<br>精算が完了したら「空席に変更」してください。
+                    </p>
+                    <button type="button" class="btn btn-danger btn-full" onclick="confirmCloseCheckedOut()">
+                        <span style="display:inline-flex; align-items:center; gap:4px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                            空席に変更
+                        </span>
+                    </button>
+                </div>
 
                 <!-- 使用中時のボタン -->
                 <div class="button-grid occupied-button-grid" id="occupiedActions" style="display: none;">
@@ -1004,53 +1051,79 @@
             const rowEntryTime = document.getElementById('rowEntryTime');
             const formOpen = document.getElementById('formOpen');
             const occupiedActions = document.getElementById('occupiedActions');
+            const checkedOutActions = document.getElementById('checkedOutActions');
 
             if (status === '空席') {
                 rowCustomerId.style.display = 'none';
                 rowMembers.style.display = 'none';
                 rowCourse.style.display = 'none';
                 rowEntryTime.style.display = 'none';
-                
+
                 formOpen.style.display = 'block';
                 occupiedActions.style.display = 'none';
-                
+                checkedOutActions.style.display = 'none';
+
                 document.getElementById('inputOpenSeatId').value = seatId;
-            } else {
+            } else if (status === '使用中') {
                 rowCustomerId.style.display = 'flex';
                 rowMembers.style.display = 'flex';
                 rowCourse.style.display = 'flex';
                 rowEntryTime.style.display = 'flex';
-                
+
                 document.getElementById('detailCustomerId').innerText = customerId || '-';
                 document.getElementById('detailMembers').innerText = `${members}名` || '-';
-                
                 document.getElementById('detailCourse').innerText = courseName || 'コースなし';
                 document.getElementById('detailEntryTime').innerText = entryTime || '-';
 
                 formOpen.style.display = 'none';
                 occupiedActions.style.display = 'grid';
-                
+                checkedOutActions.style.display = 'none';
+
                 document.getElementById('inputCloseSeatId').value = seatId;
-                
+
                 // 統合解除フォームの表示制御
                 const parentSeatId = cardElement.getAttribute('data-parent-seat-id');
                 const childSeatIdsStr = cardElement.getAttribute('data-child-seat-ids');
                 const formUnmerge = document.getElementById('formUnmerge');
-                
+
                 if ((parentSeatId && parentSeatId.trim() !== '') || (childSeatIdsStr && childSeatIdsStr.trim() !== '')) {
                     formUnmerge.style.display = 'block';
                     document.getElementById('inputUnmergeSeatId').value = seatId;
                 } else {
                     formUnmerge.style.display = 'none';
                 }
+            } else {
+                // 会計済み
+                rowCustomerId.style.display = 'flex';
+                rowMembers.style.display = 'flex';
+                rowCourse.style.display = 'flex';
+                rowEntryTime.style.display = 'flex';
+
+                document.getElementById('detailCustomerId').innerText = customerId || '-';
+                document.getElementById('detailMembers').innerText = `${members}名` || '-';
+                document.getElementById('detailCourse').innerText = courseName || 'コースなし';
+                document.getElementById('detailEntryTime').innerText = entryTime || '-';
+
+                formOpen.style.display = 'none';
+                occupiedActions.style.display = 'none';
+                checkedOutActions.style.display = 'block';
+
+                document.getElementById('inputCloseSeatId').value = seatId;
             }
 
             showModal('detailModal');
         }
 
-        // 空席に変更の確認
+        // 空席に変更の確認（使用中）
         function confirmCloseTable() {
             showConfirmDialog('状態を変更しますか？\n使用中 ➔ 空席', function() {
+                document.getElementById('formClose').submit();
+            });
+        }
+
+        // 空席に変更の確認（会計済み）
+        function confirmCloseCheckedOut() {
+            showConfirmDialog('この座席を空席に変更しますか？\n会計済み ➔ 空席', function() {
                 document.getElementById('formClose').submit();
             });
         }
