@@ -308,4 +308,13 @@ public class ProductService {
             }
         }
     }
+
+    /**
+     * カテゴリーテーブルから有効なカテゴリ一覧を動的に取得します。
+     */
+    public List<Map<String, Object>> getCategories() {
+        // 💡 本物のテーブル名「カテゴリーテーブル」に修正しました！
+        String sql = "SELECT category_id, category_name FROM カテゴリーテーブル ORDER BY display_order ASC";
+        return jdbcTemplate.queryForList(sql);
+    }
 }
