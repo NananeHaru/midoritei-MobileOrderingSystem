@@ -88,18 +88,24 @@
     <script>
         let count = 1;
         function changeCount(delta) {
+            // 💡【新しく追加】プラスボタン（deltaがプラス）が押されたとき、すでに10個なら増やさない
+            if (delta > 0 && count >= 10) {
+                alert("一度に注文できるのは最大10個までです。");
+                return;
+            }
+
             count = Math.max(1, count + delta);
             document.getElementById('quantityLabel').innerText = count;
             document.getElementById('quantityInput').value = count; // フォームに個数をセット
 
-            // 💡 【新しく追加】個数が1ならマイナスボタンを無効（グレー）に、2以上なら有効にする
+            // 個数が1ならマイナスボタンを無効（グレー）に、2以上なら有効にする
             const minusBtn = document.getElementById('minusBtn');
             if (count === 1) {
                 minusBtn.disabled = true;
-                minusBtn.style.opacity = "0.4"; // 薄く（グレーに）する
+                minusBtn.style.opacity = "0.4";
             } else {
                 minusBtn.disabled = false;
-                minusBtn.style.opacity = "1";   // 元の明るさに戻す
+                minusBtn.style.opacity = "1";
             }
         }
 
