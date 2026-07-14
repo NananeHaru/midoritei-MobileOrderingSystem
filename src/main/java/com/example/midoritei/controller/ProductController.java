@@ -139,7 +139,7 @@ public class ProductController {
         return "detail";
     }
 
-    // カゴに追加（エラー修正版）
+    // カゴに追加（修正版：コース対象外商品のオプション料金加算対応）
     @PostMapping("/cart/add")
     public String addToCart(@RequestParam("productId") String productId,
                             @RequestParam("quantity") int quantity,
@@ -159,10 +159,7 @@ public class ProductController {
                 long endTime = customerSession.getSessionEndTime();
                 if (currentTime > endTime) {
                     System.out.println("⚠️ 警告: 時間切れ後の【カゴへの追加】をブロックしました。");
-                    
-                    // 💡 【追加】時間切れを検知したら、セッションにあるカゴの中身（cart）を完全にクリアする
                     session.removeAttribute("cart");
-                    
                     return "redirect:/menu"; 
                 }
             }
@@ -177,11 +174,24 @@ public class ProductController {
 
         if (product != null) {
             String userCourseId = (customerSession != null) ? customerSession.getCourse() : "CS01";
+            
+            // 💡 1. まず商品自体の価格と「コースに含まれているか（includedInCourse）」を判定・設定する
             adjustProductPriceByCourse(product, userCourseId);
+
+            // 💡 2. 商品がお客様のコースに含まれている（0円対象）場合のみオプション料金を0円にする
+            int finalOptionAddPrice = optionAddPrice;
+            if (product.isIncludedInCourse()) {
+                finalOptionAddPrice = 0;
+            } else {
+                // 💡 コース対象外（普通にお金を払う商品）なら、選択した追加料金（+50円など）をそのまま適用する
+                finalOptionAddPrice = optionAddPrice;
+            }
 
             List<CartItem> cart = (List<CartItem>) session.getAttribute("cart");
             if (cart == null) { cart = new ArrayList<>(); }
-            cart.add(new CartItem(product, quantity, selectedOption, optionAddPrice));
+            
+            // 💡 調整した finalOptionAddPrice を使ってカートに追加する
+            cart.add(new CartItem(product, quantity, selectedOption, finalOptionAddPrice));
             session.setAttribute("cart", cart);
         }
         return "redirect:/menu";

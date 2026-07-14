@@ -62,7 +62,7 @@
                     th:each="opt, stat : ${options}" 
                     th:class="${stat.first} ? 'option-btn selected' : 'option-btn'"
                     th:onclick="selectOption([[${opt.option_name}]], [[${opt.option_add_price}]], this)"
-                    th:text="${opt.option_add_price > 0} ? ${opt.option_name} + ' (+' + ${opt.option_add_price} + '円)' : ${opt.option_name}">ロック</button>
+                    th:text="${product.includedInCourse} ? ${opt.option_name} : (${opt.option_add_price > 0} ? ${opt.option_name} + ' (+' + ${opt.option_add_price} + '円)' : ${opt.option_name})">ロック</button>
         </div>
 
         <form th:action="@{/cart/add}" method="post">
@@ -73,7 +73,6 @@
             
             <button type="submit" class="add-cart-btn">カゴに入れる</button>
         </form>
-    </div>
 
     <div class="cart-footer" style="display: flex !important; justify-content: flex-end !important; padding: 10px 20px;">
         <a th:href="@{/cart}" class="add-cart-btn" style="padding: 10px 20px; font-size:16px; width:auto; margin:0; border-radius:8px; text-decoration:none;">カゴを見る</a>
@@ -124,6 +123,7 @@
     </script>
     <div th:replace="~{fragments :: timer-script}"></div>
 </body>
+
 <script>
     // 1. ページが読み込まれた瞬間に、現在のURLを履歴の「最前列」にセットする
     // これにより、「戻る」ボタンを押したときの遷移先が「現在のページ」自身になります

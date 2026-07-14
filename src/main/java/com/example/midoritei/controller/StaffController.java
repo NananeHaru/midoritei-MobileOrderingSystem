@@ -384,19 +384,25 @@ public class StaffController {
         if (product != null) {
             adjustProductPriceByCourse(product, courseId);
 
+            // ★【追加】商品がコース対象内（0円）になっている場合、オプション料金も0円にする
+            int finalOptionAddPrice = optionAddPrice;
+            if (product.getPrice() == 0) {
+                finalOptionAddPrice = 0;
+            }
+
             // 代理注文における同一商品のマージ処理 (商品IDとオプション情報が両方一致する場合のみマージ)
             boolean exists = false;
             for (int i = 0; i < cart.size(); i++) {
                 CartItem item = cart.get(i);
                 if (item.getProduct().getProductId().equals(productId) && item.getSelectedOption().equals(selectedOption)) {
                     // 数量を加算して置き換え
-                    cart.set(i, new CartItem(item.getProduct(), item.getQuantity() + quantity, selectedOption, optionAddPrice));
+                    cart.set(i, new CartItem(item.getProduct(), item.getQuantity() + quantity, selectedOption, finalOptionAddPrice));
                     exists = true;
                     break;
                 }
             }
             if (!exists) {
-                cart.add(new CartItem(product, quantity, selectedOption, optionAddPrice));
+                cart.add(new CartItem(product, quantity, selectedOption, finalOptionAddPrice));
             }
             session.setAttribute("staffCart", cart);
         }
@@ -463,7 +469,14 @@ public class StaffController {
                         cart.remove(i);
                     } else {
                         adjustProductPriceByCourse(item.getProduct(), courseId);
-                        cart.set(i, new CartItem(item.getProduct(), quantity, item.getSelectedOption(), item.getOptionAddPrice()));
+
+                        // ★【追加】更新時も商品がコース対象内（0円）なら、オプション料金も0円にする
+                        int finalOptionAddPrice = item.getOptionAddPrice();
+                        if (item.getProduct().getPrice() == 0) {
+                            finalOptionAddPrice = 0;
+                        }
+
+                        cart.set(i, new CartItem(item.getProduct(), quantity, item.getSelectedOption(), finalOptionAddPrice));
                     }
                     break;
                 }
