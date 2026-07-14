@@ -531,9 +531,12 @@
         <div class="menu-workspace">
             <!-- カテゴリタブ -->
             <div class="category-sidebar">
-                <div class="category-tab active" onclick="filterCategory('all', this)">おすすめ</div>
-                <div class="category-tab" onclick="filterCategory('CT01', this)">お酒</div>
-                <div class="category-tab" onclick="filterCategory('CT02', this)">一品料理</div>
+                <div class="category-tab active" onclick="filterCategory('all', this)">おすすめ（すべて）</div>
+                
+                <div th:each="cat : ${categories}" 
+                     class="category-tab" 
+                     th:onclick="filterCategory([[${cat.category_id}]], this)"
+                     th:text="${cat.category_name}">カテゴリ名</div>
             </div>
 
             <!-- 商品グリッド -->

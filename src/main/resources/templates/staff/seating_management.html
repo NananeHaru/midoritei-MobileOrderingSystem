@@ -616,10 +616,60 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
+        /* トースト通知のスタイリング（画面上部に浮かせる） */
+        .error-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ff4d4f; /* 警告の赤 */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            animation: slideInDown 0.3s ease-out, fadeOut 0.5s ease-in 4.5s forwards; /* 5秒かけて消える */
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+        }
+
+        /* 上からふわっと出てくるアニメーション */
+        @keyframes slideInDown {
+            from { top: -50px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
+
+        /* 自動で消えていくアニメーション */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
 
     </style>
 </head>
 <body>
+    <div th:if="${error}" id="errorToast" class="error-toast">
+        <span class="toast-icon">⚠️</span>
+        <span th:text="${error}">エラーメッセージがここに入ります</span>
+    </div>
+    <script th:inline="javascript">
+        window.addEventListener('DOMContentLoaded', () => {
+            const toast = document.getElementById('errorToast');
+            if (toast) {
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
+
 
     <!-- ヘッダー -->
     <header class="header">

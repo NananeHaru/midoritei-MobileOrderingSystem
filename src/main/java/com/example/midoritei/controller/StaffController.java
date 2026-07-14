@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Map; // 💡【ここを追加！】
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -346,6 +346,10 @@ public class StaffController {
         adjustProductPricesByCourse(activeProducts, courseId);
 
         String courseName = getCourseNameByCustomerId(customerId);
+
+        // カテゴリ一覧をDBから取得
+        List<Map<String, Object>> categories = productService.getCategories();
+        model.addAttribute("categories", categories);
 
         model.addAttribute("seatId", seatId);
         model.addAttribute("courseName", courseName);
@@ -723,17 +727,56 @@ public class StaffController {
     }
 
     /**
-     * 座席統合を処理します。
+     * 座席統合を処理します。（二重統合をブロックするチェック機能付き）
      */
     @PostMapping("/seating/merge")
     public String mergeSeats(@RequestParam("parentSeatId") String parentSeatId,
                              @RequestParam("childSeatIds") List<String> childSeatIds,
-                             HttpSession session) {
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
         
         String storeId = (String) session.getAttribute("loggedInStoreId");
+
+        // 💡 1. 現在使用中のアクティブな座席リストを取得して、二重統合をチェックする
+        List<Map<String, Object>> activeSeats = seatingService.getActiveSeatsDetail(storeId);
+        
+        // チェック対象のすべての座席ID（親 + 子リスト）をまとめる
+        List<String> targetSeatIds = new ArrayList<>();
+        targetSeatIds.add(parentSeatId);
+        if (childSeatIds != null) {
+            targetSeatIds.addAll(childSeatIds);
+        }
+
+        for (String seatId : targetSeatIds) {
+            // 現在の座席の状態を検索
+            Map<String, Object> seatData = activeSeats.stream()
+                .filter(as -> String.valueOf(as.get("seat_id")).equals(seatId))
+                .findFirst()
+                .orElse(null);
+
+            if (seatData != null) {
+                // すでに別の席の子席（parent_customer_id が入っている）である場合
+                if (seatData.get("parent_customer_id") != null) {
+                    redirectAttributes.addFlashAttribute("error", "エラー: 選択された座席の中に、すでに他のグループに統合されている座席が含まれています。二重統合はできません。");
+                    return "redirect:/staff/seating";
+                }
+
+                // すでに自分が親席（他の席を従えている）であるか確認
+                String myCustomerId = (String) seatData.get("customer_id");
+                boolean isAlreadyParent = activeSeats.stream()
+                    .anyMatch(as -> myCustomerId != null && myCustomerId.equals(as.get("parent_customer_id")));
+
+                if (isAlreadyParent) {
+                    redirectAttributes.addFlashAttribute("error", "エラー: 選択された座席の中に、すでに親席として他の座席と統合されている座席が含まれています。一度解除してから再度統合してください。");
+                    return "redirect:/staff/seating";
+                }
+            }
+        }
+
+        // 💡 2. チェックを通過した場合のみ、実際の統合処理を呼び出す
         seatingService.mergeSeats(storeId, parentSeatId, childSeatIds);
         return "redirect:/staff/seating";
     }
