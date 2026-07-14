@@ -169,13 +169,14 @@
                 let currentQty = parseInt(qtyElement.textContent);
                 
                 if (action === 'increase') {
+                    // 💡【新しく追加】すでに10個の場合は、それ以上増やさずに処理を終了する
+                    if (currentQty >= 10) {
+                        alert("同じ商品は最大10個までしか注文できません。");
+                        return;
+                    }
                     currentQty += 1;
                 } else if (action === 'decrease') {
                     currentQty -= 1;
-                }
-                
-                if (currentQty < 1) {
-                    return; 
                 }
                 
                 const form = document.createElement('form');
