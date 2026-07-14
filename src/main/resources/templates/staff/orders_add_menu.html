@@ -662,18 +662,30 @@
                 if (data && data.length > 0) {
                     // 最初のオプションをデフォルト選択
                     const firstOptName = data[0].OPTION_NAME || data[0].option_name;
-                    const firstOptAddPrice = data[0].OPTION_ADD_PRICE || data[0].option_add_price || 0;
+                    let firstOptAddPrice = data[0].OPTION_ADD_PRICE || data[0].option_add_price || 0;
+
+                    // 💡【追加】もし商品の価格が「0円(コース込)」なら、初期選択のオプション価格も 0 円にします
+                    if (price === 0) {
+                        firstOptAddPrice = 0;
+                    }
+
                     document.getElementById('mSelectedOption').value = firstOptName;
                     document.getElementById('mOptionAddPrice').value = firstOptAddPrice;
 
                     data.forEach((opt, idx) => {
                         const optName = opt.OPTION_NAME || opt.option_name;
-                        const optAddPrice = opt.OPTION_ADD_PRICE || opt.option_add_price || 0;
+                        let optPrice = opt.OPTION_ADD_PRICE || opt.option_add_price || 0;
+
+                        // 💡【追加】もし商品の価格(price)が「0円(コース込)」なら、オプション追加料金も 0 円にします
+                        if (price === 0) {
+                            optPrice = 0;
+                        }
 
                         const btn = document.createElement('button');
                         btn.type = 'button';
                         btn.className = 'option-btn' + (idx === 0 ? ' selected' : '');
-                        btn.innerText = optAddPrice > 0 ? optName + ' (+' + optAddPrice + '円)' : optName;
+                        // 💡 optPrice が 0 になっているので、画面上も「ソーダ割り」という名前だけになります
+                        btn.innerText = optPrice > 0 ? optName + ' (+' + optPrice + '円)' : optName;
                         
                         // スタイリング
                         btn.style.background = 'white';
@@ -700,7 +712,8 @@
                             btn.style.backgroundColor = '#FFFDF5';
                             
                             document.getElementById('mSelectedOption').value = optName;
-                            document.getElementById('mOptionAddPrice').value = optAddPrice;
+                            // 💡 クリックした時も、0円で送信されるようになります
+                            document.getElementById('mOptionAddPrice').value = optPrice;
                         };
                         
                         optionContainer.appendChild(btn);
