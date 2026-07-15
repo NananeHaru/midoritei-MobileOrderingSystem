@@ -177,8 +177,17 @@ public class SeatingController {
             }
         }
 
-        // 💡 サービス側の処理に「members」を渡す（ここで顧客テーブルにレコードが作られます）
-        String customerId = seatingService.openTable(storeId, seatId, courseId, members);
+        String customerId;
+        // スタッフが事前に開設した顧客レコード（人数が0人）が存在する場合は、既存IDをそのまま引き継ぐ
+        if (cust != null && ((Number) cust.get("number_of_members")).intValue() == 0) {
+            customerId = (String) cust.get("customer_id");
+            String updateSql = "UPDATE 顧客テーブル SET course_id = ?, number_of_members = ?, entry_time = ? WHERE customer_id = ?";
+            jdbcTemplate.update(updateSql, courseId, members, java.time.LocalDateTime.now(), customerId);
+            System.out.println("★既存の顧客ID (" + customerId + ") を引き継ぎ、人数とコースを更新しました。");
+        } else {
+            // 既存の未設定レコードがない場合は、新規に席を開設（採番）する
+            customerId = seatingService.openTable(storeId, seatId, courseId, members);
+        }
         
         // ★【追加】コースが選択されている場合、注文明細にコース商品を自動登録する
         orderService.createCourseOrder(customerId, courseId, members);

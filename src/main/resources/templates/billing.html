@@ -117,9 +117,15 @@
         </div>
     </div>
 
-    <div class="checkout-footer">
-        <!-- window.confirm() はブラウザにブロックされる場合があるため、CSSモーダルを使用 -->
-        <button type="button" class="checkout-btn" id="open-modal-btn">お会計を確定する</button>
+    <div class="checkout-footer" style="flex-direction: column; gap: 10px;">
+        <!-- 未提供の商品がある場合 -->
+        <div th:if="${hasUndelivered}" style="background-color: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 0.9rem; width: 100%; box-sizing: border-box;">
+            ⚠️ 未提供の商品があるため、お会計できません。<br><span style="font-size: 0.8rem; font-weight: normal;">店員が商品を提供するまでお待ちください。</span>
+        </div>
+        <button th:if="${hasUndelivered}" type="button" class="checkout-btn" style="background: #ccc; color: #fff; cursor: not-allowed;" disabled>お会計を確定する</button>
+
+        <!-- すべての商品が提供済みの場合 -->
+        <button th:unless="${hasUndelivered}" type="button" class="checkout-btn" id="open-modal-btn">お会計を確定する</button>
         <!-- フォームはモーダル確認後にJSから submit() で送信 -->
         <form th:action="@{/orders/billing/complete}" method="get" id="billing-form" style="display:none;"></form>
     </div>
@@ -153,9 +159,11 @@
     var confirmBtn = document.getElementById('modal-confirm-btn');
     var form       = document.getElementById('billing-form');
 
-    openBtn.addEventListener('click', function() {
-        modal.classList.add('active');
-    });
+    if (openBtn) {
+        openBtn.addEventListener('click', function() {
+            modal.classList.add('active');
+        });
+    }
 
     cancelBtn.addEventListener('click', function() {
         modal.classList.remove('active');

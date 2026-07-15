@@ -413,4 +413,20 @@ public class OrderService {
             return customerId;
         }
     }
+
+    public boolean hasUndeliveredItems(String customerId) {
+        String resolvedCustomerId = getRepresentativeCustomerId(customerId);
+        String sql = "SELECT COUNT(*) " +
+                     "FROM 注文テーブル o " +
+                     "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
+                     "WHERE (o.customer_id = ? OR o.customer_id IN (SELECT customer_id FROM 顧客テーブル WHERE parent_customer_id = ?)) " +
+                     "  AND d.serve_status = 0";
+        try {
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, resolvedCustomerId, resolvedCustomerId);
+            return count != null && count > 0;
+        } catch (Exception e) {
+            System.out.println("⚠️ 未提供商品の確認に失敗しました: " + e.getMessage());
+            return false;
+        }
+    }
 }
