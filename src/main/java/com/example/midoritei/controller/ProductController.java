@@ -290,6 +290,7 @@ public class ProductController {
         model.addAttribute("billDetails", billDetails);
         model.addAttribute("finalAmount", finalAmount);
         model.addAttribute("orderId", repCustomerId);
+        model.addAttribute("hasUndelivered", orderService.hasUndeliveredItems(customerId));
 
         return "billing";
     }
@@ -308,28 +309,34 @@ public String showBillingComplete(@RequestParam(required = false) String id, Mod
     }
     
     String repCustomerId = orderService.getRepresentativeCustomerId(customerId);
+    boolean hasUndelivered = orderService.hasUndeliveredItems(customerId);
+    model.addAttribute("hasUndelivered", hasUndelivered);
     
-    try {
-        // 1. 仕様書に合わせるデータ（オブジェクト）を作成
-        PaymentUpdateRequest requestData = new PaymentUpdateRequest();
-        requestData.setMethod("updateStatus");   // 仕様書の method 値
-        requestData.setCustomerId(repCustomerId);   // 顧客ID
-        requestData.setHash(null);               // ハッシュ値（今回は同一性判定しないのでnull）
-        requestData.setBillStatus(8);            // 会計中ステータス（値: 8）
+    if (!hasUndelivered) {
+        try {
+            // 1. 仕様書に合わせるデータ（オブジェクト）を作成
+            PaymentUpdateRequest requestData = new PaymentUpdateRequest();
+            requestData.setMethod("updateStatus");   // 仕様書の method 値
+            requestData.setCustomerId(repCustomerId);   // 顧客ID
+            requestData.setHash(null);               // ハッシュ値（今回は同一性判定しないのでnull）
+            requestData.setBillStatus(8);            // 会計中ステータス（値: 8）
 
-        // 2. 相手（レジシステム側）のAPIのURLを設定
-        // ※演習環境に合わせてURL（http://localhost:XXXX など）が変わる場合はここを調整します
-        String apiUrl = "http://localhost:8080/api/orders"; 
+            // 2. 相手（レジシステム側）のAPIのURLを設定
+            // ※演習環境に合わせてURL（http://localhost:XXXX など）が変わる場合はここを調整します
+            String apiUrl = "http://localhost:8080/api/orders"; 
 
-        // 3. RestTemplateを使って、POSTメソッドでJSONデータを送信
-        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
-        restTemplate.postForObject(apiUrl, requestData, String.class);
-        
-        System.out.println("★レジAPIへの会計状況更新（status:8）に成功しました！");
+            // 3. RestTemplateを使って、POSTメソッドでJSONデータを送信
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            restTemplate.postForObject(apiUrl, requestData, String.class);
+            
+            System.out.println("★レジAPIへの会計状況更新（status:8）に成功しました！");
 
-    } catch (Exception e) {
-        System.out.println("⚠️ API送信でエラーが発生しました: " + e.getMessage());
-        // 演習環境によっては相手のAPIサーバーがまだ起動していないとここに落ちます
+        } catch (Exception e) {
+            System.out.println("⚠️ API送信でエラーが発生しました: " + e.getMessage());
+            // 演習環境によっては相手のAPIサーバーがまだ起動していないとここに落ちます
+        }
+    } else {
+        System.out.println("⚠️ 未提供の商品があるため、レジAPIへの会計中（status:8）への更新をスキップしました。");
     }
 
     // 完了画面に顧客IDを引き渡す処理（既存）

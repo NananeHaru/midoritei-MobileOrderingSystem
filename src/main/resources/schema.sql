@@ -77,31 +77,7 @@ CREATE TABLE IF NOT EXISTS 注文明細テーブル (
     serve_status INT NOT NULL DEFAULT 0 -- 0:未提供, 1:提供済, 9:キャンセル
 );
 
--- 8. テスト用の顧客データおよび注文データ（検証用）
-INSERT INTO 顧客テーブル (customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount, number_of_members)
-SELECT '9900001', '99', '1', 'CS01', CURRENT_TIMESTAMP, 1, 1630, 2 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900001');
-INSERT INTO 顧客テーブル (customer_id, store_id, seat_id, course_id, entry_time, checkout_status, total_amount, number_of_members)
-SELECT '9900002', '99', '2', 'CS01', CURRENT_TIMESTAMP, 1, 780, 3 WHERE NOT EXISTS (SELECT 1 FROM 顧客テーブル WHERE customer_id = '9900002');
-
-
-INSERT INTO 注文テーブル (order_id, customer_id, order_time, status)
-SELECT '1', '9900001', CURRENT_TIMESTAMP, 0 WHERE NOT EXISTS (SELECT 1 FROM 注文テーブル WHERE order_id = '1');
-INSERT INTO 注文テーブル (order_id, customer_id, order_time, status)
-SELECT '2', '9900001', CURRENT_TIMESTAMP, 1 WHERE NOT EXISTS (SELECT 1 FROM 注文テーブル WHERE order_id = '2');
-INSERT INTO 注文テーブル (order_id, customer_id, order_time, status)
-SELECT '3', '9900002', CURRENT_TIMESTAMP, 0 WHERE NOT EXISTS (SELECT 1 FROM 注文テーブル WHERE order_id = '3');
-
-INSERT INTO 注文明細テーブル (order_item_id, order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status)
-SELECT 1, '1', 'PR0001', 2, 450, 1, 'ロック', 0, 0 WHERE NOT EXISTS (SELECT 1 FROM 注文明細テーブル WHERE order_item_id = 1);
-INSERT INTO 注文明細テーブル (order_item_id, order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status)
-SELECT 2, '1', 'FP0002', 1, 520, NULL, '', 0, 0 WHERE NOT EXISTS (SELECT 1 FROM 注文明細テーブル WHERE order_item_id = 2);
-INSERT INTO 注文明細テーブル (order_item_id, order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status)
-SELECT 3, '2', 'PR0003', 1, 250, NULL, '', 0, 1 WHERE NOT EXISTS (SELECT 1 FROM 注文明細テーブル WHERE order_item_id = 3);
-INSERT INTO 注文明細テーブル (order_item_id, order_id, product_id, quantity, unit_price, option_id, option_info, option_add_price, serve_status)
-SELECT 4, '3', 'PR0002', 2, 380, 2, 'ソーダ割り', 50, 0 WHERE NOT EXISTS (SELECT 1 FROM 注文明細テーブル WHERE order_item_id = 4);
-
--- 自動採番カウンタを初期データの最大値の次(5)にリセット
-ALTER TABLE 注文明細テーブル ALTER COLUMN order_item_id RESTART WITH 5;
+-- 8. テスト用の顧客データおよび注文データ（削除）
 
 -- 9. カテゴリーテーブル
 CREATE TABLE IF NOT EXISTS カテゴリーテーブル (
