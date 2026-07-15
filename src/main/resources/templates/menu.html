@@ -56,7 +56,10 @@
         }
 
         .category-tabs {
-            background-color: #fff;
+            position: sticky;          /* 💡 追加：スクロール時に固定する設定 */
+            top: 60px;                 /* 💡 追加：ヘッダーの高さ(60px)の真下に固定 */
+            z-index: 99;               /* 💡 追加：商品カードより手前、ヘッダーより奥に表示 */
+            background-color: #fff;    /* すでにあります：透け防止の白背景 */
             display: flex;
             overflow-x: auto;
             padding: 10px;
