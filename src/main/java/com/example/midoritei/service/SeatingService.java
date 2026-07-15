@@ -16,6 +16,9 @@ public class SeatingService {
     @Autowired
     private CustomerIdGenerator idGenerator;
 
+    @Autowired
+    private OrderService orderService;
+
     // 人数を指定してテーブルを開設するオーバーロードメソッド
     @Transactional
     public String openTable(String storeId, String seatId, String courseId, int numberOfMembers) {
@@ -103,18 +106,80 @@ public class SeatingService {
      */
     @Transactional
     public void mergeSeats(String storeId, String parentSeatId, java.util.List<String> childSeatIds) {
-        String parentSql = "SELECT customer_id FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
-        java.util.List<String> parentIds = jdbcTemplate.queryForList(parentSql, String.class, storeId, parentSeatId);
-        if (parentIds.isEmpty()) return;
-        String parentCustomerId = parentIds.get(0);
+        // 親の情報を取得 (コースIDと終了時刻を含める)
+        String parentSql = "SELECT customer_id, course_id, end_time FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
+        java.util.List<java.util.Map<String, Object>> parentList = jdbcTemplate.queryForList(parentSql, storeId, parentSeatId);
+        if (parentList.isEmpty()) return;
+        
+        String parentCustomerId = (String) parentList.get(0).get("customer_id");
+        String parentCourseId = parentList.get(0).get("course_id") != null ? ((String) parentList.get(0).get("course_id")).trim() : "CS01";
+        java.sql.Timestamp parentEndTime = (java.sql.Timestamp) parentList.get(0).get("end_time");
 
         for (String childSeatId : childSeatIds) {
-            String childSql = "SELECT customer_id FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
-            java.util.List<String> childCustomerIds = jdbcTemplate.queryForList(childSql, String.class, storeId, childSeatId);
+            String childSql = "SELECT customer_id, course_id, number_of_members FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
+            java.util.List<java.util.Map<String, Object>> childList = jdbcTemplate.queryForList(childSql, storeId, childSeatId);
             
-            if (!childCustomerIds.isEmpty()) {
-                String childCustomerId = childCustomerIds.get(0);
-                
+            if (!childList.isEmpty()) {
+                String childCustomerId = (String) childList.get(0).get("customer_id");
+                String childCourseId = childList.get(0).get("course_id") != null ? ((String) childList.get(0).get("course_id")).trim() : "CS01";
+                int childMembers = ((Number) childList.get(0).get("number_of_members")).intValue();
+
+                // 親がコースありで、子がそのコースと異なる場合、親のコースに強制依存させる
+                if (!"CS01".equals(parentCourseId) && !parentCourseId.equals(childCourseId)) {
+                    int parentCoursePrice = 0;
+                    int childOldCoursePrice = 0;
+                    try {
+                        parentCoursePrice = jdbcTemplate.queryForObject(
+                            "SELECT price FROM コースマスタテーブル WHERE course_id = ?",
+                            Integer.class,
+                            parentCourseId
+                        );
+                        if (!"CS01".equals(childCourseId)) {
+                            childOldCoursePrice = jdbcTemplate.queryForObject(
+                                "SELECT price FROM コースマスタテーブル WHERE course_id = ?",
+                                Integer.class,
+                                childCourseId
+                            );
+                        }
+                    } catch (Exception e) {
+                        System.out.println("⚠️ コース価格の取得に失敗: " + e.getMessage());
+                    }
+
+                    // 1. 旧コース注文明細をキャンセル扱い (serve_status = 9) に更新する
+                    if (!"CS01".equals(childCourseId)) {
+                        String cancelOldCourseSql = 
+                            "UPDATE 注文明細テーブル d " +
+                            "JOIN 注文テーブル o ON d.order_id = o.order_id " +
+                            "SET d.serve_status = 9 " +
+                            "WHERE o.customer_id = ? AND d.product_id = ? AND d.serve_status = 1";
+                        jdbcTemplate.update(cancelOldCourseSql, childCustomerId, childCourseId);
+                    }
+
+                    // 2. 金額のクリーンな調整
+                    int oldAmount = childOldCoursePrice * childMembers;
+                    int newAmount = parentCoursePrice * childMembers;
+
+                    // 3. 親の新しいコース商品を新規注文（提供済）として追加登録
+                    try {
+                        orderService.createCourseOrder(childCustomerId, parentCourseId, childMembers);
+                    } catch (Exception e) {
+                        System.out.println("⚠️ 親コース商品の追加注文登録に失敗: " + e.getMessage());
+                    }
+
+                    // 4. 子の顧客レコードを更新 (コースID変更、金額の差し引き調整、制限時間を親に同期)
+                    String updateChildCourseSql = 
+                        "UPDATE 顧客テーブル " +
+                        "SET course_id = ?, total_amount = total_amount - ? + ?, end_time = ? " +
+                        "WHERE customer_id = ?";
+                    jdbcTemplate.update(updateChildCourseSql, parentCourseId, oldAmount, newAmount, parentEndTime, childCustomerId);
+                    
+                    System.out.println("★子席(ID: " + childCustomerId + ")を親のコース(" + parentCourseId + ")に強制移行。金額調整: -" + oldAmount + "円 + " + newAmount + "円。終了時間を親と同期しました。");
+                } else {
+                    // 親と同じコース、もしくは親がコースなしの場合でも、終了時刻（制限時間）は親と同期させる
+                    String updateChildTimeSql = "UPDATE 顧客テーブル SET end_time = ? WHERE customer_id = ?";
+                    jdbcTemplate.update(updateChildTimeSql, parentEndTime, childCustomerId);
+                }
+
                 // 注文の顧客IDを親に統合
                 String updateOrdersSql = "UPDATE 注文テーブル SET customer_id = ? WHERE customer_id = ?";
                 jdbcTemplate.update(updateOrdersSql, parentCustomerId, childCustomerId);
