@@ -648,6 +648,14 @@
             </div>
         </div>
     </div>
+    
+    <div id="errorModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <h3 class="modal-title" style="color:red;">エラー</h3>
+            <p id="errorMessage" style="margin-bottom:20px;"></p>
+            <button type="button" class="btn-modal-action" onclick="closeErrorModal()">閉じる</button>
+        </div>
+    </div>
 
     <script th:inline="javascript">
         // 初期コース状態反映とカテゴリーオプションの自動ロード
@@ -732,53 +740,53 @@
             }
         }
 
-        // 1. サーバーから渡された商品リストを取得（空の場合は空配列）
-        const products = /*[[${products}]]*/ []; 
-        // 重複チェック用：名前リスト（小文字化済み）
-        const existingNames = products.map(p => p.productName.trim().toLowerCase());
+    const products = /*[[${products}]]*/ [];
+    const existingNames = products.map(p => p.productName ? p.productName.trim().toLowerCase() : "");
 
-        function openConfirmModal() {
-            // HTML側の name="productName", name="price" を確実に取得
-            const nameInput = document.querySelector('input[name="productName"]');
-            const priceInput = document.querySelector('input[name="price"]');
+    // 1. チェック＆確認モーダル表示
+    function openConfirmModal() {
+        const nameInput = document.querySelector('input[name="productName"]');
+        const priceInput = document.querySelector('input[name="price"]');
+        
+        const errorModal = document.getElementById('errorModal');
+        const errorMessage = document.getElementById('errorMessage');
 
-            // エラー検知ロジック
-            if (!nameInput || nameInput.value.trim() === "") {
-                alert("エラー：商品名を入力してください。");
-                nameInput.focus();
-                return;
-            }
+        let errorText = "";
 
-            if (!priceInput || priceInput.value.trim() === "" || Number(priceInput.value) < 0) {
-                alert("エラー：価格は0以上の数値を入力してください。");
-                priceInput.focus();
-                return;
-            }
-
-            // 重複チェック
-            const inputName = nameInput.value.trim().toLowerCase();
-            if (existingNames.includes(inputName)) {
-                alert("エラー：その商品名は既に登録されています。");
-                nameInput.focus();
-                return;
-            }
-
-            // 全てOKならモーダル表示
-            const modal = document.getElementById('confirmModal');
-            if (modal) {
-                modal.style.display = 'flex';
-            }
+        // エラーチェック
+        if (!nameInput.value.trim()) {
+            errorText = "商品名を入力してください。";
+        } else if (!priceInput.value.trim() || Number(priceInput.value) < 0) {
+            errorText = "価格は0以上の数値を入力してください。";
+        } else if (existingNames.includes(nameInput.value.trim().toLowerCase())) {
+            errorText = "その商品名は既に登録されています。";
         }
 
-        // 確定ボタンから呼ばれる関数
-        function submitForm() {
-            document.getElementById('addForm').submit();
+        // エラーがある場合はエラーモーダルを表示して終了
+        if (errorText !== "") {
+            errorMessage.innerText = errorText;
+            errorModal.style.display = 'flex';
+            return;
         }
 
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').style.display = 'none';
-        }
-    </script>
+        // エラーなしなら確認モーダルを表示
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    // 2. 確定ボタンで送信
+    function submitForm() {
+        document.getElementById('addForm').submit();
+    }
+
+    // 3. モーダルを閉じる
+    function closeErrorModal() {
+        document.getElementById('errorModal').style.display = 'none';
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+</script>
 </body>
 </html>
 
