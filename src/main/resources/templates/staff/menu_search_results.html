@@ -230,6 +230,9 @@
 
         .product-info {
             flex: 1;
+            /* 💡 追加：画面が狭くなったときに、このエリアが適切に縮むようにして、
+                     右側のボタンや画像スペースを押し潰すのを防ぎます */
+            min-width: 0; 
         }
 
         .product-title {
@@ -283,34 +286,44 @@
         }
 
         .btn-detail {
-            background-color: var(--primary-color);
-            color: #FFFFFF;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 24px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.2s;
-        }
+          background-color: var(--primary-color);
+          color: #FFFFFF;
+          border: none;
+          border-radius: 6px;
+          padding: 10px 20px;       /* 💡 左右の余白を少し調整 */
+          font-size: 0.95rem;
+          font-weight: 700;
+          cursor: pointer;
+          text-decoration: none;
+          transition: background-color 0.2s;
+
+          /* 🛠️ ここから追加：絶対に潰さないための設定 */
+          white-space: nowrap;      /* 文字の自動改行を禁止 */
+          flex-shrink: 0;           /* 親要素の縮小指示を無視する */
+          min-width: 80px;          /* 最低でも80pxの横幅を確保する */
+          text-align: center;       /* 文字を中央に揃える */
+          display: inline-block;    /* サイズを正しく反映させる */
+      }
 
         .btn-detail:hover {
             background-color: var(--primary-hover);
         }
 
         .product-image-container {
-            width: 140px;
-            height: 100px;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-            background-color: #FAFAFA;
-            margin-left: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+          width: 140px;
+          height: 100px;
+          border-radius: 6px;
+          overflow: hidden;
+          border: 1px solid var(--border-color);
+          background-color: #FAFAFA;
+          margin-left: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          /* 🛠️ ここから追加 */
+          flex-shrink: 0;           /* 枠自体が縮むのを完全に禁止する */
+      }
 
         .product-image {
             max-width: 100%;
@@ -327,6 +340,15 @@
             border: 1px solid var(--border-color);
             font-size: 1.1rem;
         }
+
+        /* 💡 追加：詳細ボタンと画像コンテナが入っている右側エリア用のスタイル */
+        .product-action-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0; /* 💡 右側のボタンと画像を、左側のテキストから絶対に押し潰されないように固定します */
+        }
+
     </style>
 </head>
 <body>
@@ -411,6 +433,7 @@
                     </a>
                     <h1 class="content-title">メニュー検索</h1>
                 </div>
+            </div>
                 
                 <a th:href="@{/staff/menu/search}" class="btn-search-form">検索</a>
             </div>
@@ -431,9 +454,9 @@
                             <span class="status-tag suspended" th:if="${p.salesStatus == 2}">販売停止中</span>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center;">
+                    <div class="product-action-area">
                         <a th:href="@{/staff/menu/detail/{id}(id=${p.productId})}" class="btn-detail">詳細</a>
-                        <div class="product-image-container">
+                        <div class="product-image-container" style="margin-left: 0;">
                             <img class="product-image" th:src="${p.imagePath}" alt="商品画像" onerror="this.src='/images/no-image.png'">
                         </div>
                     </div>
