@@ -230,9 +230,6 @@
 
         .product-info {
             flex: 1;
-            /* 💡 追加：画面が狭くなったときに、このエリアが適切に縮むようにして、
-                     右側のボタンや画像スペースを押し潰すのを防ぎます */
-            min-width: 0; 
         }
 
         .product-title {
@@ -425,17 +422,14 @@
         <main class="content">
             <div class="content-header">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <a th:href="@{/staff/menu/search}" class="btn-back">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <a th:href="@{/staff/menu/search}" class="btn-search-form" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; box-sizing: border-box;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
                             <line x1="19" y1="12" x2="5" y2="12"></line>
                             <polyline points="12 19 5 12 12 5"></polyline>
                         </svg>
                     </a>
-                    <h1 class="content-title">メニュー検索</h1>
+                    <h1 class="content-title">メニュー検索結果</h1>
                 </div>
-            </div>
-                
-                <a th:href="@{/staff/menu/search}" class="btn-search-form">検索</a>
             </div>
 
             <!-- 検索結果一覧 -->
