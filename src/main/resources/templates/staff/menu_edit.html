@@ -769,8 +769,53 @@
             }
         }
 
+        // 既存の商品名リストを Thymeleaf から取得
+        /*[ th:inline="javascript" ]*/
+        const existingProductNames = /*[[${products != null} ? ${products.![productName]} : ${{}}]]*/ [];
+        // 編集中の商品の元の名前を取得
+        /*[ th:inline="javascript" ]*/
+        const originalName = /*[[${product.productName}]]*/ '';
+
         // 確認モーダル開閉
         function openConfirmModal() {
+            const form = document.getElementById('editForm');
+            const nameInput = document.getElementById('productName');
+            const priceInput = document.getElementById('price');
+
+            const nameValue = nameInput.value.trim();
+            const priceValue = priceInput.value.trim();
+
+            // 1. 商品名の空白チェック
+            if (nameValue === "") {
+                alert("エラー：商品名を入力してください。");
+                nameInput.focus();
+                return;
+            }
+
+            // 2. 値段の空白・数値チェック
+            if (priceValue === "") {
+                alert("エラー：価格を入力してください。");
+                priceInput.focus();
+                return;
+            }
+
+            const priceNum = Number(priceValue);
+            if (isNaN(priceNum) || priceNum < 0) {
+                alert("エラー：価格には0以上の数値を入力してください。");
+                priceInput.focus();
+                return;
+            }
+
+            // 3. 重複チェック（自分自身の元の名前とは異なる場合に、重複判定）
+            if (nameValue.toLowerCase() !== originalName.trim().toLowerCase()) {
+                const isDuplicate = existingProductNames.some(name => name.trim().toLowerCase() === nameValue.toLowerCase());
+                if (isDuplicate) {
+                    alert("エラー：すでに同じ名前の商品が登録されています。");
+                    nameInput.focus();
+                    return;
+                }
+            }
+
             document.getElementById('confirmModal').style.display = 'flex';
         }
 

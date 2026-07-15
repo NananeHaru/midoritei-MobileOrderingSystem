@@ -732,24 +732,51 @@
             }
         }
 
-        // 確認モーダル開閉
+        // 1. サーバーから渡された商品リストを取得（空の場合は空配列）
+        const products = /*[[${products}]]*/ []; 
+        // 重複チェック用：名前リスト（小文字化済み）
+        const existingNames = products.map(p => p.productName.trim().toLowerCase());
+
         function openConfirmModal() {
-            // 入力バリデーションのチェック
-            const form = document.getElementById('addForm');
-            if (!form.checkValidity()) {
-                form.reportValidity();
+            // HTML側の name="productName", name="price" を確実に取得
+            const nameInput = document.querySelector('input[name="productName"]');
+            const priceInput = document.querySelector('input[name="price"]');
+
+            // エラー検知ロジック
+            if (!nameInput || nameInput.value.trim() === "") {
+                alert("エラー：商品名を入力してください。");
+                nameInput.focus();
                 return;
             }
-            document.getElementById('confirmModal').style.display = 'flex';
+
+            if (!priceInput || priceInput.value.trim() === "" || Number(priceInput.value) < 0) {
+                alert("エラー：価格は0以上の数値を入力してください。");
+                priceInput.focus();
+                return;
+            }
+
+            // 重複チェック
+            const inputName = nameInput.value.trim().toLowerCase();
+            if (existingNames.includes(inputName)) {
+                alert("エラー：その商品名は既に登録されています。");
+                nameInput.focus();
+                return;
+            }
+
+            // 全てOKならモーダル表示
+            const modal = document.getElementById('confirmModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+
+        // 確定ボタンから呼ばれる関数
+        function submitForm() {
+            document.getElementById('addForm').submit();
         }
 
         function closeConfirmModal() {
             document.getElementById('confirmModal').style.display = 'none';
-        }
-
-        // フォーム送信
-        function submitForm() {
-            document.getElementById('addForm').submit();
         }
     </script>
 </body>

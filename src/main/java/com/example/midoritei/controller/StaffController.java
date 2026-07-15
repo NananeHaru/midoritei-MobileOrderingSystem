@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map; // 💡【ここを追加！】
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.example.midoritei.entity.Product; // これを追加してください
 
 @Controller
 @RequestMapping("/staff")

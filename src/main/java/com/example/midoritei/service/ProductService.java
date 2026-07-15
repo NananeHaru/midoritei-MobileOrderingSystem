@@ -317,4 +317,13 @@ public class ProductService {
         String sql = "SELECT category_id, category_name FROM カテゴリーテーブル ORDER BY display_order ASC";
         return jdbcTemplate.queryForList(sql);
     }
+
+    /**
+     * 全商品をデータベースから取得します
+     */
+    public List<Product> findAll() {
+        String sql = "SELECT * FROM 商品マスタテーブル"; // ※テーブル名は適宜合わせてください
+        return jdbcTemplate.query(sql, productRowMapper);
+    }
+    
 }
