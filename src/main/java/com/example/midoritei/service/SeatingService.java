@@ -19,8 +19,8 @@ public class SeatingService {
     // 人数を指定してテーブルを開設するオーバーロードメソッド
     @Transactional
     public String openTable(String storeId, String seatId, String courseId, int numberOfMembers) {
-        // 同一の座席で既に利用中のレコードがあれば削除してリセットする
-        String deleteSql = "DELETE FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
+        // 同一の座席で既に利用中のレコードがあればキャンセル扱いにしてリセットする
+        String deleteSql = "UPDATE 顧客テーブル SET checkout_status = 9, seat_id = NULL WHERE store_id = ? AND seat_id = ? AND checkout_status = 1";
         jdbcTemplate.update(deleteSql, storeId, seatId);
 
         String customerId = idGenerator.generateNextId(storeId);
@@ -131,8 +131,13 @@ public class SeatingService {
      */
     @Transactional
     public void closeTable(String storeId, String seatId) {
-        String sql = "DELETE FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status IN (1, 2, 8)";
-        jdbcTemplate.update(sql, storeId, seatId);
+        // 食事中(1)・会計中(8)のものはキャンセル(9)に更新し、座席との紐付けを解除
+        String sql1 = "UPDATE 顧客テーブル SET checkout_status = 9, seat_id = NULL WHERE store_id = ? AND seat_id = ? AND checkout_status IN (1, 8)";
+        jdbcTemplate.update(sql1, storeId, seatId);
+        
+        // 会計済み(2)のものはステータスは維持したまま、座席との紐付けのみを解除
+        String sql2 = "UPDATE 顧客テーブル SET seat_id = NULL WHERE store_id = ? AND seat_id = ? AND checkout_status = 2";
+        jdbcTemplate.update(sql2, storeId, seatId);
     }
 
     /**
