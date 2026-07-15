@@ -301,15 +301,18 @@ public class MenuManagementController {
     /**
      * メニュー新規追加画面を表示します。
      */
+    // MenuManagementController.java 内の該当メソッド
     @GetMapping("/menu/add")
     public String menuAddPage(HttpSession session, Model model) {
-        if (session == null || session.getAttribute("loggedInStaff") == null) {
-            return "redirect:/staff/login";
-        }
+        // ① 全商品リスト（重複チェック用）
+        List<Product> products = productService.findAll(); // ※findAll()メソッドを作成しておく必要があります
+        model.addAttribute("products", products);
 
-        model.addAttribute("product", new Product());
-        model.addAttribute("categories", productService.getAllCategories());
-        return "staff/menu_add";
+        // ② カテゴリリスト（セレクトボックス表示用）
+        List<Map<String, Object>> categories = productService.getCategories();
+        model.addAttribute("categories", categories);
+        
+        return "staff/menu_add"; // テンプレートの場所に合わせてください
     }
 
     /**
