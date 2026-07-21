@@ -261,7 +261,7 @@ INSERT INTO
         category_name,
         display_order
     )
-SELECT 'CT06', '早出し', 6
+SELECT 'CT07', 'おつまみ', 6
 WHERE
     NOT EXISTS (
         SELECT 1
@@ -276,28 +276,13 @@ INSERT INTO
         category_name,
         display_order
     )
-SELECT 'CT07', 'おつまみ', 7
-WHERE
-    NOT EXISTS (
-        SELECT 1
-        FROM カテゴリーテーブル
-        WHERE
-            category_id = 'CT07'
-    );
-
-INSERT INTO
-    カテゴリーテーブル (
-        category_id,
-        category_name,
-        display_order
-    )
 SELECT 'CT08', 'ソフトドリンク', 7
 WHERE
     NOT EXISTS (
         SELECT 1
         FROM カテゴリーテーブル
         WHERE
-            category_id = 'CT08'
+            category_id = 'CT07'
     );
 
 -- 10. 分類・オプション紐づけテーブル（★ダブルクォートをバッククォートに変更）
