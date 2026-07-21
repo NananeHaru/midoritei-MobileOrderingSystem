@@ -1040,6 +1040,23 @@ INSERT INTO コースマスタテーブル (course_id, course_name, price, time_
 SELECT 'CS30', 'プレミアム3時間贅沢飲み放題', 4500, 180
 WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS30');
 
+-- 💡 コースを商品マスタテーブルにも登録（注文履歴のJOIN用。sales_status=2で通常メニューには非表示）
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'CS02', NULL, 'スタンダード2時間飲み放題', 2000, NULL, 2, 'スタンダード2時間飲み放題コース', 0, NULL
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'CS02');
+
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'CS20', NULL, 'スタンダード3時間飲み放題', 2500, NULL, 2, 'スタンダード3時間飲み放題コース', 0, NULL
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'CS20');
+
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'CS03', NULL, 'プレミアム2時間贅沢飲み放題', 3500, NULL, 2, 'プレミアム2時間贅沢飲み放題コース', 0, NULL
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'CS03');
+
+INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
+SELECT 'CS30', NULL, 'プレミアム3時間贅沢飲み放題', 4500, NULL, 2, 'プレミアム3時間贅沢飲み放題コース', 0, NULL
+WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'CS30');
+
 -- 14. 座席マスタテーブル
 CREATE TABLE IF NOT EXISTS 座席マスタテーブル (
     store_id CHAR(2) NOT NULL,
