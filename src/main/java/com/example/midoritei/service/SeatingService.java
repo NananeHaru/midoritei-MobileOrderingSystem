@@ -6,6 +6,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class SeatingService {
@@ -196,12 +198,34 @@ public class SeatingService {
      */
     @Transactional
     public void closeTable(String storeId, String seatId) {
+        // 1. この座席（または統合されたグループ）に紐づく顧客IDを特定する
+        String getCustomerSql = "SELECT customer_id FROM 顧客テーブル WHERE store_id = ? AND seat_id = ? AND checkout_status IN (1, 8)";
+        List<Map<String, Object>> customers = jdbcTemplate.queryForList(getCustomerSql, storeId, seatId);
+        
+        if (!customers.isEmpty()) {
+            String customerId = (String) customers.get(0).get("customer_id");
+            
+            // 2. その顧客（またはグループ全体）に、キャンセルされていない有効な注文があるかチェック！
+            String checkOrderSql = "SELECT COUNT(*) FROM 注文テーブル o " +
+                                   "JOIN 注文明細テーブル d ON o.order_id = d.order_id " +
+                                   "WHERE (o.customer_id = ? OR o.customer_id IN (SELECT customer_id FROM 顧客テーブル WHERE parent_customer_id = ?)) " +
+                                   "  AND d.serve_status != 9";
+            
+            int orderCount = jdbcTemplate.queryForObject(checkOrderSql, Integer.class, customerId, customerId);
+            
+            // 3. 注文が1件でも残っている場合は、エラーメッセージを投げてクローズを阻止する
+            if (orderCount > 0) {
+                throw new IllegalStateException("エラー: 注文データが存在するため、この座席を空席にすることはできません。");
+            }
+        }
+
+        // --- 以下、元のクローズ処理（そのまま残す部分） ---
         // 食事中(1)・会計中(8)のものはキャンセル(9)に更新し、座席との紐付けを解除
         String sql1 = "UPDATE 顧客テーブル SET checkout_status = 9, seat_id = NULL WHERE store_id = ? AND seat_id = ? AND checkout_status IN (1, 8)";
         jdbcTemplate.update(sql1, storeId, seatId);
         
         // 会計済み(2)のものはステータスは維持したまま、座席との紐付けのみを解除
-        String sql2 = "UPDATE 顧客テーブル SET seat_id = NULL WHERE store_id = ? AND seat_id = ? AND checkout_status = 2";
+        String sql2 = "UPDATE 顧客テーブル SET seat_id = NULL WHERE store_id = ? AND seat_id = ? AND checkout_status IN (2)";
         jdbcTemplate.update(sql2, storeId, seatId);
     }
 
