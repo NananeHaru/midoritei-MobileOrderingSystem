@@ -151,7 +151,7 @@ public class StaffController {
 
         String storeId = (String) session.getAttribute("loggedInStoreId");
 
-        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, "all", storeId);
+        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, "undelivered", storeId);
         model.addAttribute("orderDetails", orderDetails);
         model.addAttribute("selectedDate", dateStr);
 
