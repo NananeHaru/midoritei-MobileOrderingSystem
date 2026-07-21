@@ -17,7 +17,7 @@
 
 -- 2. 顧客テーブル
 CREATE TABLE IF NOT EXISTS 顧客テーブル (
-    customer_id VARCHAR(14) PRIMARY KEY, -- 💡 CHAR(7) から VARCHAR(14) に拡張
+    customer_id VARCHAR(14) PRIMARY KEY, --  CHAR(7) から VARCHAR(14) に拡張
     store_id CHAR(2),
     seat_id VARCHAR(20),
     course_id CHAR(4),
@@ -26,12 +26,12 @@ CREATE TABLE IF NOT EXISTS 顧客テーブル (
     checkout_status INT DEFAULT 1,
     total_amount INT,
     number_of_members INT DEFAULT 0,
-    parent_customer_id VARCHAR(14),    -- 💡 ここも紐づくため VARCHAR(14) に拡張
+    parent_customer_id VARCHAR(14),    --  ここも紐づくため VARCHAR(14) に拡張
     merged_at TIMESTAMP NULL
 );
 ALTER TABLE 顧客テーブル ADD COLUMN IF NOT EXISTS merged_at TIMESTAMP NULL;
 
--- 💡 毎日リセットのLIKE検索を爆速にするインデックスを追加
+--  毎日リセットのLIKE検索を爆速にするインデックスを追加
 ALTER TABLE 顧客テーブル ADD INDEX IF NOT EXISTS idx_customer_id (customer_id);
 
 -- 3. 商品マスタテーブル
@@ -49,13 +49,13 @@ CREATE TABLE IF NOT EXISTS 商品マスタテーブル (
 
 -- 5. 注文テーブル
 CREATE TABLE IF NOT EXISTS 注文テーブル (
-    order_id VARCHAR(14) PRIMARY KEY,    -- 💡 14桁に拡張
-    customer_id VARCHAR(14),            -- 💡 顧客ID側と合わせるため 14桁に拡張
+    order_id VARCHAR(14) PRIMARY KEY,    --  14桁に拡張
+    customer_id VARCHAR(14),            --  顧客ID側と合わせるため 14桁に拡張
     order_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status INT NOT NULL DEFAULT 0       -- 💡 初期データのINSERTで使われているため復活！
+    status INT NOT NULL DEFAULT 0       --  初期データのINSERTで使われているため復活！
 );
 
--- 💡 注文IDの毎日リセット検索を爆速にするインデックスを追加
+--  注文IDの毎日リセット検索を爆速にするインデックスを追加
 ALTER TABLE 注文テーブル ADD INDEX IF NOT EXISTS idx_order_id (order_id);
 
 -- 梅酒用などのサンプルデータ（ロック、ソーダ割りなど）
@@ -1025,7 +1025,7 @@ INSERT INTO コースマスタテーブル (course_id, course_name, price, time_
 SELECT 'CS30', 'プレミアム3時間贅沢飲み放題', 4500, 180
 WHERE NOT EXISTS (SELECT 1 FROM コースマスタテーブル WHERE course_id = 'CS30');
 
--- 💡 コースを商品マスタテーブルにも登録（注文履歴のJOIN用。sales_status=2で通常メニューには非表示）
+--  コースを商品マスタテーブルにも登録（注文履歴のJOIN用。sales_status=2で通常メニューには非表示）
 INSERT INTO 商品マスタテーブル (product_id, category_id, product_name, price, course_id, sales_status, description, is_seasonal, image_path)
 SELECT 'CS02', NULL, 'スタンダード2時間飲み放題', 2000, NULL, 2, 'スタンダード2時間飲み放題コース', 0, NULL
 WHERE NOT EXISTS (SELECT 1 FROM 商品マスタテーブル WHERE product_id = 'CS02');
