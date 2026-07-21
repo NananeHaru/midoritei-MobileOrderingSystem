@@ -261,7 +261,7 @@ INSERT INTO
         category_name,
         display_order
     )
-SELECT 'CT07', 'おつまみ', 6
+SELECT 'CT06', 'おつまみ', 6
 WHERE
     NOT EXISTS (
         SELECT 1
@@ -276,7 +276,7 @@ INSERT INTO
         category_name,
         display_order
     )
-SELECT 'CT08', 'ソフトドリンク', 7
+SELECT 'CT07', 'ソフトドリンク', 7
 WHERE
     NOT EXISTS (
         SELECT 1
