@@ -701,13 +701,23 @@ public class StaffController {
      */
     @PostMapping("/seating/close")
     public String closeTable(@RequestParam("seatId") String seatId,
-                             HttpSession session) {
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) { // 💡 引数に RedirectAttributes があるか確認
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
         
         String storeId = (String) session.getAttribute("loggedInStoreId");
-        seatingService.closeTable(storeId, seatId);
+        
+        try {
+            // サービス側のクローズ処理を呼び出す
+            seatingService.closeTable(storeId, seatId);
+        } catch (IllegalStateException e) {
+            // 💡 注文があってサービスから投げられたエラーをここでキャッチ！
+            // 座席統合の時と同じように "error" というキーで画面にメッセージを渡します
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        
         return "redirect:/staff/seating";
     }
 
