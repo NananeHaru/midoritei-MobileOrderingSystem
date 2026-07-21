@@ -784,6 +784,16 @@ public class StaffController {
                     redirectAttributes.addFlashAttribute("error", "エラー: 選択された座席の中に、すでに親席として他の座席と統合されている座席が含まれています。一度解除してから再度統合してください。");
                     return "redirect:/staff/seating";
                 }
+
+                // 💡 コースが選択されているか確認（CS01以外のコースが選択されている場合は統合を不可とする）
+                String courseId = (String) seatData.get("course_id");
+                if (courseId != null) {
+                    String trimmedCourseId = courseId.trim();
+                    if (!trimmedCourseId.isEmpty() && !"CS01".equals(trimmedCourseId)) {
+                        redirectAttributes.addFlashAttribute("error", "エラー: コースが選択されている座席が含まれているため、座席統合を行うことはできません。");
+                        return "redirect:/staff/seating";
+                    }
+                }
             }
         }
 
