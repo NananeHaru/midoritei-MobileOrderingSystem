@@ -40,7 +40,7 @@ public class StaffController {
      * スタッフのルートURL（/staff または /staff/）にアクセスした際、
      * ログイン状態であれば注文一覧へ、未ログインであればログイン画面へリダイレクトします。
      */
-    @GetMapping({"", "/"})
+    @GetMapping({ "", "/" })
     public String index(HttpSession session) {
         if (session != null && session.getAttribute("loggedInStaff") != null) {
             return "redirect:/staff/orders";
@@ -67,33 +67,32 @@ public class StaffController {
      */
     @PostMapping("/login")
     public String login(@RequestParam("employeeId") String employeeId,
-                        @RequestParam("password") String password,
-                        @RequestParam("storeId") String storeId,
-                        HttpSession session,
-                        Model model) {
+            @RequestParam("password") String password,
+            @RequestParam("storeId") String storeId,
+            HttpSession session,
+            Model model) {
         // 仮のアカウント情報 (プランA)
         boolean isValid = false;
         if (("staff01".equals(employeeId) && "password".equals(password)) ||
-            ("admin".equals(employeeId) && "password".equals(password))) {
+                ("admin".equals(employeeId) && "password".equals(password))) {
             isValid = true;
         }
 
         if (isValid) {
             session.setAttribute("loggedInStaff", employeeId);
             session.setAttribute("loggedInStoreId", storeId);
-            
+
             // 店舗名を取得してセッションに格納
             try {
                 String storeName = jdbcTemplate.queryForObject(
-                    "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = ?",
-                    String.class,
-                    storeId
-                );
+                        "SELECT store_name FROM 店舗マスタテーブル WHERE store_id = ?",
+                        String.class,
+                        storeId);
                 session.setAttribute("loggedInStoreName", storeName);
             } catch (Exception e) {
                 session.setAttribute("loggedInStoreName", "不明な店舗");
             }
-            
+
             return "redirect:/staff/orders";
         } else {
             // 店舗リストを再取得してモデルに追加
@@ -109,10 +108,10 @@ public class StaffController {
      */
     @GetMapping("/orders")
     public String ordersPage(@RequestParam(value = "date", required = false) String dateStr,
-                             @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter,
-                             @RequestParam(value = "seatId", required = false) String seatId,
-                             HttpSession session,
-                             Model model) {
+            @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter,
+            @RequestParam(value = "seatId", required = false) String seatId,
+            HttpSession session,
+            Model model) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
@@ -123,7 +122,8 @@ public class StaffController {
         String storeId = (String) session.getAttribute("loggedInStoreId");
 
         // 注文一覧データおよび集計値の取得
-        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, statusFilter, storeId, seatId);
+        List<Map<String, Object>> orderDetails = orderService.getAllOrderDetails(dateStr, statusFilter, storeId,
+                seatId);
         Map<String, Object> stats = orderService.getOrderStats(dateStr, storeId);
 
         model.addAttribute("orderDetails", orderDetails);
@@ -140,8 +140,8 @@ public class StaffController {
      */
     @GetMapping("/orders/delete")
     public String ordersDeletePage(@RequestParam(value = "date", required = false) String dateStr,
-                                   HttpSession session,
-                                   Model model) {
+            HttpSession session,
+            Model model) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
@@ -163,12 +163,12 @@ public class StaffController {
      */
     @PostMapping("/orders/delete/item")
     public String cancelOrderItem(@RequestParam("orderItemId") int orderItemId,
-                                  @RequestParam("cancelQuantity") int cancelQuantity,
-                                  @RequestParam(value = "seatId", required = false) String seatId,
-                                  @RequestParam(value = "productName", required = false) String productName,
-                                  @RequestParam(value = "date", required = false) String dateStr,
-                                  HttpSession session,
-                                  RedirectAttributes redirectAttributes) {
+            @RequestParam("cancelQuantity") int cancelQuantity,
+            @RequestParam(value = "seatId", required = false) String seatId,
+            @RequestParam(value = "productName", required = false) String productName,
+            @RequestParam(value = "date", required = false) String dateStr,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
@@ -192,12 +192,12 @@ public class StaffController {
      */
     @PostMapping("/orders/status")
     public String updateStatus(@RequestParam("orderItemId") int orderItemId,
-                               @RequestParam("status") int status,
-                               @RequestParam(value = "date", required = false) String dateStr,
-                               @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter,
-                               @RequestParam(value = "seatId", required = false) String seatId) {
+            @RequestParam("status") int status,
+            @RequestParam(value = "date", required = false) String dateStr,
+            @RequestParam(value = "statusFilter", defaultValue = "all") String statusFilter,
+            @RequestParam(value = "seatId", required = false) String seatId) {
         orderService.updateOrderStatus(orderItemId, status);
-        
+
         // 元々選択されていた日付を引き継いでリダイレクト
         if (dateStr == null || dateStr.trim().isEmpty()) {
             dateStr = LocalDate.now().toString();
@@ -234,12 +234,11 @@ public class StaffController {
         }
         String storeId = (String) session.getAttribute("loggedInStoreId");
         model.addAttribute("activeSeats", seatingService.getActiveSeatsDetail(storeId));
-        
+
         List<Map<String, Object>> courses = jdbcTemplate.queryForList(
-            "SELECT course_id, course_name FROM コースマスタテーブル ORDER BY course_id ASC"
-        );
+                "SELECT course_id, course_name FROM コースマスタテーブル ORDER BY course_id ASC");
         model.addAttribute("courses", courses);
-        
+
         return "staff/orders_add_seating";
     }
 
@@ -248,31 +247,31 @@ public class StaffController {
      */
     @PostMapping("/orders/add/select-seat")
     public String selectSeat(@RequestParam("seatId") String seatId,
-                             @RequestParam("customerId") String customerId,
-                             @RequestParam("courseId") String courseId,
-                             HttpSession session) {
+            @RequestParam("customerId") String customerId,
+            @RequestParam("courseId") String courseId,
+            HttpSession session) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
-        
+
         // コースなし(CS01)から有料コースに変更された場合、料金×人数を顧客テーブルの合計金額に加算する
         try {
             String selectOldSql = "SELECT course_id, number_of_members FROM 顧客テーブル WHERE customer_id = ?";
             java.util.Map<String, Object> oldCust = jdbcTemplate.queryForMap(selectOldSql, customerId);
             String oldCourseId = oldCust.get("course_id") != null ? ((String) oldCust.get("course_id")).trim() : "CS01";
-            int members = oldCust.get("number_of_members") != null ? ((Number) oldCust.get("number_of_members")).intValue() : 1;
+            int members = oldCust.get("number_of_members") != null
+                    ? ((Number) oldCust.get("number_of_members")).intValue()
+                    : 1;
 
             if ("CS01".equals(oldCourseId) && !"CS01".equals(courseId.trim())) {
                 int coursePrice = jdbcTemplate.queryForObject(
-                    "SELECT price FROM コースマスタテーブル WHERE course_id = ?",
-                    Integer.class,
-                    courseId.trim()
-                );
+                        "SELECT price FROM コースマスタテーブル WHERE course_id = ?",
+                        Integer.class,
+                        courseId.trim());
                 jdbcTemplate.update(
-                    "UPDATE 顧客テーブル SET total_amount = total_amount + ? WHERE customer_id = ?",
-                    coursePrice * members,
-                    customerId
-                );
+                        "UPDATE 顧客テーブル SET total_amount = total_amount + ? WHERE customer_id = ?",
+                        coursePrice * members,
+                        customerId);
             }
         } catch (Exception e) {
             System.out.println("⚠️ スタッフ代理注文時のコース変更に伴う合計金額加算に失敗しました: " + e.getMessage());
@@ -280,35 +279,32 @@ public class StaffController {
 
         // 顧客テーブルのコースを更新（現在のコースがコースなし「CS01」の場合のみ変更を許可）
         jdbcTemplate.update(
-            "UPDATE 顧客テーブル SET course_id = ? WHERE customer_id = ? AND (TRIM(course_id) = 'CS01' OR TRIM(course_id) = ?)",
-            courseId,
-            customerId,
-            courseId
-        );
+                "UPDATE 顧客テーブル SET course_id = ? WHERE customer_id = ? AND (TRIM(course_id) = 'CS01' OR TRIM(course_id) = ?)",
+                courseId,
+                customerId,
+                courseId);
 
         // ★【追加】スタッフ側の代理注文時のコース選択でも、選択されたコースを商品として注文明細に登録する
         try {
             if (courseId != null && !"CS01".equals(courseId.trim())) {
                 // 重複登録を防ぐため、既にその顧客IDで同じコース商品の明細が存在しない場合のみ登録
                 int existingCount = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM 注文テーブル o JOIN 注文明細テーブル d ON o.order_id = d.order_id WHERE o.customer_id = ? AND d.product_id = ?",
-                    Integer.class,
-                    customerId,
-                    courseId.trim()
-                );
+                        "SELECT COUNT(*) FROM 注文テーブル o JOIN 注文明細テーブル d ON o.order_id = d.order_id WHERE o.customer_id = ? AND d.product_id = ?",
+                        Integer.class,
+                        customerId,
+                        courseId.trim());
                 if (existingCount == 0) {
                     int members = jdbcTemplate.queryForObject(
-                        "SELECT number_of_members FROM 顧客テーブル WHERE customer_id = ?",
-                        Integer.class,
-                        customerId
-                    );
+                            "SELECT number_of_members FROM 顧客テーブル WHERE customer_id = ?",
+                            Integer.class,
+                            customerId);
                     orderService.createCourseOrder(customerId, courseId.trim(), members);
                 }
             }
         } catch (Exception e) {
             System.out.println("⚠️ スタッフ代理注文時のコース商品インサートに失敗しました: " + e.getMessage());
         }
-        
+
         session.setAttribute("staffSeatId", seatId);
         session.setAttribute("staffCustomerId", customerId);
         session.setAttribute("staffCart", new ArrayList<CartItem>()); // カート初期化
@@ -364,10 +360,10 @@ public class StaffController {
      */
     @PostMapping("/orders/add/cart/add")
     public String addToStaffCart(@RequestParam("productId") String productId,
-                                 @RequestParam("quantity") int quantity,
-                                 @RequestParam(value = "selectedOption", defaultValue = "") String selectedOption,
-                                 @RequestParam(value = "optionAddPrice", defaultValue = "0") int optionAddPrice,
-                                 HttpSession session) {
+            @RequestParam("quantity") int quantity,
+            @RequestParam(value = "selectedOption", defaultValue = "") String selectedOption,
+            @RequestParam(value = "optionAddPrice", defaultValue = "0") int optionAddPrice,
+            HttpSession session) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
@@ -399,9 +395,11 @@ public class StaffController {
             boolean exists = false;
             for (int i = 0; i < cart.size(); i++) {
                 CartItem item = cart.get(i);
-                if (item.getProduct().getProductId().equals(productId) && item.getSelectedOption().equals(selectedOption)) {
+                if (item.getProduct().getProductId().equals(productId)
+                        && item.getSelectedOption().equals(selectedOption)) {
                     // 数量を加算して置き換え
-                    cart.set(i, new CartItem(item.getProduct(), item.getQuantity() + quantity, selectedOption, finalOptionAddPrice));
+                    cart.set(i, new CartItem(item.getProduct(), item.getQuantity() + quantity, selectedOption,
+                            finalOptionAddPrice));
                     exists = true;
                     break;
                 }
@@ -456,9 +454,9 @@ public class StaffController {
      */
     @PostMapping("/orders/add/cart/update")
     public String updateStaffCart(@RequestParam("productId") String productId,
-                                  @RequestParam("quantity") int quantity,
-                                  @RequestParam(value = "remove", required = false, defaultValue = "false") boolean remove,
-                                  HttpSession session) {
+            @RequestParam("quantity") int quantity,
+            @RequestParam(value = "remove", required = false, defaultValue = "false") boolean remove,
+            HttpSession session) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
@@ -481,7 +479,8 @@ public class StaffController {
                             finalOptionAddPrice = 0;
                         }
 
-                        cart.set(i, new CartItem(item.getProduct(), quantity, item.getSelectedOption(), finalOptionAddPrice));
+                        cart.set(i, new CartItem(item.getProduct(), quantity, item.getSelectedOption(),
+                                finalOptionAddPrice));
                     }
                     break;
                 }
@@ -564,50 +563,53 @@ public class StaffController {
 
         // 食事中（checkout_status = 0）の席一覧を取得
         List<Map<String, Object>> activeSeats = seatingService.getActiveSeatsDetail(storeId);
-        
+
         // 親子関係を持つグループの整理
         // 親の顧客ID -> グループ情報 (ラベル, カラー)
         Map<String, String> groupLabels = new java.util.HashMap<>();
         Map<String, String> groupColors = new java.util.HashMap<>();
         String[] labels = new String[26];
-        for (int j = 0; j < 26; j++) labels[j] = String.valueOf((char) ('A' + j));
-        String[] colors = {"#1a73e8", "#a142f4", "#e8710a", "#12b5cb", "#e52592", "#137333"};
+        for (int j = 0; j < 26; j++)
+            labels[j] = String.valueOf((char) ('A' + j));
+        String[] colors = { "#1a73e8", "#a142f4", "#e8710a", "#12b5cb", "#e52592", "#137333" };
 
         // 統合グループの親顧客IDを、子席の merged_at 最小値昇順（統合操作を行った順）で収集してラベルを割り当て
         List<String> sortedParentIds = activeSeats.stream()
-            .filter(s -> s.get("parent_customer_id") != null)
-            .map(s -> (String) s.get("parent_customer_id"))
-            .distinct()
-            .sorted((id1, id2) -> {
-                java.sql.Timestamp t1 = activeSeats.stream()
-                    .filter(s -> id1.equals(s.get("parent_customer_id")))
-                    .map(s -> (java.sql.Timestamp) s.get("merged_at"))
-                    .filter(t -> t != null)
-                    .min(java.util.Comparator.naturalOrder()).orElse(null);
-                java.sql.Timestamp t2 = activeSeats.stream()
-                    .filter(s -> id2.equals(s.get("parent_customer_id")))
-                    .map(s -> (java.sql.Timestamp) s.get("merged_at"))
-                    .filter(t -> t != null)
-                    .min(java.util.Comparator.naturalOrder()).orElse(null);
-                if (t1 == null && t2 == null) return 0;
-                if (t1 == null) return 1;
-                if (t2 == null) return -1;
-                return t1.compareTo(t2);
-            })
-            .collect(java.util.stream.Collectors.toList());
+                .filter(s -> s.get("parent_customer_id") != null)
+                .map(s -> (String) s.get("parent_customer_id"))
+                .distinct()
+                .sorted((id1, id2) -> {
+                    java.sql.Timestamp t1 = activeSeats.stream()
+                            .filter(s -> id1.equals(s.get("parent_customer_id")))
+                            .map(s -> (java.sql.Timestamp) s.get("merged_at"))
+                            .filter(t -> t != null)
+                            .min(java.util.Comparator.naturalOrder()).orElse(null);
+                    java.sql.Timestamp t2 = activeSeats.stream()
+                            .filter(s -> id2.equals(s.get("parent_customer_id")))
+                            .map(s -> (java.sql.Timestamp) s.get("merged_at"))
+                            .filter(t -> t != null)
+                            .min(java.util.Comparator.naturalOrder()).orElse(null);
+                    if (t1 == null && t2 == null)
+                        return 0;
+                    if (t1 == null)
+                        return 1;
+                    if (t2 == null)
+                        return -1;
+                    return t1.compareTo(t2);
+                })
+                .collect(java.util.stream.Collectors.toList());
 
         for (int i = 0; i < sortedParentIds.size(); i++) {
             int labelIdx = i % 26;
             groupLabels.put(sortedParentIds.get(i), labels[labelIdx]);
             groupColors.put(sortedParentIds.get(i), colors[labelIdx % colors.length]);
         }
-        
+
         // データベースから店舗の全座席を取得
         List<Map<String, Object>> storeSeats = jdbcTemplate.queryForList(
-            "SELECT seat_id, seat_type FROM 座席マスタテーブル WHERE store_id = ? ORDER BY LENGTH(seat_id) ASC, seat_id ASC",
-            storeId
-        );
-        
+                "SELECT seat_id, seat_type FROM 座席マスタテーブル WHERE store_id = ? ORDER BY LENGTH(seat_id) ASC, seat_id ASC",
+                storeId);
+
         // 座席状態をマージしたデータを構築
         List<Map<String, Object>> seats = new java.util.ArrayList<>();
         for (Map<String, Object> s : storeSeats) {
@@ -616,37 +618,40 @@ public class StaffController {
             Map<String, Object> seatMap = new java.util.HashMap<>();
             seatMap.put("seatId", seatId);
             seatMap.put("type", seatType);
-            
+
             // 現在の席データがあるか探索
             Map<String, Object> activeSeat = activeSeats.stream()
-                .filter(as -> seatId.equals(String.valueOf(as.get("seat_id"))))
-                .findFirst()
-                .orElse(null);
-            
+                    .filter(as -> seatId.equals(String.valueOf(as.get("seat_id"))))
+                    .findFirst()
+                    .orElse(null);
+
             if (activeSeat != null) {
                 int checkoutStatus = ((Number) activeSeat.get("checkout_status")).intValue();
                 seatMap.put("status", checkoutStatus == 2 ? "会計済み" : "使用中");
                 String myCustomerId = (String) activeSeat.get("customer_id");
                 seatMap.put("customerId", myCustomerId);
                 seatMap.put("numberOfMembers", activeSeat.get("number_of_members"));
-                seatMap.put("courseId", activeSeat.get("course_id") != null ? ((String) activeSeat.get("course_id")).trim() : null);
-                seatMap.put("courseName", activeSeat.get("course_name") != null ? ((String) activeSeat.get("course_name")).trim() : "コースなし");
+                seatMap.put("courseId",
+                        activeSeat.get("course_id") != null ? ((String) activeSeat.get("course_id")).trim() : null);
+                seatMap.put("courseName",
+                        activeSeat.get("course_name") != null ? ((String) activeSeat.get("course_name")).trim()
+                                : "コースなし");
                 seatMap.put("entryTime", activeSeat.get("entry_time"));
-                
+
                 // 親の顧客ID
                 String parentCustomerId = (String) activeSeat.get("parent_customer_id");
-                
+
                 if (parentCustomerId != null) {
                     // 自分は子席
                     seatMap.put("parentCustomerId", parentCustomerId);
                     // 親座席の番号を取得
                     String parentSeatId = activeSeats.stream()
-                        .filter(as -> parentCustomerId.equals(as.get("customer_id")))
-                        .map(as -> String.valueOf(as.get("seat_id")))
-                        .findFirst()
-                        .orElse(null);
+                            .filter(as -> parentCustomerId.equals(as.get("customer_id")))
+                            .map(as -> String.valueOf(as.get("seat_id")))
+                            .findFirst()
+                            .orElse(null);
                     seatMap.put("parentSeatId", parentSeatId);
-                    
+
                     // グループ情報の適用
                     if (groupLabels.containsKey(parentCustomerId)) {
                         seatMap.put("groupId", parentCustomerId);
@@ -657,10 +662,10 @@ public class StaffController {
                     // 自分は親席、あるいは単独席
                     // 自分が親（＝自分を親顧客IDとしている子がいる）か確認
                     List<String> childSeatIds = activeSeats.stream()
-                        .filter(as -> myCustomerId.equals(as.get("parent_customer_id")))
-                        .map(as -> String.valueOf(as.get("seat_id")))
-                        .collect(java.util.stream.Collectors.toList());
-                    
+                            .filter(as -> myCustomerId.equals(as.get("parent_customer_id")))
+                            .map(as -> String.valueOf(as.get("seat_id")))
+                            .collect(java.util.stream.Collectors.toList());
+
                     if (!childSeatIds.isEmpty()) {
                         seatMap.put("childSeatIds", childSeatIds);
                         if (groupLabels.containsKey(myCustomerId)) {
@@ -685,11 +690,11 @@ public class StaffController {
      */
     @PostMapping("/seating/open")
     public String openTable(@RequestParam("seatId") String seatId,
-                            HttpSession session) {
+            HttpSession session) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
-        
+
         String storeId = (String) session.getAttribute("loggedInStoreId");
         // 初期値：店舗ID=storeId, 人数=0名, コース=なし(CS01)
         seatingService.openTable(storeId, seatId, "CS01", 0);
@@ -701,14 +706,14 @@ public class StaffController {
      */
     @PostMapping("/seating/close")
     public String closeTable(@RequestParam("seatId") String seatId,
-                             HttpSession session,
-                             RedirectAttributes redirectAttributes) { // 💡 引数に RedirectAttributes があるか確認
+            HttpSession session,
+            RedirectAttributes redirectAttributes) { // 💡 引数に RedirectAttributes があるか確認
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
-        
+
         String storeId = (String) session.getAttribute("loggedInStoreId");
-        
+
         try {
             // サービス側のクローズ処理を呼び出す
             seatingService.closeTable(storeId, seatId);
@@ -717,7 +722,7 @@ public class StaffController {
             // 座席統合の時と同じように "error" というキーで画面にメッセージを渡します
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        
+
         return "redirect:/staff/seating";
     }
 
@@ -726,12 +731,12 @@ public class StaffController {
      */
     @PostMapping("/seating/change")
     public String changeSeat(@RequestParam("currentSeatId") String currentSeatId,
-                             @RequestParam("newSeatId") String newSeatId,
-                             HttpSession session) {
+            @RequestParam("newSeatId") String newSeatId,
+            HttpSession session) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
-        
+
         String storeId = (String) session.getAttribute("loggedInStoreId");
         seatingService.changeSeat(storeId, currentSeatId, newSeatId);
         return "redirect:/staff/seating";
@@ -742,18 +747,18 @@ public class StaffController {
      */
     @PostMapping("/seating/merge")
     public String mergeSeats(@RequestParam("parentSeatId") String parentSeatId,
-                             @RequestParam("childSeatIds") List<String> childSeatIds,
-                             HttpSession session,
-                             RedirectAttributes redirectAttributes) {
+            @RequestParam("childSeatIds") List<String> childSeatIds,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
-        
+
         String storeId = (String) session.getAttribute("loggedInStoreId");
 
         // 💡 1. 現在使用中のアクティブな座席リストを取得して、二重統合をチェックする
         List<Map<String, Object>> activeSeats = seatingService.getActiveSeatsDetail(storeId);
-        
+
         // チェック対象のすべての座席ID（親 + 子リスト）をまとめる
         List<String> targetSeatIds = new ArrayList<>();
         targetSeatIds.add(parentSeatId);
@@ -764,24 +769,26 @@ public class StaffController {
         for (String seatId : targetSeatIds) {
             // 現在の座席の状態を検索
             Map<String, Object> seatData = activeSeats.stream()
-                .filter(as -> String.valueOf(as.get("seat_id")).equals(seatId))
-                .findFirst()
-                .orElse(null);
+                    .filter(as -> String.valueOf(as.get("seat_id")).equals(seatId))
+                    .findFirst()
+                    .orElse(null);
 
             if (seatData != null) {
                 // すでに別の席の子席（parent_customer_id が入っている）である場合
                 if (seatData.get("parent_customer_id") != null) {
-                    redirectAttributes.addFlashAttribute("error", "エラー: 選択された座席の中に、すでに他のグループに統合されている座席が含まれています。二重統合はできません。");
+                    redirectAttributes.addFlashAttribute("error",
+                            "エラー: 選択された座席の中に、すでに他のグループに統合されている座席が含まれています。二重統合はできません。");
                     return "redirect:/staff/seating";
                 }
 
                 // すでに自分が親席（他の席を従えている）であるか確認
                 String myCustomerId = (String) seatData.get("customer_id");
                 boolean isAlreadyParent = activeSeats.stream()
-                    .anyMatch(as -> myCustomerId != null && myCustomerId.equals(as.get("parent_customer_id")));
+                        .anyMatch(as -> myCustomerId != null && myCustomerId.equals(as.get("parent_customer_id")));
 
                 if (isAlreadyParent) {
-                    redirectAttributes.addFlashAttribute("error", "エラー: 選択された座席の中に、すでに親席として他の座席と統合されている座席が含まれています。一度解除してから再度統合してください。");
+                    redirectAttributes.addFlashAttribute("error",
+                            "エラー: 選択された座席の中に、すでに親席として他の座席と統合されている座席が含まれています。一度解除してから再度統合してください。");
                     return "redirect:/staff/seating";
                 }
 
@@ -807,30 +814,30 @@ public class StaffController {
      */
     @PostMapping("/seating/unmerge")
     public String unmergeSeat(@RequestParam("seatId") String seatId,
-                              HttpSession session) {
+            HttpSession session) {
         if (session == null || session.getAttribute("loggedInStaff") == null) {
             return "redirect:/staff/login";
         }
-        
+
         String storeId = (String) session.getAttribute("loggedInStoreId");
         seatingService.unmergeSeat(storeId, seatId);
         return "redirect:/staff/seating";
     }
 
     private void adjustProductPriceByCourse(Product product, String courseId) {
-        if (product == null) return;
+        if (product == null)
+            return;
         String trimmedCourseId = (courseId != null) ? courseId.trim() : "";
         String prodCourseId = (product.getCourseId() != null) ? product.getCourseId().trim() : "";
-        
+
         // 親コースID（parent_course_id）を引き当て
         String parentCourseId = trimmedCourseId;
         if (!trimmedCourseId.isEmpty()) {
             try {
                 parentCourseId = jdbcTemplate.queryForObject(
-                    "SELECT COALESCE(parent_course_id, course_id) FROM コースマスタテーブル WHERE TRIM(course_id) = ?",
-                    String.class,
-                    trimmedCourseId
-                );
+                        "SELECT COALESCE(parent_course_id, course_id) FROM コースマスタテーブル WHERE TRIM(course_id) = ?",
+                        String.class,
+                        trimmedCourseId);
                 if (parentCourseId != null) {
                     parentCourseId = parentCourseId.trim();
                 }
@@ -864,10 +871,9 @@ public class StaffController {
         }
         try {
             String courseId = jdbcTemplate.queryForObject(
-                "SELECT course_id FROM 顧客テーブル WHERE customer_id = ?",
-                String.class,
-                customerId
-            );
+                    "SELECT course_id FROM 顧客テーブル WHERE customer_id = ?",
+                    String.class,
+                    customerId);
             return (courseId != null) ? courseId.trim() : "CS01";
         } catch (Exception e) {
             return "CS01";
@@ -880,12 +886,11 @@ public class StaffController {
         }
         try {
             String courseName = jdbcTemplate.queryForObject(
-                "SELECT cm.course_name FROM 顧客テーブル c " +
-                "LEFT JOIN コースマスタテーブル cm ON TRIM(c.course_id) = TRIM(cm.course_id) " +
-                "WHERE c.customer_id = ?",
-                String.class,
-                customerId
-            );
+                    "SELECT cm.course_name FROM 顧客テーブル c " +
+                            "LEFT JOIN コースマスタテーブル cm ON TRIM(c.course_id) = TRIM(cm.course_id) " +
+                            "WHERE c.customer_id = ?",
+                    String.class,
+                    customerId);
             return (courseName != null) ? courseName.trim() : "コースなし";
         } catch (Exception e) {
             return "コースなし";
