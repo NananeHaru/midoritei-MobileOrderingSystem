@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:with="backCatId=${param.categoryId != null ? param.categoryId[0] : ''}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +38,7 @@
 </head>
 <body>
     <header>
-        <a th:href="@{/menu}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <a th:href="@{/menu(categoryId=${backCatId})}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
         <h1>注文</h1>
         <div class="timer">残り時間<br><strong id="countdown-timer">01:20:00</strong></div>
     </header>
@@ -71,6 +71,7 @@
             <input type="hidden" name="selectedOption" id="optionInput" th:value="${not #lists.isEmpty(options)} ? ${options[0].option_name} : 'なし'">
             <input type="hidden" name="optionAddPrice" id="optionPriceInput" th:value="${not #lists.isEmpty(options)} ? ${options[0].option_add_price} : 0">
             
+            <input type="hidden" name="categoryId" th:value="${backCatId}">
             <button type="submit" class="add-cart-btn">カゴに入れる</button>
         </form>
 
@@ -79,7 +80,7 @@
     </div>
 
     <nav class="bottom-nav">
-        <a th:href="@{/menu}" class="nav-item active"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>
+        <a th:href="@{/menu(categoryId=${backCatId})}" class="nav-item active"><i class="fas fa-utensils" style="font-size:20px;"></i><div>注文</div></a>
         <a th:href="@{/orders/history}" class="nav-item"><i class="fas fa-list-alt" style="font-size:20px;"></i><div>注文履歴</div></a>
         <a th:href="@{/orders/billing}" class="nav-item"><i class="fas fa-cash-register" style="font-size:20px;"></i><div>会計</div></a>
     </nav>

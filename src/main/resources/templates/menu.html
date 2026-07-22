@@ -221,7 +221,7 @@
     </div>
 
     <div class="menu-list">
-        <a th:href="@{/menu/detail/{id}(id=${p.productId})}" class="product-card" th:each="p : ${products}">
+        <a th:href="@{/menu/detail/{id}(id=${p.productId}, categoryId=${currentCategoryId})}" class="product-card" th:each="p : ${products}">
             <div class="product-info">
                 <h3 class="product-name" th:text="${p.productName}">商品名</h3>
                 
