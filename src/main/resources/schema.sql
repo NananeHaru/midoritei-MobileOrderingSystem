@@ -159,11 +159,7 @@ CREATE TABLE IF NOT EXISTS 注文明細テーブル (
     serve_status INT NOT NULL DEFAULT 0 -- 0:未提供, 1:提供済, 9:キャンセル
 );
 
--- 8. 既存の顧客データ・注文データ・注文明細データの全削除＆顧客採番リセット
-DELETE FROM 注文明細テーブル;
-DELETE FROM 注文テーブル;
-DELETE FROM 顧客テーブル;
-UPDATE 顧客採番テーブル SET current_number = 1;
+-- 8. テスト用の顧客データおよび注文データ（削除）
 
 -- 9. カテゴリーテーブル
 CREATE TABLE IF NOT EXISTS カテゴリーテーブル (
@@ -819,20 +815,55 @@ WHERE
             product_id = 'FP0005'
     );
 
--- 今回画像を用意・生成した27商品以外の旧商品・不要商品をすべて削除
-DELETE FROM 商品マスタテーブル
-WHERE product_id NOT IN (
-    'PR0001', 'PR0002', 'PR0003', 'PR0004', 'PR0005', 'PR0006', 'PR0007', 'PR0008', 'PR0009',
-    'FP0001', 'FP0002', 'FP0003', 'FP0004', 'FP0005', 'FP0006', 'FP0007', 'FP0008',
-    'FP0010', 'FP0011', 'FP0012', 'FP0013', 'FP0014', 'FP0015', 'FP0016', 'FP0017', 'FP0018', 'FP0019', 'FP0020', 'FP0021', 'FP0022'
-);
+-- コース商品のマスタデータ追加
+INSERT INTO
+    商品マスタテーブル (
+        product_id,
+        category_id,
+        product_name,
+        price,
+        course_id,
+        sales_status,
+        description,
+        is_seasonal,
+        image_path
+    )
+SELECT 'CS02', 'CT01', 'スタンダードコース', 3000, 'CS01', 2, 'スタンダードコース料金', 0, NULL
+WHERE
+    NOT EXISTS (
+        SELECT 1
+        FROM 商品マスタテーブル
+        WHERE
+            product_id = 'CS02'
+    );
 
-DELETE FROM "商品オプション紐づけテーブル"
-WHERE product_id NOT IN (
-    'PR0001', 'PR0002', 'PR0003', 'PR0004', 'PR0005', 'PR0006', 'PR0007', 'PR0008', 'PR0009',
-    'FP0001', 'FP0002', 'FP0003', 'FP0004', 'FP0005', 'FP0006', 'FP0007', 'FP0008',
-    'FP0010', 'FP0011', 'FP0012', 'FP0013', 'FP0014', 'FP0015', 'FP0016', 'FP0017', 'FP0018', 'FP0019', 'FP0020', 'FP0021', 'FP0022'
-);
+INSERT INTO
+    商品マスタテーブル (
+        product_id,
+        category_id,
+        product_name,
+        price,
+        course_id,
+        sales_status,
+        description,
+        is_seasonal,
+        image_path
+    )
+SELECT 'CS03', 'CT01', 'プレミアムコース', 4000, 'CS01', 2, 'プレミアムコース料金', 0, NULL
+WHERE
+    NOT EXISTS (
+        SELECT 1
+        FROM 商品マスタテーブル
+        WHERE
+            product_id = 'CS03'
+    );
+
+-- すでに登録済みのコース商品のsales_statusを強制的に2(非表示)に更新
+UPDATE 商品マスタテーブル
+SET
+    sales_status = 2
+WHERE
+    product_id IN ('CS02', 'CS03');
 
 -- 商品オプション紐づけ初期データ
 -- 生ビール(PR0001)、レモンサワー(PR0002)にロック(1)・ソーダ割り(2)・ストレート(3)・水割り(4)を紐づけ
