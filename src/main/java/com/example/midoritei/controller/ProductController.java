@@ -120,7 +120,9 @@ public class ProductController {
 
     // 商品詳細画面
     @GetMapping("/menu/detail/{productId}")
-    public String showDetail(@PathVariable("productId") String productId, Model model, HttpSession session) {
+    public String showDetail(@PathVariable("productId") String productId, 
+                            @RequestParam(value = "categoryId", required = false) String categoryId, // 💡 追加
+                            Model model, HttpSession session) {
         List<Product> allProducts = productService.getActiveProducts();
         Product targetProduct = allProducts.stream()
                 .filter(p -> p.getProductId().equals(productId))
@@ -136,15 +138,18 @@ public class ProductController {
 
         model.addAttribute("product", targetProduct);
         model.addAttribute("options", productService.getOptionsByProductId(targetProduct.getProductId()));
+        model.addAttribute("categoryId", categoryId); // 💡 追加：HTMLへカテゴリーIDを渡す
         return "detail";
     }
 
+    // カゴに追加（修正版：コース対象外商品のオプション料金加算対応）
     // カゴに追加（修正版：コース対象外商品のオプション料金加算対応）
     @PostMapping("/cart/add")
     public String addToCart(@RequestParam("productId") String productId,
                             @RequestParam("quantity") int quantity,
                             @RequestParam(value = "selectedOption", defaultValue = "なし") String selectedOption,
                             @RequestParam(value = "optionAddPrice", defaultValue = "0") int optionAddPrice,
+                            @RequestParam(value = "categoryId", required = false) String categoryId, // 💡 追加
                             HttpSession session) {
 
         // 1. カゴに入れる直前に、本当にまだ制限時間内かチェックする
@@ -183,7 +188,7 @@ public class ProductController {
             if (product.isIncludedInCourse()) {
                 finalOptionAddPrice = 0;
             } else {
-                // 💡 コース対象外（普通にお金を払う商品）なら、選択した追加料金（+50円など）をそのまま適用する
+                //  コース対象外（普通にお金を払う商品）なら、選択した追加料金（+50円など）をそのまま適用する
                 finalOptionAddPrice = optionAddPrice;
             }
 
@@ -194,6 +199,12 @@ public class ProductController {
             cart.add(new CartItem(product, quantity, selectedOption, finalOptionAddPrice));
             session.setAttribute("cart", cart);
         }
+
+        // 💡 3. カガに入れた後、元のカテゴリーが分かっていればそこへ戻す
+        if (categoryId != null && !categoryId.isEmpty()) {
+            return "redirect:/menu?categoryId=" + categoryId;
+        }
+        
         return "redirect:/menu";
     }
 
